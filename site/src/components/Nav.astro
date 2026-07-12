@@ -1,0 +1,97 @@
+---
+const { pathname } = Astro.url;
+const links = [
+  { href: '/', label: 'Work' },
+  { href: '/about', label: 'About' },
+  { href: '/code', label: 'Code' },
+  { href: '/contact', label: 'Contact' },
+];
+
+function isActive(href: string): boolean {
+  if (href === '/') return pathname === '/' || pathname.startsWith('/work');
+  return pathname === href || pathname.startsWith(href + '/');
+}
+---
+<header class="nav" data-scrolled="false">
+  <div class="wrap nav__inner">
+    <a href="/" class="nav__logo" aria-label="GW Gabriel Worm — Home">GW</a>
+    <nav aria-label="Primary">
+      <ul class="nav__list">
+        {links.map(link => (
+          <li>
+            <a
+              href={link.href}
+              class:list={['nav__link', isActive(link.href) && 'is-active']}
+              aria-current={isActive(link.href) ? 'page' : undefined}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: 64px;
+    background: transparent;
+    transition: background var(--d-base) var(--ease-out), backdrop-filter var(--d-base) var(--ease-out);
+  }
+  .nav[data-scrolled="true"] {
+    background: rgba(11, 11, 12, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .nav__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+  }
+  .nav__logo {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--fg-bone);
+    border-bottom: 0;
+  }
+  .nav__logo:hover { color: var(--accent-amber); }
+  .nav__list {
+    display: flex;
+    list-style: none;
+    gap: var(--s-5);
+  }
+  .nav__link {
+    font-family: var(--font-mono);
+    font-size: var(--t-eyebrow);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--muted-graphite);
+    border-bottom: 0;
+  }
+  .nav__link:hover, .nav__link.is-active { color: var(--fg-bone); }
+  .nav__link.is-active { border-bottom: 1px solid var(--accent-amber); }
+
+  @media (max-width: 640px) {
+    .nav { height: 56px; }
+    .nav__list { gap: var(--s-4); }
+    .nav__link { font-size: 10px; }
+  }
+</style>
+
+<script>
+  const nav = document.querySelector('.nav') as HTMLElement | null;
+  if (nav) {
+    const onScroll = () => {
+      nav.dataset.scrolled = window.scrollY > 16 ? 'true' : 'false';
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+</script>

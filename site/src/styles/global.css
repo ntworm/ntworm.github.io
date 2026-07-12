@@ -1,0 +1,214 @@
+/* ============================================================
+   Gabriel Worm — Portfolio
+   Direção C: Sound Director's Dailies
+   ============================================================ */
+
+/* ----- Tokens ----- */
+:root {
+  /* Palette (4 tokens, no gradients).
+     --muted-graphite bumped from #5A5A5E → #7C7C7E for WCAG AA contrast
+     against --bg-noir (≈4.7:1, passes 1.4.3 normal text + 1.4.11 non-text). */
+  --bg-noir: #0B0B0C;
+  --fg-bone: #EAE6DE;
+  --accent-amber: #D4A847;
+  --muted-graphite: #7C7C7E;
+
+  /* Typefaces */
+  --font-display: 'Antonio', 'Tungsten', system-ui, sans-serif;
+  --font-body: 'Inter Tight', 'Söhne', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* Type scale */
+  --t-display-xl: clamp(56px, 11vw, 180px);
+  --t-display: clamp(40px, 7vw, 96px);
+  --t-h2: clamp(28px, 4vw, 48px);
+  --t-h3: clamp(20px, 2.2vw, 26px);
+  --t-body: 17px;
+  --t-body-sm: 15px;
+  --t-mono: 13px;
+  --t-eyebrow: 11px;
+
+  /* Spacing scale (multiples of 4) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+  --s-10: 128px;
+  --s-11: 192px;
+  --s-12: 256px;
+
+  /* Layout */
+  --grid-gutter: 24px;
+  --margin-x: clamp(20px, 5vw, 80px);
+  --max-width: 1320px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --d-fast: 200ms;
+  --d-base: 300ms;
+  --d-slow: 600ms;
+}
+
+/* ----- Dark mode locked (direção C is dark by design) ----- */
+@media (prefers-color-scheme: light) {
+  :root { color-scheme: dark; }
+}
+
+/* ----- Reset ----- */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+
+html {
+  background: var(--bg-noir);
+  color: var(--fg-bone);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--t-body);
+  font-weight: 400;
+  line-height: 1.55;
+  min-height: 100vh;
+  font-feature-settings: "ss01", "tnum";
+}
+
+img, svg, video { display: block; max-width: 100%; height: auto; }
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--d-fast) var(--ease-out);
+}
+a:hover { color: var(--accent-amber); }
+a:focus-visible {
+  outline: 2px solid var(--accent-amber);
+  outline-offset: 2px;
+}
+
+/* Entity link (subtle in-text reference).
+   Uses text-decoration (not border-bottom) so the inline element stays
+   inline-flow: it can break across lines naturally without forcing the
+   whole link onto its own line. The amber default is intentional:
+   entity-links are project names / institutional refs that the owner
+   wants visually called out everywhere they appear, not only inside
+   <em> wrappers. Page (bone) color came from `color: inherit` falling
+   through to the body when entity-link appeared outside an <em>. */
+.entity-link {
+  color: var(--accent-amber);
+  text-decoration: underline;
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: color var(--d-fast) var(--ease-out), text-decoration-color var(--d-fast) var(--ease-out);
+}
+.entity-link:hover {
+  color: var(--fg-bone);
+  text-decoration-color: var(--fg-bone);
+}
+
+/* ----- Typography base ----- */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--fg-bone);
+}
+h1 { font-size: var(--t-display); }
+h2 { font-size: var(--t-h2); }
+h3 { font-size: var(--t-h3); }
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--t-eyebrow);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--accent-amber);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono);
+  letter-spacing: 0.04em;
+  color: var(--muted-graphite);
+}
+
+p { max-width: 64ch; }
+p + p { margin-top: var(--s-4); }
+
+/* ----- Layout primitives ----- */
+.wrap {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--margin-x);
+}
+
+main { padding-top: var(--s-9); padding-bottom: var(--s-9); }
+
+/* ----- Hairline rule ----- */
+.hairline {
+  height: 1px;
+  background: var(--muted-graphite);
+  border: 0;
+  opacity: 0.4;
+}
+
+/* ----- Reduced motion (global guard) — see end of file ----- */
+
+/* ----- Skip link ----- */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: var(--s-4);
+  z-index: 100;
+  padding: var(--s-3) var(--s-4);
+  background: var(--accent-amber);
+  color: var(--bg-noir);
+  font-family: var(--font-mono);
+  font-size: var(--t-mono);
+  border: 0;
+  transition: top var(--d-base) var(--ease-out);
+}
+.skip-link:focus { top: var(--s-4); }
+.skip-link:focus-visible { outline: 2px solid var(--fg-bone); outline-offset: 2px; }
+
+/* ----- Selection ----- */
+::selection { background: var(--accent-amber); color: var(--bg-noir); }
+
+/* ----- Scroll fade-in (motion task) ----- */
+[data-fade-in] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity var(--d-slow) var(--ease-out), transform var(--d-slow) var(--ease-out);
+}
+[data-fade-in].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fade-in] { opacity: 1; transform: none; }
+
+  /* Universal motion reduction. The .spotlight-cell rule in index.astro
+     handles its own keyframe freeze (show first child statically);
+     this rule covers every other transition + animation in the site
+     (hover effects, nav backdrop, gallery fade-ins, etc.) without
+     touching the spotlight's special-cased behavior. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

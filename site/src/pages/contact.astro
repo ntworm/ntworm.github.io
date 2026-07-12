@@ -1,0 +1,70 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const links = [
+  { label: 'Email', value: 'gabrielwormm@gmail.com', href: 'mailto:gabrielwormm@gmail.com' },
+  { label: 'LinkedIn', value: 'gabrielworm', href: 'https://www.linkedin.com/in/gabrielworm' },
+  { label: 'IMDB', value: 'nm16356368', href: 'https://www.imdb.com/name/nm16356368/' },
+  { label: 'GitHub', value: '@ntworm', href: 'https://github.com/ntworm' },
+  { label: 'fxhash', value: '@nt_worm', href: 'https://www.fxhash.xyz/u/nt_worm' },
+];
+---
+<Layout title="Contact">
+  <article class="contact wrap">
+    <header class="contact__header">
+      <span class="eyebrow">Contact</span>
+      <h1 class="contact__title">gabrielwormm@gmail.com</h1>
+    </header>
+
+    <ul class="contact__list">
+      {links.map(l => (
+        <li class="contact__item">
+          <span class="contact__label mono">{l.label}</span>
+          <a href={l.href} class="contact__value" rel="noopener">{l.value} <span aria-hidden="true">↗</span></a>
+        </li>
+      ))}
+    </ul>
+
+    <footer class="contact__footer">
+      <p class="mono">Currently based in Palmas, Tocantins, Brazil. Available for cinema, music, and creative coding projects.</p>
+    </footer>
+  </article>
+</Layout>
+
+<style>
+  .contact { padding-top: var(--s-8); padding-bottom: var(--s-8); }
+  .contact__header { margin-bottom: var(--s-9); }
+  .contact__title {
+    font-size: var(--t-display);
+    margin-top: var(--s-3);
+    overflow-wrap: anywhere;
+  }
+  .contact__list { list-style: none; margin-bottom: var(--s-9); }
+  .contact__item {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: var(--s-5);
+    padding: var(--s-5) 0;
+    border-top: 1px solid var(--muted-graphite);
+    align-items: baseline;
+  }
+  .contact__item:last-child { border-bottom: 1px solid var(--muted-graphite); }
+  .contact__label {
+    color: var(--muted-graphite);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+  }
+  .contact__value {
+    font-family: var(--font-display);
+    font-size: var(--t-h3);
+    color: var(--fg-bone);
+    border-bottom: 0;
+  }
+  .contact__value:hover { color: var(--accent-amber); }
+  .contact__footer { max-width: 60ch; }
+  .contact__footer .mono { color: var(--muted-graphite); font-size: var(--t-body-sm); }
+  @media (max-width: 640px) {
+    .contact__item { grid-template-columns: 1fr; gap: var(--s-1); }
+    .contact__value { font-size: var(--t-body); }
+  }
+</style>

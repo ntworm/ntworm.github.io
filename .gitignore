@@ -1,0 +1,36 @@
+# Scratch da pasta tmp não é versionado.
+# Tudo dentro de tmp/ é considerado rascunho.
+# Os arquivos .gitkeep e .gitignore são obrigatórios e versionados.
+tmp/*
+!tmp/.gitkeep
+!tmp/.gitignore
+
+# /RAW = drop zone de conteúdo bruto. Nunca é versionado:
+# pode conter assets de terceiros (áudio, vídeo, imagens),
+# PDFs com layouts diferentes, screenshots do editor Wix, etc.
+# A "publicação" do conteúdo útil acontece ao copiar/curar
+# para src/ (Astro), cvs/, ou arquivos markdown específicos.
+RAW/*
+!RAW/.gitkeep
+!RAW/.gitignore
+
+# Astro site build output + cache
+node_modules/
+dist/
+.astro/
+.output/
+
+site/node_modules/
+site/dist/
+site/.astro/
+
+# Dev server log files (created when running npm run dev)
+.dev.log
+.dev.err.log
+
+# Agent context files (internal working notes, never published)
+.agent-context/
+AGENTS.md
+
+# Local-only writing drafts (never published)
+/site/drafts/

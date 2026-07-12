@@ -1,0 +1,620 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Tile from '../components/Tile.astro';
+import { getProjectMedia } from '../utils/project-images';
+
+// Selected Work — split into two sections (Audiovisual + Performance & Installations).
+// Order inside each section is chronological reverse (most recent first).
+
+// === Audiovisual section (13 cases, 2023–2026) ===
+const audiovisualCases = [
+  {
+    slug: 'a-quermesse', act: 'ACT 01', title: 'A Quermesse',
+    role: 'Sound Assistant', year: '2026', type: 'Feature film',
+    production: 'MZN Filmes + Borboletas Filmes · dir. Juliane Almeida',
+    summary: 'Tocantins feature film by Juliane Almeida, with Christian Malheiros in the lead role. Sound Assistant on set during principal photography (April–May 2026).',
+  },
+  {
+    slug: 'trisal', act: 'ACT 02', title: 'Trisal — TV series, episode 2',
+    role: 'Sound Director', year: '2026', type: 'TV Series',
+    production: 'Artpalco Filmes',
+    summary: 'Sound direction end-to-end for Artpalco Filmes. 17-minute episode delivered June 2026. In post for episode 3.',
+  },
+  {
+    slug: 'unveiling-new-futures', act: 'ACT 03', title: 'Unveiling New Futures',
+    role: 'Sound Director + Composer', year: '2025', type: 'Advertisement (international)',
+    production: 'Universidade Lusófona',
+    summary: "Two ads in Lusófona's 2025 international campaign ('Descobrir Novos Futuros'). Sound Director + Composer — captured production sound, composed original score, mixed and delivered both.",
+  },
+  {
+    slug: 'ticha-penicheiro', act: 'ACT 04', title: 'Feel the Magic – Ticha Penicheiro',
+    role: 'Sound Editor', year: '2025', type: 'Documentary',
+    production: 'Betclic Studios · dir. André Braz',
+    summary: 'Documentary feature on Portuguese basketball legend Ticha Penicheiro. Dialogue cleanup, archival mix, score shaping.',
+  },
+  {
+    slug: 'this-feminine-side', act: 'ACT 05', title: 'This Feminine Side',
+    role: 'Sound Director + Sound Design + Editing', year: '2025', type: 'Audiovisual (REANIMA)',
+    production: 'REANIMA / Universidade Lusófona',
+    summary: "Audiovisual piece by Alice (her Lusófona master's thesis through REANIMA). Sound direction end-to-end, design, and editorial for the final project.",
+  },
+  {
+    slug: 'o-clube', act: 'ACT 06', title: 'O Clube (S6 + S7)',
+    role: 'Sound Editor', year: '2024–2025', type: 'TV Series',
+    production: 'AMMP — Audio & Music for Motion Picture',
+    summary: 'Portuguese TV series streaming on OPTO/SIC. Sound editor on seasons 6 and 7 at AMMP, working dialogue editorial layered on location sound and ADR.',
+  },
+  {
+    slug: 'bed-time', act: 'ACT 07', title: 'Bed Time',
+    role: 'Composer + Sound Mixer', year: '2024', type: 'Short film (horror)',
+    production: 'Lisbon, Portugal',
+    summary: 'Horror short, 2024. Composer + Sound Mixer — wrote the original score and handled the final mix.',
+  },
+  {
+    slug: 'caio', act: 'ACT 08', title: 'Caio',
+    role: 'Remix Engineer', year: '2024', type: 'BA short film',
+    production: 'Universidade Lusófona',
+    summary: 'BA short from Lusófona (Lisbon). Remix Engineer — shaped the final re-mix of the existing soundtrack for delivery.',
+  },
+  {
+    slug: 'futuro-realizado', act: 'ACT 09', title: 'Futuro Realizado',
+    role: 'Sound Designer', year: '2024', type: 'Advertisement',
+    production: 'Universidade Lusófona',
+    summary: "Lusófona 2024 advertisement. Sound Designer on the spot — full sound design from brief to delivery.",
+  },
+  {
+    slug: 'o-compositor', act: 'ACT 10', title: 'O Compositor',
+    role: 'Sound Direction', year: '2024', type: 'BA short film',
+    production: 'Universidade Lusófona',
+    summary: 'BA short film. Sound direction end-to-end, mixing, and supervision of foley + dialogue editorial. Prémio Curtas 2026 nominee, Best Composition.',
+  },
+  {
+    slug: 'ai-am', act: 'ACT 11', title: 'A.I. AM',
+    role: 'Composer', year: '2024', type: 'Short Film (sci-fi)',
+    production: 'Universidade Lusófona',
+    summary: 'Composed the soundtrack on a single steel-string acoustic guitar, recorded at Lusófona University studios. Stripped-down score — every note has to carry the scene.',
+  },
+  {
+    slug: 'unconscious-vision', act: 'ACT 12', title: 'Unconscious Vision',
+    role: 'Sound Designer + Sound Mixer', year: '2024', type: 'BA short film (horror)',
+    production: 'Universidade Lusófona',
+    summary: 'BA horror short from Lusófona (Lisbon). Sound Designer + Sound Mixer — full sound design through to final mix.',
+  },
+  {
+    slug: 'el-tono-del-mar', act: 'ACT 13', title: 'El Tono Del Mar',
+    role: 'Sound Assistant', year: '2023', type: 'Animation',
+    production: 'Universidade Lusófona · REANIMA',
+    summary: 'REANIMA animation. Sound effects and sound design, recorded and edited alongside the animation team.',
+  },
+];
+
+// === Music section (5 entries: solo + bands + producer era, 2015–2025) ===
+// Reverse chronological order. Each entry has its own case page when
+// there is enough context to warrant one.
+const musicCases = [
+  {
+    slug: 'ep-rinoceronte', act: 'ACT 01', title: 'EP Rinoceronte (Luzo Cairo)',
+    role: 'Producer + Mix/Master', year: '2025', type: 'EP — 6 tracks',
+    production: 'Política Nacional Aldir Blanc / PAAR 2024',
+    summary: 'Six-track EP for Luzo Cairo. Producer, mix, and master across all tracks, plus pre-production recording and the live stream. Released on Bandcamp and Spotify in late 2025.',
+  },
+  {
+    slug: 'invasao-do-pequi', act: 'ACT 02', title: 'Invasão do Pequi',
+    role: 'Artist + Mix Engineer', year: '2024', type: 'Music video / Album track',
+    production: 'Local production, Palmas/TO',
+    summary: 'Music video and album track from Palmas, 2024. Artist via Em Agosto Chove + Mix Engineer on the album tracks.',
+  },
+  {
+    slug: 'arvore-seca', act: 'ACT 03', title: 'Árvore Seca',
+    role: 'Sound engineer + Producer + Festival co-founder', year: '2019–2021', type: 'Producer era',
+    production: 'Produtora Árvore Seca, Palmas/TO',
+    summary: 'Two and a half years as technical sound + producer at Árvore Seca. Co-founded Som na Árvore 2019; produced Seletiva Bem Ali, Verão Brabo, Wingfuzz, Som do Formigueiro. Studio + live engineering.',
+  },
+  {
+    slug: 'bem-ali-sessions', act: 'ACT 04', title: 'Bem Ali Sessions',
+    role: 'Sound engineer + Producer', year: '2021', type: '5 music videos',
+    production: 'Festival Bem Ali, Palmas/TO',
+    summary: 'Sound engineer and producer on the Bem Ali Sessions cycle — five music videos from local bands, recorded and mixed as part of the Festival Bem Ali 2021.',
+  },
+  {
+    slug: 'em-agosto-chove', act: 'ACT 05', title: 'Em Agosto Chove',
+    role: 'Composer + Guitarist + Producer', year: '2015–2021', type: 'Band (Palmas/TO)',
+    production: 'Personal project',
+    summary: 'My band, 2015–2021. One album, one music video, one live recording. Local catalogue, kept in the Palmas scene.',
+  },
+];
+
+// === Performance & Installations section (4 cases, 2021–2026) ===
+const codeCases = [
+  {
+    slug: 'fxhash', act: 'ACT 01', title: 'fxhash',
+    role: 'Creator (as nt_worm)', year: '2022–2026', type: 'Generative art platform',
+    production: 'Hydra.js + Web Audio API',
+    summary: '~30 generative pieces on fxhash as nt_worm. Hydra.js visuals, Web Audio + OSC reactivity. Highlights include KAKOFONI ORQUESTRA (edition #37 acquired by the Madison Museum).',
+  },
+  {
+    slug: 'eletronik-fields', act: 'ACT 02', title: 'Eletronik Fields',
+    role: 'Creator', year: '2023', type: 'Generative audiovisual / Installation',
+    production: 'Personal · Hydra.js + Max 8',
+    summary: 'Live performance that converts electromagnetic signals to music via a magnetic induction coil. Max 8 patches for sound-to-MIDI mapping, with real-time oscilloscope visuals projected in a dark room.',
+  },
+  {
+    slug: 'kakofoni-orquestra', act: 'ACT 03', title: 'Kakofoni Orquestra',
+    role: 'Collaborator + Programmer (audio + reactivity)', year: '2022', type: 'Generative audiovisual',
+    production: 'With Rangga Purnama Aji (visuals)',
+    summary: 'Generative audiovisual on fxhash. Hydra.js visuals by Rangga Purnama Aji, audio and reactivity by me (Hydra → Ableton/MaxLive). Inspired by Brian Eno\'s Ambient 1. Edition #37 acquired by the Madison Museum.',
+  },
+  {
+    slug: 'lucy', act: 'ACT 04', title: 'LUCY',
+    role: 'Creator', year: '2021', type: 'Digital Arts (generative audiovisual)',
+    production: 'Max + Ableton Live + Hydra.js',
+    summary: 'Autonomous generative automaton in Max that composes its own audiovisual pieces. Probabilistic MIDI control with scale maps and transitions, Hydra.js reactive to audio. Published as the `lucy` pseudonym on Teia.',
+  },
+];
+
+const audiovisualWithMedia = audiovisualCases.map((c) => ({ ...c, media: getProjectMedia(c.slug) }));
+const musicWithMedia = musicCases.map((c) => ({ ...c, media: getProjectMedia(c.slug) }));
+const codeWithMedia = codeCases.map((c) => ({ ...c, media: getProjectMedia(c.slug) }));
+const rcSurfaceCover = getProjectMedia('rc-surface').cover;
+
+// All 17 projects for the About-side spotlight. Each gets a staggered
+// animation-delay so one cover is in focus at a time, cross-fading
+// through all of them in array order. Filtered to entries with a real
+// cover so the loop never lands on a placeholder.
+const spotlightSlugs = new Set([
+  'a-quermesse',
+  'trisal',
+  'ticha-penicheiro',
+  'o-clube',
+  'o-compositor',
+  'eletronik-fields',
+  'rc-surface',
+]);
+
+const shufflerCases = [
+  ...audiovisualCases.map((c) => ({ slug: c.slug, title: c.title, role: c.role, year: c.year })),
+  ...musicCases.map((c) => ({ slug: c.slug, title: c.title, role: c.role, year: c.year })),
+  ...codeCases.map((c) => ({ slug: c.slug, title: c.title, role: c.role, year: c.year })),
+  { slug: 'rc-surface', title: 'RC Surface', role: 'Max4Live Author', year: '2025' },
+]
+  .map((c) => ({ ...c, media: getProjectMedia(c.slug) }))
+  .filter((c) => spotlightSlugs.has(c.slug) && !!c.media.cover);
+
+// Spotlight cycle = n × stagger so every 6s slot is filled by a cell (no gap).
+// Auto-derived from cell count so adding a new project recomputes the cycle.
+// Keyframe percentages below assume visible window = stagger; if you change
+// the keyframe, recompute 1.2/cycle%, 5.4/cycle%, 6/cycle% to match.
+const spotlightCycleSeconds = shufflerCases.length * 6;
+---
+<Layout title="Sound & Code" image="/portrait/1.jpg">
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="hero__text">
+      <span class="eyebrow hero__eyebrow">Sound Editor · Artist</span>
+      <h1 id="hero-title" class="hero__title">Gabriel Worm</h1>
+      <p class="hero__tagline">
+        Sound direction, music production, and creative tooling — for cinema, performance, and live instruments.
+      </p>
+      <p class="hero__location mono">Palmas, Tocantins · Brazil</p>
+      <a href="#work" class="hero__cta" aria-label="Skip to Selected Work">
+        <span class="mono">Selected Work</span>
+        <span class="hero__arrow" aria-hidden="true">↓</span>
+      </a>
+    </div>
+    <figure class="hero__portrait">
+      <img src="/portrait/1.jpg" alt="Portrait of Gabriel Worm" loading="eager" width="1440" height="1440" />
+    </figure>
+  </section>
+
+  <section class="currently wrap" aria-labelledby="currently-title" data-fade-in>
+    <header class="currently__header">
+      <span class="eyebrow">Currently</span>
+      <h2 id="currently-title" class="currently__title">In progress</h2>
+    </header>
+    <a class="currently-card" href="/work/rc-surface">
+      <div class="currently-card__cover">
+        {rcSurfaceCover ? (
+          <img src={rcSurfaceCover} alt="RC Surface — cover" loading="eager" width="1920" height="1080" />
+        ) : (
+          <div class="currently-card__placeholder" aria-label="Cover image pending">
+            <span class="mono">image pending</span>
+          </div>
+        )}
+      </div>
+      <div class="currently-card__meta">
+        <span class="currently-card__act eyebrow">NOW 01</span>
+        <h3 class="currently-card__title">RC Surface — Max4Live device</h3>
+        <p class="currently-card__role mono">Max4Live Author · Ableton Live extension · MIT-licensed</p>
+        <p class="currently-card__desc">
+          RC Surface turns any phone browser into a wireless MIDI + multi-sensor controller for Ableton Live — 12 performance pads, two physics XY pads, knobs & faders, sensor mappings (motion, orientation, audio, vision), in-browser mapping editor. Built on the Ableton Extensions SDK. Open source on GitHub.
+        </p>
+        <span class="currently-card__cta mono">Open case →</span>
+      </div>
+    </a>
+  </section>
+
+  <section class="about-mini wrap" aria-labelledby="about-mini-title" data-fade-in>
+    <div class="about-mini__text">
+      <span class="eyebrow">About</span>
+      <h2 id="about-mini-title" class="about-mini__title">A sound director working between cinema, music, and code.</h2>
+      <p>
+        I work at the intersection of film sound, music production, and creative tooling — composing, recording,
+        mixing, and building instruments for cinema, performance, and live instruments. Currently based in
+        Palmas, Tocantins, Brazil. Recently shipped <em>O Compositor</em> (Prémio Curtas 2026 nominee, Best
+        Composition) and the EP Rinoceronte for Luzo Cairo. Author of <em>RC Surface</em>, a Max4Live device for
+        Ableton Live.
+      </p>
+      <ul class="about-mini__tags" aria-label="Practice areas">
+        <li>Film Audio</li>
+        <li>Music Production</li>
+        <li>Creative Coding</li>
+        <li>Live / Experimental</li>
+      </ul>
+      <a href="/about" class="about-mini__more">Read more →</a>
+    </div>
+    <div class="about-mini__shuffler" role="group" aria-label="Project spotlight" style={`--spotlight-cycle: ${spotlightCycleSeconds}s`}>
+      {shufflerCases.map((c, i) => (
+        <a
+          href={`/work/${c.slug}`}
+          class="spotlight-cell"
+          style={`--i: ${i};`}
+          aria-label={`${c.title} — ${c.role} (${c.year})`}
+          title={`${c.title} — ${c.role} (${c.year})`}
+        >
+          <img src={c.media.cover} alt="" loading="lazy" width={c.media.coverType === 'video' ? undefined : 480} />
+          <div class="spotlight-caption">
+            <span class="spotlight-title">{c.title}</span>
+            <span class="spotlight-meta mono">{c.role} · {c.year}</span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section id="work" class="work wrap" aria-labelledby="audiovisual-title" data-fade-in>
+    <header class="work__header">
+      <span class="eyebrow">Selected Work</span>
+      <h2 id="audiovisual-title" class="work__title">Audiovisual · 2023 — 2026</h2>
+    </header>
+    <div class="work__grid work__grid--2col">
+      {audiovisualWithMedia.map(c => (
+        <Tile
+          act={c.act}
+          title={c.title}
+          role={c.role}
+          year={c.year}
+          href={`/work/${c.slug}`}
+          cover={c.media.cover}
+          coverAlt={`${c.title} — cover`}
+          summary={c.summary}
+          production={c.production}
+        />
+      ))}
+    </div>
+  </section>
+
+  <section class="work wrap" aria-labelledby="music-title" data-fade-in>
+    <header class="work__header">
+      <span class="eyebrow">Selected Work</span>
+      <h2 id="music-title" class="work__title">Music · 2015 — 2025</h2>
+    </header>
+    <div class="work__grid work__grid--2col">
+      {musicWithMedia.map(c => (
+        <Tile
+          act={c.act}
+          title={c.title}
+          role={c.role}
+          year={c.year}
+          href={`/work/${c.slug}`}
+          cover={c.media.cover}
+          coverAlt={`${c.title} — cover`}
+          summary={c.summary}
+          production={c.production}
+        />
+      ))}
+    </div>
+  </section>
+
+  <section class="work wrap" aria-labelledby="code-title" data-fade-in>
+    <header class="work__header">
+      <span class="eyebrow">Selected Work</span>
+      <h2 id="code-title" class="work__title">Performance &amp; Installations · 2021 — 2026</h2>
+    </header>
+    <div class="work__grid work__grid--2col">
+      {codeWithMedia.map(c => (
+        <Tile
+          act={c.act}
+          title={c.title}
+          role={c.role}
+          year={c.year}
+          href={`/work/${c.slug}`}
+          cover={c.media.cover}
+          coverAlt={`${c.title} — cover`}
+          summary={c.summary}
+          production={c.production}
+        />
+      ))}
+    </div>
+  </section>
+
+  </Layout>
+
+<style>
+  /* Hero */
+  .hero {
+    padding-top: var(--s-7);
+    padding-bottom: var(--s-7);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--s-8);
+    align-items: start;
+  }
+  .hero__eyebrow { margin-bottom: var(--s-5); display: block; }
+  .hero__title {
+    font-size: clamp(40px, 7vw, 96px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--s-5);
+    color: var(--fg-bone);
+  }
+  .hero__tagline {
+    font-size: clamp(18px, 2vw, 22px);
+    line-height: 1.4;
+    color: var(--fg-bone);
+    max-width: 32ch;
+    margin-bottom: var(--s-4);
+  }
+  .hero__location { color: var(--muted-graphite); margin-bottom: var(--s-6); }
+  .hero__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-3);
+    color: var(--accent-amber);
+    border-bottom: 0;
+    font-size: var(--t-eyebrow);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+  }
+  .hero__cta:hover { color: var(--fg-bone); }
+  .hero__arrow { font-size: 20px; transition: transform var(--d-base) var(--ease-out); }
+  .hero__cta:hover .hero__arrow { transform: translateY(4px); }
+  .hero__portrait { margin: 0; }
+  .hero__portrait img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 220px;
+    max-height: 280px;
+    filter: grayscale(0.15) contrast(1.04);
+  }
+  @media (max-width: 720px) {
+    .hero { grid-template-columns: 1fr; gap: var(--s-6); }
+    .hero__portrait { max-width: 180px; }
+  }
+
+  /* About mini */
+  .about-mini {
+    padding-top: var(--s-7);
+    padding-bottom: var(--s-7);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: var(--s-8);
+    align-items: start;
+  }
+  .about-mini__text { min-width: 0; }
+  .about-mini__title {
+    font-size: var(--t-h2);
+    max-width: 24ch;
+    margin: var(--s-3) 0 var(--s-5);
+  }
+  .about-mini p { color: var(--fg-bone); }
+  .about-mini em { color: var(--accent-amber); font-style: normal; font-weight: 500; }
+  .about-mini__tags {
+    display: flex;
+    gap: var(--s-2);
+    flex-wrap: wrap;
+    list-style: none;
+    margin: var(--s-5) 0;
+  }
+  .about-mini__tags li {
+    font-family: var(--font-mono);
+    font-size: var(--t-mono);
+    color: var(--fg-bone);
+    border: 1px solid var(--muted-graphite);
+    padding: var(--s-1) var(--s-3);
+    border-radius: 2px;
+  }
+  .about-mini__more {
+    display: inline-block;
+    margin-top: var(--s-3);
+    color: var(--accent-amber);
+    font-family: var(--font-mono);
+    font-size: var(--t-mono);
+    letter-spacing: 0.05em;
+  }
+
+  /* Side spotlight — slideshow of project covers. Each cell is on
+     screen for ~6s, then off for ~138s. Stagger is also 6s, so one
+     cell fades in exactly as the previous fades out — no two cells
+     share the screen at the same instant.
+     Cycle = 24 cells × 6s = 144s. The cycle must be > n × stagger to
+     avoid the modulo-sync bug: with 23 cells in a 132s cycle, cell
+     k=22 ends up exactly one full cycle behind cell k=0. 144s gives
+     one cell of buffer before the sync reappears. Bump this when
+     the shuffler crosses 24 projects.
+     Pure opacity fade, no transform, no z-index manipulation. Hovering
+     the shuffler pauses the whole show. */
+  .about-mini__shuffler {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border: 1px solid var(--muted-graphite);
+    background: var(--bg-noir);
+  }
+  .spotlight-cell {
+    position: absolute;
+    inset: 0;
+    display: block;
+    color: inherit;
+    opacity: 0;
+    animation: spotlight-cycle var(--spotlight-cycle, 138s) linear infinite;
+    animation-delay: calc(var(--i) * -6s);
+    will-change: opacity;
+  }
+  .spotlight-cell img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .spotlight-caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: var(--s-5) var(--s-4) var(--s-4);
+    background: linear-gradient(to top, rgba(11, 11, 12, 0.85), rgba(11, 11, 12, 0));
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-1);
+  }
+  .spotlight-title {
+    font-family: var(--font-display);
+    font-size: var(--t-h3);
+    color: var(--fg-bone);
+    line-height: 1.15;
+  }
+  .spotlight-meta {
+    font-size: var(--t-eyebrow);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted-graphite);
+  }
+  .about-mini__shuffler:hover .spotlight-cell {
+    animation-play-state: paused;
+  }
+  /* No hover-locked opacity. The hover affordance is just colour on
+     the caption (meta turns amber) and a pointer cursor; forcing the
+     cell to opacity:1 would lift it above the fading-out neighbour
+     and recreate the very crossfade-competition bug we're fixing. */
+  .spotlight-cell:hover .spotlight-meta {
+    color: var(--accent-amber);
+  }
+  @keyframes spotlight-cycle {
+    /* Visible window = stagger (6s) inside cycle = cellCount × stagger.
+       Percentages tuned for 23 cells × 6s = 138s. If cell count changes,
+       recompute 1.2/cycle×100%, 5.4/cycle×100%, 6/cycle×100% to keep
+       the visible window equal to one stagger slot. */
+    0%      { opacity: 0; }
+    0.87%   { opacity: 1; animation-timing-function: linear; }
+    3.91%   { opacity: 1; animation-timing-function: ease-in; }
+    4.35%   { opacity: 0; }
+    100%    { opacity: 0; }
+  }
+  @media (max-width: 880px) {
+    .about-mini { grid-template-columns: 1fr; }
+    .about-mini__shuffler { aspect-ratio: 4 / 3; max-width: 560px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spotlight-cell {
+      animation: none;
+      opacity: 0;
+      transform: none;
+    }
+    .spotlight-cell:first-child {
+      opacity: 1;
+      transform: none;
+    }
+    .spotlight-cell:first-child img {
+      animation: none;
+      filter: none;
+    }
+  }
+
+  /* Work */
+  .work { padding-top: var(--s-7); padding-bottom: var(--s-7); }
+  .work__header { margin-bottom: var(--s-7); }
+  .work__title {
+    font-size: var(--t-h2);
+    margin-top: var(--s-2);
+    color: var(--muted-graphite);
+    font-weight: 500;
+  }
+  /* Mobile: brighten the section title. On narrow screens the title is the
+     only visual cue between About and the cards — a dark grey title on the
+     near-black bg reads as a "missing section" gap. Lift it to bone-tone
+     so the boundary is visible mid-scroll. */
+  @media (max-width: 880px) {
+    .work__title { color: var(--fg-bone); font-weight: 500; }
+  }
+  .work__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--s-7) var(--s-5);
+  }
+  @media (max-width: 560px) {
+    .work__grid { grid-template-columns: 1fr; gap: var(--s-6); }
+  }
+
+  /* Currently */
+  .currently { padding-top: var(--s-7); padding-bottom: var(--s-7); }
+  .currently__header { margin-bottom: var(--s-5); }
+  .currently__title {
+    font-size: var(--t-h2);
+    margin-top: var(--s-2);
+    color: var(--muted-graphite);
+    font-weight: 500;
+  }
+  .currently-card {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: var(--s-7);
+    align-items: center;
+    padding: var(--s-5) 0;
+    border-top: 1px solid var(--muted-graphite);
+    border-bottom: 1px solid var(--muted-graphite);
+    color: inherit;
+  }
+  .currently-card:hover .currently-card__title { color: var(--accent-amber); }
+  .currently-card__cover {
+    overflow: hidden;
+    background: rgba(234, 230, 222, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 240px;
+  }
+  .currently-card__cover img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 360px;
+    object-fit: contain;
+    filter: grayscale(0.15) contrast(1.04);
+  }
+  .currently-card__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-noir);
+    color: var(--muted-graphite);
+  }
+  .currently-card__meta { display: flex; flex-direction: column; gap: var(--s-3); }
+  .currently-card__act { color: var(--accent-amber); }
+  .currently-card__title {
+    font-family: var(--font-display);
+    font-size: var(--t-h2);
+    line-height: 1.1;
+    color: var(--fg-bone);
+    transition: color var(--d-fast) var(--ease-out);
+  }
+  .currently-card__role { color: var(--muted-graphite); }
+  .currently-card__desc { color: var(--fg-bone); max-width: 60ch; }
+  .currently-card__cta { color: var(--accent-amber); }
+  @media (max-width: 720px) {
+    .currently-card { grid-template-columns: 1fr; gap: var(--s-4); }
+    .currently-card__cover { max-width: 220px; }
+  }
+</style>

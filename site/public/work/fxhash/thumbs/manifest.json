@@ -1,0 +1,44 @@
+{
+  "56": {
+    "file": "56.webp",
+    "w": 800,
+    "h": 800,
+    "ar": "800/800"
+  },
+  "65": {
+    "file": "65.webp",
+    "w": 800,
+    "h": 800,
+    "ar": "800/800"
+  },
+  "capsula": {
+    "file": "capsula.webp",
+    "w": 800,
+    "h": 800,
+    "ar": "800/800"
+  },
+  "the-unrealized-painting-1": {
+    "file": "the-unrealized-painting-1.webp",
+    "w": 800,
+    "h": 1311,
+    "ar": "800/1311"
+  },
+  "liquid": {
+    "file": "liquid.webp",
+    "w": 800,
+    "h": 800,
+    "ar": "800/800"
+  },
+  "lines-and-cells": {
+    "file": "lines-and-cells.webp",
+    "w": 800,
+    "h": 800,
+    "ar": "800/800"
+  },
+  "kakofoni-orquestra": {
+    "file": "kakofoni-orquestra.webp",
+    "w": 800,
+    "h": 1177,
+    "ar": "800/1177"
+  }
+}

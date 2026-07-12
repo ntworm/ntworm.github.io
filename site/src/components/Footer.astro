@@ -1,0 +1,56 @@
+---
+const year = new Date().getFullYear();
+---
+<footer class="foot">
+  <div class="wrap foot__inner">
+    <div class="foot__left">
+      <span class="foot__copy mono">© {year} Gabriel Worm</span>
+      <span class="foot__loc mono">Palmas, TO · BR</span>
+    </div>
+    <nav aria-label="Footer">
+      <ul class="foot__nav">
+        <li><a href="https://www.imdb.com/name/nm16356368/" rel="noopener">IMDB</a></li>
+        <li><a href="https://github.com/ntworm" rel="noopener">GitHub</a></li>
+        <li><a href="mailto:gabrielwormm@gmail.com">Email</a></li>
+        <li><a href="/#work">Work</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .foot {
+    border-top: 1px solid var(--muted-graphite);
+    padding: var(--s-7) 0;
+    margin-top: var(--s-10);
+  }
+  .foot__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-5);
+    flex-wrap: wrap;
+  }
+  .foot__left { display: flex; gap: var(--s-5); flex-wrap: wrap; }
+  .foot__copy, .foot__loc { color: var(--muted-graphite); }
+  .foot__nav {
+    display: flex;
+    list-style: none;
+    gap: var(--s-5);
+    flex-wrap: wrap;
+  }
+  .foot__nav a {
+    font-family: var(--font-mono);
+    font-size: var(--t-eyebrow);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--muted-graphite);
+    border-bottom: 0;
+  }
+  .foot__nav a:hover { color: var(--accent-amber); }
+  @media (max-width: 640px) {
+    .foot__inner { flex-direction: column; align-items: flex-start; }
+  }
+</style>

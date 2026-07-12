@@ -1,0 +1,65 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string | null;
+  type?: 'website' | 'article';
+  /** Canonical URL for the page. Auto-derived from Astro.url when omitted. */
+  canonicalUrl?: string;
+}
+
+const {
+  title,
+  description = 'Sound direction, music production, and creative tooling for cinema, performance, and live instruments.',
+  image = null,
+  type = 'website',
+  canonicalUrl = Astro.url.href,
+} = Astro.props;
+
+// Resolve absolute URL for og:image (social platforms need absolute URLs).
+// Astro.site gives the configured site origin; on dev it falls back to localhost.
+const siteOrigin = Astro.site?.origin ?? `${Astro.url.protocol}//${Astro.url.host}`;
+const ogImage = image ? (image.startsWith('http') ? image : `${siteOrigin}${image}`) : null;
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title} &mdash; Gabriel Worm</title>
+    <meta name="description" content={description}>
+    <link rel="canonical" href={canonicalUrl}>
+
+    <!-- Open Graph -->
+    <meta property="og:type" content={type}>
+    <meta property="og:title" content={`${title} — Gabriel Worm`}>
+    <meta property="og:description" content={description}>
+    <meta property="og:url" content={canonicalUrl}>
+    {ogImage && <meta property="og:image" content={ogImage}>}
+    <meta property="og:site_name" content="Gabriel Worm">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'}>
+    <meta name="twitter:title" content={`${title} — Gabriel Worm`}>
+    <meta name="twitter:description" content={description}>
+    {ogImage && <meta name="twitter:image" content={ogImage}>}
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@500;700&family=Inter+Tight:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <Nav />
+    <main id="main"><slot /></main>
+    <Footer />
+    <script>
+      import '../scripts/scroll-fade.ts';
+    </script>
+  </body>
+</html>

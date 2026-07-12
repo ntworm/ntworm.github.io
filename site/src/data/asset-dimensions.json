@@ -1,0 +1,398 @@
+{
+  "a-quermesse": [
+    {
+      "file": "1.jpg",
+      "w": 1440,
+      "h": 1800,
+      "type": "image",
+      "ar": "1440/1800"
+    }
+  ],
+  "ai-am": [
+    {
+      "file": "1.jpg",
+      "w": 2767,
+      "h": 4096,
+      "type": "image",
+      "ar": "2767/4096"
+    }
+  ],
+  "arvore-seca": [
+    {
+      "file": "1.jpg",
+      "w": 920,
+      "h": 1072,
+      "type": "image",
+      "ar": "920/1072"
+    },
+    {
+      "file": "2.jpg",
+      "w": 1080,
+      "h": 1080,
+      "type": "image",
+      "ar": "1080/1080"
+    },
+    {
+      "file": "3.jpg",
+      "w": 1080,
+      "h": 1080,
+      "type": "image",
+      "ar": "1080/1080"
+    }
+  ],
+  "bed-time": [
+    {
+      "file": "1.jpg",
+      "w": 1000,
+      "h": 1500,
+      "type": "image",
+      "ar": "1000/1500"
+    }
+  ],
+  "bem-ali-sessions": [
+    {
+      "file": "1.png",
+      "w": 1904,
+      "h": 1080,
+      "type": "image",
+      "ar": "1904/1080"
+    }
+  ],
+  "caio": [
+    {
+      "file": "1.jpg",
+      "w": 320,
+      "h": 466,
+      "type": "image",
+      "ar": "320/466"
+    }
+  ],
+  "el-tono-del-mar": [
+    {
+      "file": "2.jpg",
+      "w": 2160,
+      "h": 1440,
+      "type": "image",
+      "ar": "2160/1440"
+    },
+    {
+      "file": "3.jpg",
+      "w": 1440,
+      "h": 865,
+      "type": "image",
+      "ar": "1440/865"
+    },
+    {
+      "file": "trailer1.mp4",
+      "w": 1200,
+      "h": 720,
+      "type": "video",
+      "ar": "1200/720"
+    },
+    {
+      "file": "trailer2.mp4",
+      "w": 1200,
+      "h": 720,
+      "type": "video",
+      "ar": "1200/720"
+    },
+    {
+      "file": "trailermain.mp4",
+      "w": 1200,
+      "h": 720,
+      "type": "video",
+      "ar": "1200/720"
+    }
+  ],
+  "eletronik-fields": [
+    {
+      "file": "1.webp",
+      "w": 1144,
+      "h": 465,
+      "type": "image",
+      "ar": "1144/465"
+    },
+    {
+      "file": "2.webp",
+      "w": 962,
+      "h": 507,
+      "type": "image",
+      "ar": "962/507"
+    },
+    {
+      "file": "3.webp",
+      "w": 1493,
+      "h": 438,
+      "type": "image",
+      "ar": "1493/438"
+    },
+    {
+      "file": "4.webp",
+      "w": 987,
+      "h": 249,
+      "type": "image",
+      "ar": "987/249"
+    },
+    {
+      "file": "6.webp",
+      "w": 701,
+      "h": 635,
+      "type": "image",
+      "ar": "701/635"
+    }
+  ],
+  "em-agosto-chove": [
+    {
+      "file": "1.png",
+      "w": 1374,
+      "h": 918,
+      "type": "image",
+      "ar": "1374/918"
+    },
+    {
+      "file": "2.webp",
+      "w": 1500,
+      "h": 1500,
+      "type": "image",
+      "ar": "1500/1500"
+    }
+  ],
+  "ep-rinoceronte": [
+    {
+      "file": "1.jpg",
+      "w": 1440,
+      "h": 1920,
+      "type": "image",
+      "ar": "1440/1920"
+    },
+    {
+      "file": "2.jpg",
+      "w": 1440,
+      "h": 1920,
+      "type": "image",
+      "ar": "1440/1920"
+    }
+  ],
+  "futuro-realizado": [
+    {
+      "file": "1.jpg",
+      "w": 618,
+      "h": 323,
+      "type": "image",
+      "ar": "618/323"
+    }
+  ],
+  "fxhash": [
+    {
+      "file": "1.webp",
+      "w": 1054,
+      "h": 929,
+      "type": "image",
+      "ar": "1054/929"
+    },
+    {
+      "file": "2.webp",
+      "w": 1054,
+      "h": 929,
+      "type": "image",
+      "ar": "1054/929"
+    },
+    {
+      "file": "3.webp",
+      "w": 1054,
+      "h": 929,
+      "type": "image",
+      "ar": "1054/929"
+    },
+    {
+      "file": "4.webp",
+      "w": 1054,
+      "h": 929,
+      "type": "image",
+      "ar": "1054/929"
+    }
+  ],
+  "invasao-do-pequi": [
+    {
+      "file": "1.jpg",
+      "w": 1704,
+      "h": 1704,
+      "type": "image",
+      "ar": "1704/1704"
+    }
+  ],
+  "kakofoni-orquestra": [
+    {
+      "file": "1.jpg",
+      "w": 1200,
+      "h": 1765,
+      "type": "image",
+      "ar": "1200/1765"
+    },
+    {
+      "file": "2.webp",
+      "w": 1054,
+      "h": 929,
+      "type": "image",
+      "ar": "1054/929"
+    }
+  ],
+  "lucy": [
+    {
+      "file": "1.webp",
+      "w": 500,
+      "h": 500,
+      "type": "image",
+      "ar": "500/500"
+    },
+    {
+      "file": "2.webp",
+      "w": 899,
+      "h": 899,
+      "type": "image",
+      "ar": "899/899"
+    },
+    {
+      "file": "3.webp",
+      "w": 900,
+      "h": 900,
+      "type": "image",
+      "ar": "900/900"
+    },
+    {
+      "file": "4.webp",
+      "w": 720,
+      "h": 720,
+      "type": "image",
+      "ar": "720/720"
+    }
+  ],
+  "o-clube": [
+    {
+      "file": "1.jpg",
+      "w": 349,
+      "h": 500,
+      "type": "image",
+      "ar": "349/500"
+    },
+    {
+      "file": "2.jpg",
+      "w": 349,
+      "h": 500,
+      "type": "image",
+      "ar": "349/500"
+    }
+  ],
+  "o-compositor": [
+    {
+      "file": "1.jpg",
+      "w": 1041,
+      "h": 1492,
+      "type": "image",
+      "ar": "1041/1492"
+    },
+    {
+      "file": "2.jpg",
+      "w": 1080,
+      "h": 1350,
+      "type": "image",
+      "ar": "1080/1350"
+    },
+    {
+      "file": "3.jpg",
+      "w": 1350,
+      "h": 1688,
+      "type": "image",
+      "ar": "1350/1688"
+    },
+    {
+      "file": "4.jpg",
+      "w": 1080,
+      "h": 1350,
+      "type": "image",
+      "ar": "1080/1350"
+    },
+    {
+      "file": "5.jpg",
+      "w": 1080,
+      "h": 1080,
+      "type": "image",
+      "ar": "1080/1080"
+    },
+    {
+      "file": "6.jpg",
+      "w": 1080,
+      "h": 1364,
+      "type": "image",
+      "ar": "1080/1364"
+    },
+    {
+      "file": "7.jpg",
+      "w": 1080,
+      "h": 1364,
+      "type": "image",
+      "ar": "1080/1364"
+    },
+    {
+      "file": "trailer.mp4",
+      "w": 1280,
+      "h": 664,
+      "type": "video",
+      "ar": "1280/664"
+    }
+  ],
+  "rc-surface": [
+    {
+      "file": "1.jpg",
+      "w": 1920,
+      "h": 1080,
+      "type": "image",
+      "ar": "1920/1080"
+    }
+  ],
+  "this-feminine-side": [
+    {
+      "file": "1.jpg",
+      "w": 1440,
+      "h": 1920,
+      "type": "image",
+      "ar": "1440/1920"
+    }
+  ],
+  "ticha-penicheiro": [
+    {
+      "file": "1.jpg",
+      "w": 1131,
+      "h": 1413,
+      "type": "image",
+      "ar": "1131/1413"
+    }
+  ],
+  "trisal": [
+    {
+      "file": "1.jpg",
+      "w": 1440,
+      "h": 1920,
+      "type": "image",
+      "ar": "1440/1920"
+    }
+  ],
+  "unconscious-vision": [
+    {
+      "file": "1.jpg",
+      "w": 826,
+      "h": 1244,
+      "type": "image",
+      "ar": "826/1244"
+    }
+  ],
+  "unveiling-new-futures": [
+    {
+      "file": "1.jpg",
+      "w": 1280,
+      "h": 720,
+      "type": "image",
+      "ar": "1280/720"
+    }
+  ]
+}
