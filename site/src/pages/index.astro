@@ -187,14 +187,18 @@ const shufflerCases = [
 const spotlightCycleSeconds = shufflerCases.length * 6;
 ---
 <Layout title="Sound & Code" image="/portrait/1.jpg">
-  <section class="hero wrap" aria-labelledby="hero-title">
+  <section class="hero wrap" data-section="hero" aria-labelledby="hero-title">
     <div class="hero__text">
       <span class="eyebrow hero__eyebrow">Sound Editor · Artist</span>
-      <h1 id="hero-title" class="hero__title">Gabriel Worm</h1>
+      <h1 id="hero-title" class="hero__title" data-reveal="cut" aria-label="Sound direction, music production, and creative tooling.">
+        <span class="reveal-line"><span class="reveal-seg">Sound direction,</span></span>
+        <span class="reveal-line"><span class="reveal-seg">music production,</span></span>
+        <span class="reveal-line"><span class="reveal-seg reveal-amber">and creative tooling.</span></span>
+      </h1>
       <p class="hero__tagline">
-        Sound direction, music production, and creative tooling — for cinema, performance, and live instruments.
+        For cinema, performance, and live instruments.
       </p>
-      <p class="hero__location mono">Palmas, Tocantins · Brazil</p>
+      <p class="hero__signature mono">Gabriel Worm · Palmas, Tocantins, Brazil</p>
       <a href="#work" class="hero__cta" aria-label="Skip to Selected Work">
         <span class="mono">Selected Work</span>
         <span class="hero__arrow" aria-hidden="true">↓</span>
@@ -270,10 +274,10 @@ const spotlightCycleSeconds = shufflerCases.length * 6;
     </div>
   </section>
 
-  <section id="work" class="work wrap" aria-labelledby="audiovisual-title" data-fade-in>
+  <section id="work" class="work wrap" data-section="audiovisual" aria-labelledby="audiovisual-title" data-fade-in>
     <header class="work__header">
       <span class="eyebrow">Selected Work</span>
-      <h2 id="audiovisual-title" class="work__title">Audiovisual · 2023 — 2026</h2>
+      <h2 id="audiovisual-title" class="work__title reveal-mask"><span>Audiovisual · 2023 — 2026</span></h2>
     </header>
     <div class="work__grid work__grid--2col">
       {audiovisualWithMedia.map(c => (
@@ -292,10 +296,10 @@ const spotlightCycleSeconds = shufflerCases.length * 6;
     </div>
   </section>
 
-  <section class="work wrap" aria-labelledby="music-title" data-fade-in>
+  <section class="work wrap" data-section="music" aria-labelledby="music-title" data-fade-in>
     <header class="work__header">
       <span class="eyebrow">Selected Work</span>
-      <h2 id="music-title" class="work__title">Music · 2015 — 2025</h2>
+      <h2 id="music-title" class="work__title reveal-mask"><span>Music · 2015 — 2025</span></h2>
     </header>
     <div class="work__grid work__grid--2col">
       {musicWithMedia.map(c => (
@@ -314,10 +318,10 @@ const spotlightCycleSeconds = shufflerCases.length * 6;
     </div>
   </section>
 
-  <section class="work wrap" aria-labelledby="code-title" data-fade-in>
+  <section class="work wrap" data-section="code" aria-labelledby="code-title" data-fade-in>
     <header class="work__header">
       <span class="eyebrow">Selected Work</span>
-      <h2 id="code-title" class="work__title">Performance &amp; Installations · 2021 — 2026</h2>
+      <h2 id="code-title" class="work__title reveal-mask"><span>Performance &amp; Installations · 2021 — 2026</span></h2>
     </header>
     <div class="work__grid work__grid--2col">
       {codeWithMedia.map(c => (
@@ -346,15 +350,36 @@ const spotlightCycleSeconds = shufflerCases.length * 6;
     display: grid;
     grid-template-columns: 1fr auto;
     gap: var(--s-8);
-    align-items: start;
+    align-items: center;
   }
   .hero__eyebrow { margin-bottom: var(--s-5); display: block; }
   .hero__title {
-    font-size: clamp(40px, 7vw, 96px);
-    line-height: 1;
+    font-size: clamp(48px, 6.4vw, 88px);
+    line-height: 0.96;
     letter-spacing: -0.02em;
     margin-bottom: var(--s-5);
     color: var(--fg-bone);
+  }
+  .hero__title .reveal-line {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.06em;
+  }
+  .hero__title .reveal-seg {
+    display: block;
+    white-space: nowrap;
+  }
+  .hero__title .reveal-amber { color: var(--accent-amber); }
+  .hero__title[data-reveal-initialized="true"] .reveal-seg {
+    opacity: 0;
+    transform: translateY(112%) skewY(2deg);
+  }
+  .hero__title[data-reveal-ready="true"] .reveal-seg {
+    animation: hero-cut-in 620ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: calc(120ms + var(--reveal-i, 0) * 115ms);
+  }
+  @keyframes hero-cut-in {
+    to { opacity: 1; transform: none; }
   }
   .hero__tagline {
     font-size: clamp(18px, 2vw, 22px);
@@ -363,7 +388,7 @@ const spotlightCycleSeconds = shufflerCases.length * 6;
     max-width: 32ch;
     margin-bottom: var(--s-4);
   }
-  .hero__location { color: var(--muted-graphite); margin-bottom: var(--s-6); }
+  .hero__signature { color: var(--muted-graphite); margin-bottom: var(--s-6); }
   .hero__cta {
     display: inline-flex;
     align-items: center;
@@ -393,7 +418,17 @@ const spotlightCycleSeconds = shufflerCases.length * 6;
   }
   @media (max-width: 720px) {
     .hero { grid-template-columns: 1fr; gap: var(--s-6); }
+    .hero__title { max-width: 11ch; font-size: clamp(44px, 13vw, 72px); }
+    .hero__title .reveal-seg { white-space: normal; }
     .hero__portrait { max-width: 180px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__title[data-reveal-initialized="true"] .reveal-seg {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
   }
 
   /* About mini */

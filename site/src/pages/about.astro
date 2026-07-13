@@ -32,11 +32,14 @@ const photoAlt = (i: number) => `Portrait ${i + 1} of ${portraitFiles.length}`;
 ---
 
 <Layout title="About" image="/portrait/1.jpg">
-  <article class="about wrap">
+  <article class="about wrap" data-section="about">
     <header class="about__header">
       <span class="eyebrow">About</span>
-      <h1 class="about__title" data-reveal="typewriter">
-        <span class="reveal-seg">A </span><span class="reveal-seg reveal-amber">sound director</span><span class="reveal-seg"> working between cinema, music, and code.</span><span class="reveal-caret" aria-hidden="true">▍</span>
+      <h1 class="about__title" data-reveal="focus" aria-label="A practice shaped by listening, systems, and collaboration.">
+        <span class="reveal-seg">A practice</span>
+        <span class="reveal-seg">shaped by</span>
+        <span class="reveal-seg reveal-amber">listening</span><span class="reveal-seg">, systems,</span>
+        <span class="reveal-seg">and collaboration.</span>
       </h1>
       <p class="about__lead">
         Sound direction, music production, and creative tooling — for cinema, performance,
@@ -379,31 +382,28 @@ const photoAlt = (i: number) => `Portrait ${i + 1} of ${portraitFiles.length}`;
   }
   .about__contact:hover { color: var(--fg-bone); }
 
-  /* Typewriter reveal (about H1).
-     The .reveal-seg spans start empty (JS fills them) and the
-     .reveal-caret blinks at the end of the typing. The amber
-     segment ("sound director") is set in the script's reveal-amber
-     class so it lands in amber on first paint, not after a delay. */
+  /* Cinematic focus reveal: phrase groups drift out of a shallow blur. */
   .about__title { min-height: 1.2em; }
-  .reveal-seg { display: inline; }
+  .reveal-seg { display: inline-block; margin-right: 0.18em; }
   .reveal-seg.reveal-amber { color: var(--accent-amber); }
-  .reveal-caret {
-    display: inline-block;
-    margin-left: 2px;
-    color: var(--accent-amber);
+  .about__title[data-reveal-initialized="true"] .reveal-seg {
     opacity: 0;
-    animation: caret-blink 900ms steps(2, start) infinite;
-    font-weight: 400;
+    filter: blur(16px);
+    transform: translateX(-14px) translateY(6px);
   }
-  @keyframes caret-blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+  .about__title[data-reveal-ready="true"] .reveal-seg {
+    animation: about-focus-in 780ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: calc(140ms + var(--reveal-i, 0) * 105ms);
+  }
+  @keyframes about-focus-in {
+    to { opacity: 1; filter: blur(0); transform: none; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .reveal-caret { display: none; }
+    .about__title[data-reveal-initialized="true"] .reveal-seg {
+      opacity: 1;
+      filter: none;
+      transform: none;
+      animation: none;
+    }
   }
 </style>
-
-<script>
-  import '../scripts/title-reveal.ts';
-</script>

@@ -25,7 +25,7 @@ const { act, title, role, year, href, cover, coverAlt = '', summary, production 
   </div>
   <div class="tile__meta">
     <span class="tile__act eyebrow">{act}</span>
-    <h3 class="tile__title">{title}</h3>
+    <h3 class="tile__title"><span class="reveal-mask"><span>{title}</span></span></h3>
     <p class="tile__role mono">{role} · {year}</p>
     {summary && <p class="tile__summary">{summary}</p>}
     {production && <p class="tile__production mono">{production}</p>}

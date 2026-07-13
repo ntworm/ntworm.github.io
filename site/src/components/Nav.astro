@@ -12,7 +12,7 @@ function isActive(href: string): boolean {
   return pathname === href || pathname.startsWith(href + '/');
 }
 ---
-<header class="nav" data-scrolled="false">
+<header class="nav">
   <div class="wrap nav__inner">
     <a href="/" class="nav__logo" aria-label="GW Gabriel Worm — Home">GW</a>
     <nav aria-label="Primary">
@@ -40,12 +40,6 @@ function isActive(href: string): boolean {
     z-index: 50;
     height: 64px;
     background: transparent;
-    transition: background var(--d-base) var(--ease-out), backdrop-filter var(--d-base) var(--ease-out);
-  }
-  .nav[data-scrolled="true"] {
-    background: rgba(11, 11, 12, 0.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
   }
   .nav__inner {
     display: flex;
@@ -74,8 +68,11 @@ function isActive(href: string): boolean {
     letter-spacing: 0.18em;
     color: var(--muted-graphite);
     border-bottom: 0;
+    transition: color var(--d-fast) var(--ease-out);
   }
-  .nav__link:hover, .nav__link.is-active { color: var(--fg-bone); }
+  .nav__link:hover, .nav__link.is-active {
+    color: var(--fg-bone);
+  }
   .nav__link.is-active { border-bottom: 1px solid var(--accent-amber); }
 
   @media (max-width: 640px) {
@@ -84,14 +81,3 @@ function isActive(href: string): boolean {
     .nav__link { font-size: 10px; }
   }
 </style>
-
-<script>
-  const nav = document.querySelector('.nav') as HTMLElement | null;
-  if (nav) {
-    const onScroll = () => {
-      nav.dataset.scrolled = window.scrollY > 16 ? 'true' : 'false';
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-  }
-</script>

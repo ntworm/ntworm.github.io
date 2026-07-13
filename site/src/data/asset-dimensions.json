@@ -67,6 +67,22 @@
       "ar": "320/466"
     }
   ],
+  "code": [
+    {
+      "file": "carro-poster.jpg",
+      "w": 1126,
+      "h": 627,
+      "type": "image",
+      "ar": "1126/627"
+    },
+    {
+      "file": "luzoebreno-poster.jpg",
+      "w": 1115,
+      "h": 635,
+      "type": "image",
+      "ar": "1115/635"
+    }
+  ],
   "el-tono-del-mar": [
     {
       "file": "2.jpg",

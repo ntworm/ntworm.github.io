@@ -13,11 +13,17 @@ const projects = defineCollection({
     awards: z.array(z.string()).optional(),
     links: z.array(z.object({ url: z.string().url(), label: z.string().min(1) })).optional(),
     youtubeId: z.string().optional(),
+    interactiveEmbed: z.object({
+      url: z.string().url(),
+      title: z.string().min(1),
+      cta: z.string().min(1),
+    }).optional(),
+    hideGallery: z.boolean().optional(),
     tags: z.array(z.string()).optional(),
     seasons: z.array(z.object({ img: z.string(), label: z.string() })).optional(),
     // Mini-catalog: a list of sub-pieces associated with this project.
     // Used by fxhash to surface 7 generative pieces as a 2-col grid on the
-    // case page. Each piece renders as a card (thumb + title + desc + link).
+    // case page. Each card renders as a thumb + title + desc + link.
     // desc is author-curated; leave empty if not yet written.
     fxhashPieces: z.array(z.object({
       slug: z.string(),

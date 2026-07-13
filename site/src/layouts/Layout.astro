@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 
@@ -49,11 +50,13 @@ const ogImage = image ? (image.startsWith('http') ? image : `${siteOrigin}${imag
     {ogImage && <meta name="twitter:image" content={ogImage}>}
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <ClientRouter />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@500;700&family=Inter+Tight:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   </head>
   <body>
+    <div class="page-curtain" transition:persist></div>
     <a href="#main" class="skip-link">Skip to content</a>
     <Nav />
     <main id="main"><slot /></main>
@@ -61,6 +64,39 @@ const ogImage = image ? (image.startsWith('http') ? image : `${siteOrigin}${imag
     <script>
       import '../scripts/scroll-fade.ts';
       import '../scripts/scroll-progress.ts';
+      import '../scripts/title-reveal.ts';
     </script>
   </body>
 </html>
+
+<style>
+  /* Page transition curtain — bymonolog/cobloc style.
+     Ativa quando Astro ClientRouter troca de página. */
+  .page-curtain {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-noir, #0B0B0C);
+    z-index: 9999;
+    pointer-events: none;
+    transform: translateY(100%);
+    transition: transform 0.55s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  /* Estado "carregando" — quando Astro começa swap, sobe */
+  .page-curtain[data-loading] {
+    transform: translateY(0);
+  }
+  /* Animação de entrada na página nova — desce revelando conteúdo */
+  :global(body.swap-done) .page-curtain {
+    transform: translateY(100%);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .page-curtain { transition: none; }
+  }
+</style>
+
+<script>
+  // Garante que o curtain desce após cada navegação SPA
+  document.addEventListener('astro:after-swap', () => {
+    document.body.classList.add('swap-done');
+  });
+</script>

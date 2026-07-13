@@ -83,23 +83,7 @@ body {
   min-height: 100vh;
   font-feature-settings: "ss01", "tnum";
 
-  /* Ambient surface — Direção C, take 3.
-     Layered: scanlines (top) + 3 amber radials + noir base (bottom).
-     All fixed-attachment so they read as a projection overlay,
-     not a scrolling ticker. Drift animates the scanlines 4px down
-     per 60s cycle = 0.067 px/sec — a slow breath, never a flicker.
-
-     v3 changes (after feedback that v2 was too subtle):
-     - Scanlines 4% → 8% (visible without being harsh).
-     - Radial 1 (top-right): 10% → 14%.
-     - Radial 2 (bottom-left): 6% → 10%.
-     - Radial 3 added (center-bottom, 6%) — asymmetric warmth
-       so the page doesn't look like two pinned corners.
-
-     v4 changes (scanlines still not visible at 8%):
-     - Scanlines 8% → 12%. Now registers on casual look without
-       making body text feel dusty.
-     - Scanline stride tightened 4px → 3.5px (denser). */
+  /* Ambient surface -- Direcao B (texturas regionais). Cada <section data-section=...> injeta seu proprio SVG pattern via [data-section]::before (ver final do arquivo). Este bloco mantem so a base global: noir + 3 radiais amber + vignette + grain minimo. prefers-reduced-motion congela o drift lento, mantem textura estatica. */
   background:
     repeating-linear-gradient(
       to bottom,
@@ -114,11 +98,34 @@ body {
     var(--bg-noir);
   background-size: 100% 3.5px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
   background-attachment: fixed, fixed, fixed, fixed, fixed;
-  background-size: 100% 4px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
   background-repeat: repeat-y, no-repeat, no-repeat, no-repeat, no-repeat;
   animation: scanline-drift 60s linear infinite;
   will-change: background-position;
 }
+
+/* Grain + vignette overlay. Sits above the body's base layers, below
+   content. Pointer-events: none so it never blocks interaction. The
+   noise SVG is generated once via feTurbulence (baseFrequency 0.9,
+   numOctaves 2, fractal noise) and inlined as a data URI — no extra
+   HTTP request, no asset to cache. Vignette is a radial darkening at
+   all four corners that converges toward transparent in the middle. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.92  0 0 0 0 0.90  0 0 0 0 0.87  0 0 0 0.4 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+    radial-gradient(120% 90% at 50% 50%, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.45) 100%);
+  background-size: 240px 240px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  opacity: 0.30;
+}
+
+/* Content sits above the overlay layers. Nav (z 50) and scroll
+   progress (z 100) keep their own stacking. */
+body > * { position: relative; z-index: 1; }
 
 @keyframes scanline-drift {
   from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
@@ -295,7 +302,7 @@ main { padding-top: var(--s-9); padding-bottom: var(--s-9); }
      this rule covers every other transition + animation in the site
      (hover effects, nav backdrop, gallery fade-ins, etc.) without
      touching the spotlight's special-cased behavior. The body
-     scanline-drift gets explicit `animation: none` here so the radial
+     ambient-drift gets explicit `animation: none` here so the radial
      glow + scanlines remain readable but don't move. */
   body { animation: none; }
 
@@ -306,5 +313,46 @@ main { padding-top: var(--s-9); padding-bottom: var(--s-9); }
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+   TEXT REVEAL — bymonolog-style (CSS Scroll-Driven, 0KB JS)
+   ============================================================
+   Cada .reveal-line esconde o texto e revela linha por linha
+   conforme entra no viewport. Usa animation-timeline: view() —
+   funciona em Chrome 115+, Firefox 134+, Safari 18.4+.
+   Fallback: opacity inicial 1 (sem animação) para browsers velhos. */
+
+.reveal-mask {
+  display: block;
+  overflow: hidden;
+}
+.reveal-mask > span {
+  display: inline-block;
+  /* Esconde texto inicial: empurra pra baixo do mask */
+  transform: translateY(110%);
+  animation-name: reveal-up;
+  animation-duration: 0.85s;
+  animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+  animation-fill-mode: both;
+  animation-timeline: view();
+  animation-range: entry 0% cover 40%;
+}
+@keyframes reveal-up {
+  to { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-mask > span {
+    transform: translateY(0);
+    animation: none;
+  }
+}
+
+@supports not (animation-timeline: view()) {
+  .reveal-mask > span {
+    transform: translateY(0);
+    animation: none;
   }
 }

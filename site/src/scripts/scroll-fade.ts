@@ -2,9 +2,11 @@
 // Respects prefers-reduced-motion
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const observed = new WeakSet<Element>();
 
-if (!reducedMotion) {
-  const observer = new IntersectionObserver(
+const observer = reducedMotion
+  ? null
+  : new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -20,7 +22,23 @@ if (!reducedMotion) {
     { threshold: 0.05, rootMargin: '0px 0px -10px 0px' }
   );
 
+function initScrollFades() {
   document.querySelectorAll<HTMLElement>('[data-fade-in]').forEach((el) => {
-    observer.observe(el);
+    if (reducedMotion) {
+      el.classList.add('is-visible');
+      return;
+    }
+
+    if (observed.has(el)) return;
+    observed.add(el);
+    observer?.observe(el);
   });
+}
+
+document.addEventListener('astro:page-load', initScrollFades);
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initScrollFades, { once: true });
+} else {
+  initScrollFades();
 }

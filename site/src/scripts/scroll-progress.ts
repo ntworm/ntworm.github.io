@@ -14,7 +14,8 @@ let ticking = false;
 function update() {
   const scrollTop = window.scrollY;
   const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  const rawProgress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  const progress = Math.min(100, Math.max(0, rawProgress));
   root.style.setProperty('--scroll-progress', `${progress}%`);
   ticking = false;
 }
@@ -26,12 +27,19 @@ function onScroll() {
   }
 }
 
+function updateAfterNavigation() {
+  // Astro restores scroll after swapping the document. Waiting two frames
+  // prevents the previous page's progress width from lingering at the top.
+  requestAnimationFrame(() => requestAnimationFrame(update));
+}
+
 // Skip the bar entirely if the user prefers reduced motion.
 // (CSS-side the transition is also off; here we just skip the JS work.)
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 if (!reducedMotion) {
   update();
+  document.addEventListener('astro:page-load', updateAfterNavigation);
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll, { passive: true });
 }

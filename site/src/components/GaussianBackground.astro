@@ -1,0 +1,494 @@
+---
+/**
+ * GaussianBackground — full-viewport 3D Gaussian splat as page background.
+ *
+ * Picks one of N splats at random per page load. Initializes gsplat.js from
+ * CDN on first IntersectionObserver hit. Falls back to a static poster image
+ * during load and on mobile (data-saver friendly).
+ *
+ * Splats are loaded once and orbit continuously. The canvas is `position:fixed`
+ * so it stays anchored to the viewport while the user scrolls. A radial mask
+ * fades the splat from the page edges inward, so cards/sections stacked above
+ * read clearly while the splat breathes behind them.
+ *
+ * Props:
+ *   splats — array of { src, poster, label } pairs (root-relative URLs)
+ *   mobileBreakpoint — width below which we skip WebGL and show poster only
+ *   placement — optional visual treatment for a specific page composition
+ */
+
+interface SplatEntry {
+  src: string;
+  poster: string;
+  label: string;
+}
+
+interface Props {
+  splats: SplatEntry[];
+  mobileBreakpoint?: number;
+  /**
+   * When true, the background is positioned `absolute` inside its parent
+   * (e.g. a hero section) instead of `fixed` across the viewport. Use this
+   * when the splat should fade out below the fold rather than bleed through
+   * the whole page.
+   */
+  contained?: boolean;
+  placement?: 'full' | 'hero-right' | 'section-right' | 'section-left';
+}
+
+const {
+  splats,
+  mobileBreakpoint = 768,
+  contained = false,
+  placement = 'full',
+} = Astro.props;
+
+if (!splats || splats.length === 0) {
+  throw new Error('GaussianBackground requires at least one splat entry.');
+}
+---
+
+<div class="gs-bg" data-mobile-breakpoint={mobileBreakpoint} data-splats={JSON.stringify(splats)} data-contained={contained ? '1' : '0'} data-placement={placement}>
+  <canvas class="gs-bg__canvas" aria-hidden="true"></canvas>
+  <div class="gs-bg__veil" aria-hidden="true"></div>
+</div>
+
+
+<script>
+type SplatEntry = { src: string; poster: string; label: string };
+
+declare global {
+  interface Window {
+    __gsBgStart?: (src: string, stage: HTMLElement) => Promise<void>;
+    __gsBgLoaded?: boolean;
+    __gsBgReady?: Promise<void>;
+    __gsBgReadyResolve?: () => void;
+  }
+}
+
+const SPLAT_LIB = 'https://esm.sh/gsplat';
+
+async function loadSplatEngine(): Promise<void> {
+  if (window.__gsBgStart) return;
+  if (window.__gsBgReady) {
+    await window.__gsBgReady;
+    return;
+  }
+  const code = [
+    "import * as SPLAT from '" + SPLAT_LIB + "';",
+    "window.__gsBgStart = async function(src, stage) {",
+    "  const scene = new SPLAT.Scene();",
+    "  const camera = new SPLAT.Camera();",
+    "  const renderer = new SPLAT.WebGLRenderer();",
+    "  renderer.canvas.classList.add('gs-bg__live-canvas');",
+    "  renderer.canvas.style.cssText = 'width:100%;height:100%;display:block;position:absolute;inset:0';",
+    "  stage.appendChild(renderer.canvas);",
+    "  // OrbitControls is created so user drag rotates the camera. We DON'T call",
+    "  // controls.update() during auto-rotate — instead we set camera.position +",
+    "  // camera.rotation directly so we have full control over the orbit math.",
+    "  const controls = new SPLAT.OrbitControls(camera, renderer.canvas);",
+    "  controls.dampening = 0.06;",
+    "  controls.orbitSpeed = 0.6;",
+    "  controls.zoomSpeed = 0.7;",
+    "  controls.panSpeed = 0.6;",
+    "  // Force renderer to use the actual size. Contained mode fills the parent",
+    "  // (hero); default mode fills the viewport.",
+    "  const forceSize = () => {",
+    "    let w, h;",
+    "    if (stage.dataset.contained === '1') {",
+    "      w = stage.clientWidth || window.innerWidth;",
+    "      h = stage.clientHeight || window.innerHeight;",
+    "    } else {",
+    "      w = window.innerWidth;",
+    "      h = window.innerHeight;",
+    "    }",
+    "    renderer.setSize(w, h);",
+    "    camera.data && camera.data.setSize(w, h);",
+    "  };",
+    "  forceSize();",
+    "  window.addEventListener('resize', forceSize);",
+    "  // Auto-rotate state",
+    "  let autoRotate = true;",
+    "  let angle = 0;",
+    "  const target = new SPLAT.Vector3(0, 0, 0);",
+    "  let radius = 6;",
+    "  const pitch = -0.15;",
+    "  // Set initial camera position",
+    "  function setCameraOnOrbit(a) {",
+    "    const cx = radius * Math.cos(pitch) * Math.sin(a);",
+    "    const cy = radius * Math.sin(pitch);",
+    "    const cz = radius * Math.cos(pitch) * Math.cos(a);",
+    "    camera.position = new SPLAT.Vector3(cx, cy, cz);",
+    "    // Compute rotation so camera looks at (0,0,0).",
+    "    // forward = target - position, normalized",
+    "    const fx = -cx, fy = -cy, fz = -cz;",
+    "    const flen = Math.sqrt(fx*fx + fy*fy + fz*fz) || 1;",
+    "    const ux = fx/flen, uy = fy/flen, uz = fz/flen;",
+    "    // Convert forward vector to euler (yaw + pitch), then to quaternion.",
+    "    const yaw = Math.atan2(ux, uz);",
+    "    const pch = Math.asin(Math.max(-0.99, Math.min(0.99, uy)));",
+    "    // gsplat Quaternion has FromEuler(eulerVector3)",
+    "    camera.rotation = SPLAT.Quaternion.FromEuler(new SPLAT.Vector3(pch, yaw, 0));",
+    "  }",
+    "  setCameraOnOrbit(0);",
+    "  renderer.canvas.addEventListener('pointerdown', () => { autoRotate = false; }, { once: true });",
+    "  await SPLAT.Loader.LoadAsync(src, scene, () => {});",
+    "  window.__gsBgLoaded = true;",
+    "  const frame = function() {",
+    "    if (autoRotate) {",
+    "      angle += 0.0018;",
+    "      setCameraOnOrbit(angle);",
+    "    }",
+    "    renderer.render(scene, camera);",
+    "    requestAnimationFrame(frame);",
+    "  };",
+    "  requestAnimationFrame(frame);",
+    "};",
+    "  window.__gsBgReadyResolve && window.__gsBgReadyResolve();",
+  ].join('\n');
+  const blob = new Blob([code], { type: 'text/javascript' });
+  const blobUrl = URL.createObjectURL(blob);
+  window.__gsBgReady = new Promise<void>((resolve) => {
+    window.__gsBgReadyResolve = resolve;
+  });
+  const script = document.createElement('script');
+  script.type = 'module';
+  script.src = blobUrl;
+  script.onerror = () => window.__gsBgReadyResolve && window.__gsBgReadyResolve();
+  document.head.appendChild(script);
+  await window.__gsBgReady;
+  URL.revokeObjectURL(blobUrl);
+}
+
+function pickRandomSplat(bg: HTMLElement): SplatEntry | null {
+  // Splats are passed as prop via data-splats (JSON encoded by Astro template).
+  const raw = bg.dataset.splats;
+  if (!raw) return null;
+  try {
+    const list = JSON.parse(raw) as SplatEntry[];
+    if (!list.length) return null;
+    return list[Math.floor(Math.random() * list.length)];
+  } catch (e) {
+    console.error('[gs-bg] failed to parse splats list', e);
+    return null;
+  }
+}
+
+async function mountGaussianBackground(bg: HTMLElement): Promise<void> {
+  const pick = pickRandomSplat(bg);
+  if (!pick) return;
+
+  // The matching poster is a lightweight, deliberately blurred outer layer.
+  // It makes the scene feel continuous while the sharp WebGL core fades away.
+  if (pick.poster) {
+    bg.style.setProperty('--gs-poster', `url(${JSON.stringify(pick.poster)})`);
+    bg.classList.add('gs-bg--poster');
+  }
+
+  const breakpoint = parseInt(bg.dataset.mobileBreakpoint || '768', 10);
+  if (window.innerWidth < breakpoint) return; // mobile = blurred poster, no WebGL
+
+  if (!bg.querySelector<HTMLCanvasElement>('.gs-bg__canvas')) return;
+
+  try {
+    await loadSplatEngine();
+    if (!pick.src || !window.__gsBgStart) return;
+    await window.__gsBgStart(pick.src, bg);
+    bg.classList.add('gs-bg--live');
+  } catch (err) {
+    console.error('[gs-bg] failed', err);
+  }
+}
+
+function attachAll(): void {
+  const bgs = document.querySelectorAll<HTMLElement>('.gs-bg');
+  bgs.forEach((bg) => {
+    if (bg.dataset.gsAttached === '1') return;
+    bg.dataset.gsAttached = '1';
+
+    // Lazy mount: only load gsplat.js once the background enters the viewport.
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          io.disconnect();
+          void mountGaussianBackground(bg);
+        }
+      });
+      io.observe(bg);
+    } else {
+      void mountGaussianBackground(bg);
+    }
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', attachAll);
+} else {
+  attachAll();
+}
+document.addEventListener('astro:page-load', attachAll);
+</script>
+
+
+<style>
+  .gs-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: var(--bg-noir, #050505);
+    isolation: isolate;
+  }
+
+  /* A low-cost blurred continuation of the selected scene. The live WebGL
+     canvas sits above it and is radially masked, so there is never a visible
+     rectangle or hard edge around the Gaussian. */
+  .gs-bg::before {
+    content: '';
+    position: absolute;
+    inset: -7%;
+    z-index: 0;
+    background-image: var(--gs-poster, none);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    filter: blur(28px) saturate(0.82) brightness(0.58);
+    opacity: 0;
+    transform: scale(1.16);
+    transition: opacity 800ms var(--ease-out, ease-out);
+  }
+
+  .gs-bg--poster::before { opacity: 0.34; }
+
+  /* Contained mode scrolls with its section, but deliberately overscans it.
+     The extra vertical area plus the outer mask prevents the renderer's box
+     from ever becoming a visible top/bottom edge during the transition. */
+  .gs-bg[data-contained="1"] {
+    position: absolute;
+    inset: -52vh 0;
+    width: 100vw;
+    margin-left: calc((100% - 100vw) / 2);
+    background: transparent;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 72%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 72%, transparent 100%);
+  }
+
+  /* The first scene trails farther into the GitHub profile before dissolving. */
+  .gs-bg[data-placement="hero-right"][data-contained="1"] {
+    bottom: -88vh;
+  }
+
+  .gs-bg__canvas,
+  .gs-bg__veil {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Placeholder canvas is hidden — the real WebGL canvas is appended by
+     the gsplat renderer. We only fade that real canvas in once gsplat is
+     live and the splat is being rendered. */
+  .gs-bg__canvas {
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* The renderer appends this canvas at runtime, so its class must stay global;
+     otherwise Astro's scoped attribute makes every transform/mask miss it. */
+  .gs-bg > :global(.gs-bg__live-canvas) {
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 800ms var(--ease-out, ease-out);
+  }
+
+  .gs-bg--live > :global(.gs-bg__live-canvas) { opacity: 0.92; }
+
+  .gs-bg[data-placement="hero-right"]::before,
+  .gs-bg[data-placement="section-right"]::before {
+    background-position: 70% 42%;
+    -webkit-mask-image: radial-gradient(
+      ellipse 100% 105% at 70% 42%,
+      #000 0%,
+      rgba(0, 0, 0, 0.95) 60%,
+      rgba(0, 0, 0, 0.45) 86%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 100% 105% at 70% 42%,
+      #000 0%,
+      rgba(0, 0, 0, 0.95) 60%,
+      rgba(0, 0, 0, 0.45) 86%,
+      transparent 100%
+    );
+  }
+
+  .gs-bg[data-placement="hero-right"]::before {
+    background-position: 70% 34%;
+    -webkit-mask-image: radial-gradient(
+      ellipse 100% 105% at 70% 34%,
+      #000 0%,
+      rgba(0, 0, 0, 0.95) 60%,
+      rgba(0, 0, 0, 0.45) 86%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 100% 105% at 70% 34%,
+      #000 0%,
+      rgba(0, 0, 0, 0.95) 60%,
+      rgba(0, 0, 0, 0.45) 86%,
+      transparent 100%
+    );
+  }
+
+  .gs-bg[data-placement="section-left"]::before {
+    background-position: 30% 42%;
+    -webkit-mask-image: radial-gradient(
+      ellipse 100% 105% at 30% 42%,
+      #000 0%,
+      rgba(0, 0, 0, 0.95) 60%,
+      rgba(0, 0, 0, 0.45) 86%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 100% 105% at 30% 42%,
+      #000 0%,
+      rgba(0, 0, 0, 0.95) 60%,
+      rgba(0, 0, 0, 0.45) 86%,
+      transparent 100%
+    );
+  }
+
+  .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas),
+  .gs-bg[data-placement="section-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
+    transform: translateX(18%) translateY(-10%) scale(1.32);
+    transform-origin: center;
+    -webkit-mask-image: radial-gradient(
+      ellipse 60% 82% at 50% 48%,
+      #000 0%,
+      #000 45%,
+      rgba(0, 0, 0, 0.88) 62%,
+      rgba(0, 0, 0, 0.4) 84%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 60% 82% at 50% 48%,
+      #000 0%,
+      #000 45%,
+      rgba(0, 0, 0, 0.88) 62%,
+      rgba(0, 0, 0, 0.4) 84%,
+      transparent 100%
+    );
+  }
+
+  .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
+    transform: translateX(18%) translateY(-18%) scale(1.32);
+  }
+
+  .gs-bg[data-placement="section-left"].gs-bg--live > :global(.gs-bg__live-canvas) {
+    transform: translateX(-18%) translateY(-10%) scale(1.32);
+    transform-origin: center;
+    -webkit-mask-image: radial-gradient(
+      ellipse 60% 82% at 50% 48%,
+      #000 0%,
+      #000 45%,
+      rgba(0, 0, 0, 0.88) 62%,
+      rgba(0, 0, 0, 0.4) 84%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 60% 82% at 50% 48%,
+      #000 0%,
+      #000 45%,
+      rgba(0, 0, 0, 0.88) 62%,
+      rgba(0, 0, 0, 0.4) 84%,
+      transparent 100%
+    );
+  }
+
+  .gs-bg__veil {
+    z-index: 2;
+    /* Protect the copy on the left and dissolve the scene into the page on
+       every outer edge, with a stronger fade into the content below. */
+    background:
+      linear-gradient(
+        90deg,
+        rgba(11, 11, 12, 0.98) 0%,
+        rgba(11, 11, 12, 0.92) 24%,
+        rgba(11, 11, 12, 0.64) 40%,
+        rgba(11, 11, 12, 0.16) 60%,
+        rgba(11, 11, 12, 0.04) 76%,
+        rgba(11, 11, 12, 0.34) 100%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(11, 11, 12, 0.18) 0%,
+        rgba(11, 11, 12, 0.02) 52%,
+        rgba(11, 11, 12, 0.56) 86%,
+        rgba(11, 11, 12, 1) 100%
+      );
+    pointer-events: none;
+  }
+
+  .gs-bg[data-placement="section-left"] .gs-bg__veil {
+    background:
+      linear-gradient(
+        270deg,
+        rgba(11, 11, 12, 0.98) 0%,
+        rgba(11, 11, 12, 0.92) 24%,
+        rgba(11, 11, 12, 0.64) 40%,
+        rgba(11, 11, 12, 0.16) 60%,
+        rgba(11, 11, 12, 0.04) 76%,
+        rgba(11, 11, 12, 0.34) 100%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(11, 11, 12, 0.18) 0%,
+        rgba(11, 11, 12, 0.02) 52%,
+        rgba(11, 11, 12, 0.56) 86%,
+        rgba(11, 11, 12, 1) 100%
+      );
+  }
+
+  @media (max-width: 880px) {
+    .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas),
+    .gs-bg[data-placement="section-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
+      transform: translateX(24%) translateY(-10%) scale(1.36);
+    }
+    .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
+      transform: translateX(24%) translateY(-18%) scale(1.36);
+    }
+    .gs-bg[data-placement="section-left"].gs-bg--live > :global(.gs-bg__live-canvas) {
+      transform: translateX(-24%) translateY(-10%) scale(1.36);
+    }
+    .gs-bg__veil {
+      background:
+        linear-gradient(90deg, rgba(11, 11, 12, 0.98) 0%, rgba(11, 11, 12, 0.9) 34%, rgba(11, 11, 12, 0.18) 72%, rgba(11, 11, 12, 0.48) 100%),
+        linear-gradient(180deg, rgba(11, 11, 12, 0.24) 0%, rgba(11, 11, 12, 0.05) 48%, rgba(11, 11, 12, 1) 100%);
+    }
+    .gs-bg[data-placement="section-left"] .gs-bg__veil {
+      background:
+        linear-gradient(270deg, rgba(11, 11, 12, 0.98) 0%, rgba(11, 11, 12, 0.9) 34%, rgba(11, 11, 12, 0.18) 72%, rgba(11, 11, 12, 0.48) 100%),
+        linear-gradient(180deg, rgba(11, 11, 12, 0.24) 0%, rgba(11, 11, 12, 0.05) 48%, rgba(11, 11, 12, 1) 100%);
+    }
+  }
+
+  @media (max-width: 720px) {
+    .gs-bg--poster::before {
+      opacity: 0.24;
+      filter: blur(18px) saturate(0.72) brightness(0.5);
+    }
+    .gs-bg__veil {
+      background: linear-gradient(90deg, rgba(11, 11, 12, 0.92), rgba(11, 11, 12, 0.62));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gs-bg__canvas { display: none; }
+  }
+</style>
