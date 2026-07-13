@@ -75,34 +75,21 @@ function wordReveal(el: HTMLElement): void {
   const segments = Array.from(el.querySelectorAll<HTMLElement>('.reveal-seg'));
   if (!segments.length) return;
 
-  if (reducedMotion) {
-    segments.forEach(s => {
-      s.style.opacity = '1';
-      s.style.transform = 'none';
-    });
-    const caret = el.querySelector<HTMLElement>('.reveal-caret');
-    if (caret) caret.style.display = 'none';
-    return;
-  }
-
-  // Stagger fade + slight upward translation.
-  const totalMs = segments.length * 80 + 300; // ~1.2s for 8 words
+  // Stagger via per-segment --reveal-i CSS var. The animation itself
+  // lives in the page's stylesheet (e.g. .code.astro .reveal-seg rule)
+  // — we only set the index. CSS handles initial state, transition
+  // delay, and final state, which avoids the JS batch-timing race
+  // where setting opacity:0 then opacity:1 in the same frame cancels
+  // out and the transition never fires.
   segments.forEach((s, i) => {
-    s.style.opacity = '0';
-    s.style.transform = 'translateY(8px)';
-    s.style.transition = `opacity 320ms ease-out ${300 + i * 80}ms, transform 320ms ease-out ${300 + i * 80}ms`;
-    requestAnimationFrame(() => {
-      s.style.opacity = '1';
-      s.style.transform = 'none';
-    });
+    s.style.setProperty('--reveal-i', String(i));
   });
 
-  // Caret blinks in after the last word lands.
-  const caret = el.querySelector<HTMLElement>('.reveal-caret');
-  if (caret) {
-    setTimeout(() => {
-      if (caret) caret.style.opacity = '1';
-    }, totalMs);
+  // Caret reveal timing: page CSS animates it in after the last word
+  // lands (delay = (segments.length * 80) + 300 + 320ms).
+  if (reducedMotion) {
+    const caret = el.querySelector<HTMLElement>('.reveal-caret');
+    if (caret) caret.style.display = 'none';
   }
 }
 

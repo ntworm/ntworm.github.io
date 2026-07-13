@@ -380,25 +380,46 @@ const FXHASH = {
   .fxhash__cta:hover { color: var(--fg-bone); }
 
   /* Word reveal (code H1).
-     Each .reveal-seg starts hidden; JS fades them in with stagger
-     (handled in scripts/title-reveal.ts). The amber segment is
-     "performance." — the verb that ties the whole sentence
-     together. Caret is monospace underscore, blinks at end. */
+     Each .reveal-seg starts hidden; the keyframe runs once with
+     a per-segment --reveal-i stagger (set by JS). Pure CSS animation
+     so there's no JS frame-timing race (the old transition-based
+     approach set opacity:0 and opacity:1 in the same frame, so the
+     browser saw only the final state and skipped the transition). */
   .code__title { min-height: 1.2em; }
-  .reveal-seg { display: inline-block; margin-right: 0.25em; }
+  .reveal-seg {
+    display: inline-block;
+    margin-right: 0.25em;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: reveal-word-in 420ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: calc(200ms + var(--reveal-i, 0) * 100ms);
+  }
   .reveal-seg.reveal-amber { color: var(--accent-amber); }
+  @keyframes reveal-word-in {
+    to { opacity: 1; transform: none; }
+  }
   .reveal-caret {
     display: inline-block;
     color: var(--accent-amber);
     opacity: 0;
     font-family: var(--font-mono);
-    animation: caret-blink 700ms steps(2, start) infinite;
+    animation: caret-blink 700ms steps(2, start) infinite,
+               caret-show 200ms ease-out forwards;
+    animation-delay: calc(200ms + 8 * 100ms), calc(200ms + 8 * 100ms + 100ms);
   }
   @keyframes caret-blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
   }
+  @keyframes caret-show {
+    to { opacity: 1; }
+  }
   @media (prefers-reduced-motion: reduce) {
+    .reveal-seg {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
     .reveal-caret { display: none; }
   }
 </style>

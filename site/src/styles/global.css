@@ -94,19 +94,25 @@ body {
      - Radial 1 (top-right): 10% → 14%.
      - Radial 2 (bottom-left): 6% → 10%.
      - Radial 3 added (center-bottom, 6%) — asymmetric warmth
-       so the page doesn't look like two pinned corners. */
+       so the page doesn't look like two pinned corners.
+
+     v4 changes (scanlines still not visible at 8%):
+     - Scanlines 8% → 12%. Now registers on casual look without
+       making body text feel dusty.
+     - Scanline stride tightened 4px → 3.5px (denser). */
   background:
     repeating-linear-gradient(
       to bottom,
       rgba(0, 0, 0, 0) 0,
-      rgba(0, 0, 0, 0) 3px,
-      rgba(0, 0, 0, 0.08) 3.5px,
-      rgba(0, 0, 0, 0) 4px
+      rgba(0, 0, 0, 0) 2.5px,
+      rgba(0, 0, 0, 0.12) 3px,
+      rgba(0, 0, 0, 0) 3.5px
     ),
     radial-gradient(1200px 700px at 78% -8%, rgba(212, 168, 71, 0.14), rgba(11, 11, 12, 0) 60%),
     radial-gradient(900px 600px at 8% 88%, rgba(212, 168, 71, 0.10), rgba(11, 11, 12, 0) 55%),
     radial-gradient(600px 400px at 50% 110%, rgba(212, 168, 71, 0.06), rgba(11, 11, 12, 0) 60%),
     var(--bg-noir);
+  background-size: 100% 3.5px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
   background-attachment: fixed, fixed, fixed, fixed, fixed;
   background-size: 100% 4px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
   background-repeat: repeat-y, no-repeat, no-repeat, no-repeat, no-repeat;
@@ -116,7 +122,7 @@ body {
 
 @keyframes scanline-drift {
   from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
-  to { background-position: 0 4px, 0 0, 0 0, 0 0, 0 0; }
+  to { background-position: 0 3.5px, 0 0, 0 0, 0 0, 0 0; }
 }
 
 /* Scroll progress indicator — 1px amber line that grows from 0%
