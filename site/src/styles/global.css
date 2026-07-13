@@ -25,6 +25,8 @@
   --t-h3: clamp(20px, 2.2vw, 26px);
   --t-body: 17px;
   --t-body-sm: 15px;
+  --t-small: 14px;
+  --t-micro: 12px;
   --t-mono: 13px;
   --t-eyebrow: 11px;
 
@@ -70,6 +72,7 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   scroll-behavior: smooth;
+  scroll-padding-top: 80px;
 }
 
 body {
@@ -91,8 +94,35 @@ a {
 a:hover { color: var(--accent-amber); }
 a:focus-visible {
   outline: 2px solid var(--accent-amber);
-  outline-offset: 2px;
+  outline-offset: 3px;
+  border-radius: 2px;
 }
+
+/* Animated underline for inline text links (not nav, foot, or already-underlined).
+   Reveals from left on hover; amber at 40% opacity (subtle). */
+a:not([class*="nav"]):not([class*="foot"]):not(.skip-link):not(.entity-link):not([class*="tile"]):not([class*="card"]):not([class*="spotlight"]) {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  transition: background-size var(--d-base) var(--ease-out), color var(--d-fast) var(--ease-out);
+}
+a:not([class*="nav"]):not([class*="foot"]):not(.skip-link):not(.entity-link):not([class*="tile"]):not([class*="card"]):not([class*="spotlight"]):hover {
+  background-size: 100% 1px;
+}
+
+/* Scrollbar — themed to match dark palette, no rounded corners (Direção C = sharp). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 168, 71, 0.35) var(--bg-noir);
+}
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: var(--bg-noir); }
+*::-webkit-scrollbar-thumb {
+  background: rgba(212, 168, 71, 0.35);
+  border-radius: 0;
+}
+*::-webkit-scrollbar-thumb:hover { background: rgba(212, 168, 71, 0.55); }
 
 /* Entity link (subtle in-text reference).
    Uses text-decoration (not border-bottom) so the inline element stays
@@ -120,10 +150,11 @@ h1, h2, h3, h4 {
   font-family: var(--font-display);
   font-weight: 700;
   line-height: 1.05;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   color: var(--fg-bone);
+  text-wrap: balance;
 }
-h1 { font-size: var(--t-display); }
+h1 { font-size: var(--t-display); letter-spacing: -0.03em; }
 h2 { font-size: var(--t-h2); }
 h3 { font-size: var(--t-h3); }
 
@@ -143,7 +174,7 @@ h3 { font-size: var(--t-h3); }
   color: var(--muted-graphite);
 }
 
-p { max-width: 64ch; }
+p { max-width: 64ch; text-wrap: pretty; }
 p + p { margin-top: var(--s-4); }
 
 /* ----- Layout primitives ----- */

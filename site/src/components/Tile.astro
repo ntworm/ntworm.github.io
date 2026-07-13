@@ -48,10 +48,27 @@ const { act, title, role, year, href, cover, coverAlt = '', summary, production 
     }
   }
   .tile:hover .tile__title { color: var(--accent-amber); }
+  .tile:focus-visible {
+    outline: 2px solid var(--accent-amber);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
   .tile__media {
+    position: relative;
     overflow: hidden;
     background: rgba(234, 230, 222, 0.04);
     height: 220px;
+  }
+  .tile__media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1px solid transparent;
+    pointer-events: none;
+    transition: border-color var(--d-base) var(--ease-out);
+  }
+  .tile:hover .tile__media::after {
+    border-color: var(--accent-amber);
   }
   .tile__media img {
     display: block;
@@ -59,6 +76,11 @@ const { act, title, role, year, href, cover, coverAlt = '', summary, production 
     height: 100%;
     object-fit: cover;
     filter: grayscale(0.15) contrast(1.04);
+    transition: transform var(--d-slow) var(--ease-out), filter var(--d-base) var(--ease-out);
+  }
+  .tile:hover .tile__media img {
+    transform: scale(1.02);
+    filter: grayscale(0) contrast(1);
   }
   .tile__placeholder {
     width: 100%;

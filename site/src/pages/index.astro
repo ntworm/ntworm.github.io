@@ -377,6 +377,11 @@ const spotlightCycleSeconds = shufflerCases.length * 6;
   .hero__cta:hover { color: var(--fg-bone); }
   .hero__arrow { font-size: 20px; transition: transform var(--d-base) var(--ease-out); }
   .hero__cta:hover .hero__arrow { transform: translateY(4px); }
+  .hero__cta:focus-visible {
+    outline: 2px solid var(--accent-amber);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
   .hero__portrait { margin: 0; }
   .hero__portrait img {
     display: block;
@@ -422,6 +427,11 @@ const spotlightCycleSeconds = shufflerCases.length * 6;
     border: 1px solid var(--muted-graphite);
     padding: var(--s-1) var(--s-3);
     border-radius: 2px;
+    transition: border-color var(--d-base) var(--ease-out), color var(--d-fast) var(--ease-out);
+  }
+  .about-mini__tags li:hover {
+    border-color: var(--accent-amber);
+    color: var(--accent-amber);
   }
   .about-mini__more {
     display: inline-block;
@@ -459,6 +469,10 @@ const spotlightCycleSeconds = shufflerCases.length * 6;
     animation: spotlight-cycle var(--spotlight-cycle, 138s) linear infinite;
     animation-delay: calc(var(--i) * -6s);
     will-change: opacity;
+  }
+  .spotlight-cell:focus-visible {
+    outline: 2px solid var(--accent-amber);
+    outline-offset: -4px;
   }
   .spotlight-cell img {
     width: 100%;
@@ -575,7 +589,12 @@ const spotlightCycleSeconds = shufflerCases.length * 6;
     color: inherit;
   }
   .currently-card:hover .currently-card__title { color: var(--accent-amber); }
+  .currently-card:focus-visible {
+    outline: 2px solid var(--accent-amber);
+    outline-offset: 4px;
+  }
   .currently-card__cover {
+    position: relative;
     overflow: hidden;
     background: rgba(234, 230, 222, 0.04);
     display: flex;
@@ -583,6 +602,15 @@ const spotlightCycleSeconds = shufflerCases.length * 6;
     justify-content: center;
     min-height: 240px;
   }
+  .currently-card__cover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1px solid transparent;
+    pointer-events: none;
+    transition: border-color var(--d-base) var(--ease-out);
+  }
+  .currently-card:hover .currently-card__cover::after { border-color: var(--accent-amber); }
   .currently-card__cover img {
     display: block;
     width: auto;
@@ -591,6 +619,11 @@ const spotlightCycleSeconds = shufflerCases.length * 6;
     max-height: 360px;
     object-fit: contain;
     filter: grayscale(0.15) contrast(1.04);
+    transition: transform var(--d-slow) var(--ease-out), filter var(--d-base) var(--ease-out);
+  }
+  .currently-card:hover .currently-card__cover img {
+    transform: scale(1.02);
+    filter: grayscale(0) contrast(1);
   }
   .currently-card__placeholder {
     width: 100%;
