@@ -35,7 +35,9 @@ const photoAlt = (i: number) => `Portrait ${i + 1} of ${portraitFiles.length}`;
   <article class="about wrap">
     <header class="about__header">
       <span class="eyebrow">About</span>
-      <h1 class="about__title">A sound director working between cinema, music, and code.</h1>
+      <h1 class="about__title" data-reveal="typewriter">
+        <span class="reveal-seg">A </span><span class="reveal-seg reveal-amber">sound director</span><span class="reveal-seg"> working between cinema, music, and code.</span><span class="reveal-caret" aria-hidden="true">▍</span>
+      </h1>
       <p class="about__lead">
         Sound direction, music production, and creative tooling — for cinema, performance,
         and live instruments. Based in Palmas, Tocantins, Brazil.
@@ -376,4 +378,32 @@ const photoAlt = (i: number) => `Portrait ${i + 1} of ${portraitFiles.length}`;
     letter-spacing: 0.05em;
   }
   .about__contact:hover { color: var(--fg-bone); }
+
+  /* Typewriter reveal (about H1).
+     The .reveal-seg spans start empty (JS fills them) and the
+     .reveal-caret blinks at the end of the typing. The amber
+     segment ("sound director") is set in the script's reveal-amber
+     class so it lands in amber on first paint, not after a delay. */
+  .about__title { min-height: 1.2em; }
+  .reveal-seg { display: inline; }
+  .reveal-seg.reveal-amber { color: var(--accent-amber); }
+  .reveal-caret {
+    display: inline-block;
+    margin-left: 2px;
+    color: var(--accent-amber);
+    opacity: 0;
+    animation: caret-blink 900ms steps(2, start) infinite;
+    font-weight: 400;
+  }
+  @keyframes caret-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-caret { display: none; }
+  }
 </style>
+
+<script>
+  import '../scripts/title-reveal.ts';
+</script>

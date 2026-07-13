@@ -83,43 +83,60 @@ body {
   min-height: 100vh;
   font-feature-settings: "ss01", "tnum";
 
-  /* Ambient surface — Direção C option B (drift lento).
-     Layered: scanlines (top) + 2 amber radials + noir base (bottom).
+  /* Ambient surface — Direção C, take 3.
+     Layered: scanlines (top) + 3 amber radials + noir base (bottom).
      All fixed-attachment so they read as a projection overlay,
      not a scrolling ticker. Drift animates the scanlines 4px down
      per 60s cycle = 0.067 px/sec — a slow breath, never a flicker.
 
-     Why these values:
-     - Scanline opacity 4% — patchwright uses 7% but their bg is a
-       different palette. 4% is enough to register on close look
-       without making body text feel dusty.
-     - Amber radials at 10% / 6% — Direção C amber at low alpha
-       reads as "warm room", not "brand bar".
-     - 2nd radial is bottom-left, not top-left like patchwright.
-       Mirroring gives the page a diagonal warmth instead of a
-       single lit corner.
-     - Drift = 4px over 60s. One full repeat per cycle. */
+     v3 changes (after feedback that v2 was too subtle):
+     - Scanlines 4% → 8% (visible without being harsh).
+     - Radial 1 (top-right): 10% → 14%.
+     - Radial 2 (bottom-left): 6% → 10%.
+     - Radial 3 added (center-bottom, 6%) — asymmetric warmth
+       so the page doesn't look like two pinned corners. */
   background:
     repeating-linear-gradient(
       to bottom,
       rgba(0, 0, 0, 0) 0,
       rgba(0, 0, 0, 0) 3px,
-      rgba(0, 0, 0, 0.04) 3.5px,
+      rgba(0, 0, 0, 0.08) 3.5px,
       rgba(0, 0, 0, 0) 4px
     ),
-    radial-gradient(1200px 700px at 78% -8%, rgba(212, 168, 71, 0.10), rgba(11, 11, 12, 0) 60%),
-    radial-gradient(900px 600px at 8% 88%, rgba(212, 168, 71, 0.06), rgba(11, 11, 12, 0) 55%),
+    radial-gradient(1200px 700px at 78% -8%, rgba(212, 168, 71, 0.14), rgba(11, 11, 12, 0) 60%),
+    radial-gradient(900px 600px at 8% 88%, rgba(212, 168, 71, 0.10), rgba(11, 11, 12, 0) 55%),
+    radial-gradient(600px 400px at 50% 110%, rgba(212, 168, 71, 0.06), rgba(11, 11, 12, 0) 60%),
     var(--bg-noir);
-  background-attachment: fixed, fixed, fixed, fixed;
-  background-size: 100% 4px, 100% 100%, 100% 100%, 100% 100%;
-  background-repeat: repeat-y, no-repeat, no-repeat, no-repeat;
+  background-attachment: fixed, fixed, fixed, fixed, fixed;
+  background-size: 100% 4px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  background-repeat: repeat-y, no-repeat, no-repeat, no-repeat, no-repeat;
   animation: scanline-drift 60s linear infinite;
   will-change: background-position;
 }
 
 @keyframes scanline-drift {
-  from { background-position: 0 0, 0 0, 0 0, 0 0; }
-  to { background-position: 0 4px, 0 0, 0 0, 0 0; }
+  from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
+  to { background-position: 0 4px, 0 0, 0 0, 0 0, 0 0; }
+}
+
+/* Scroll progress indicator — 1px amber line that grows from 0%
+   to 100% width as the page scrolls. Sits above the nav (z 100)
+   so it's always visible during scroll. Driven by --scroll-progress
+   CSS var updated by a tiny scroll handler in Layout.astro. */
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 1px;
+  width: var(--scroll-progress, 0%);
+  background: var(--accent-amber);
+  z-index: 100;
+  pointer-events: none;
+  transition: width 80ms linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  body::after { transition: none; }
 }
 
 img, svg, video { display: block; max-width: 100%; height: auto; }

@@ -77,7 +77,17 @@ const FXHASH = {
   <article class="code wrap">
     <header class="code__header">
       <span class="eyebrow">Code</span>
-      <h1 class="code__title">Tools and instruments for music and audiovisual performance.</h1>
+      <h1 class="code__title" data-reveal="word">
+        <span class="reveal-seg">Tools</span>
+        <span class="reveal-seg">and</span>
+        <span class="reveal-seg">instruments</span>
+        <span class="reveal-seg">for</span>
+        <span class="reveal-seg">music</span>
+        <span class="reveal-seg">and</span>
+        <span class="reveal-seg">audiovisual</span>
+        <span class="reveal-seg reveal-amber">performance.</span>
+        <span class="reveal-caret" aria-hidden="true">_</span>
+      </h1>
       <p class="code__intro">
         Personal and open-source projects spanning Max4Live devices, generative
         audiovisual systems, and live instruments. Most of what's here runs in
@@ -368,4 +378,31 @@ const FXHASH = {
     letter-spacing: 0.05em;
   }
   .fxhash__cta:hover { color: var(--fg-bone); }
+
+  /* Word reveal (code H1).
+     Each .reveal-seg starts hidden; JS fades them in with stagger
+     (handled in scripts/title-reveal.ts). The amber segment is
+     "performance." — the verb that ties the whole sentence
+     together. Caret is monospace underscore, blinks at end. */
+  .code__title { min-height: 1.2em; }
+  .reveal-seg { display: inline-block; margin-right: 0.25em; }
+  .reveal-seg.reveal-amber { color: var(--accent-amber); }
+  .reveal-caret {
+    display: inline-block;
+    color: var(--accent-amber);
+    opacity: 0;
+    font-family: var(--font-mono);
+    animation: caret-blink 700ms steps(2, start) infinite;
+  }
+  @keyframes caret-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-caret { display: none; }
+  }
 </style>
+
+<script>
+  import '../scripts/title-reveal.ts';
+</script>
