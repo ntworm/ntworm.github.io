@@ -82,6 +82,44 @@ body {
   line-height: 1.55;
   min-height: 100vh;
   font-feature-settings: "ss01", "tnum";
+
+  /* Ambient surface — Direção C option B (drift lento).
+     Layered: scanlines (top) + 2 amber radials + noir base (bottom).
+     All fixed-attachment so they read as a projection overlay,
+     not a scrolling ticker. Drift animates the scanlines 4px down
+     per 60s cycle = 0.067 px/sec — a slow breath, never a flicker.
+
+     Why these values:
+     - Scanline opacity 4% — patchwright uses 7% but their bg is a
+       different palette. 4% is enough to register on close look
+       without making body text feel dusty.
+     - Amber radials at 10% / 6% — Direção C amber at low alpha
+       reads as "warm room", not "brand bar".
+     - 2nd radial is bottom-left, not top-left like patchwright.
+       Mirroring gives the page a diagonal warmth instead of a
+       single lit corner.
+     - Drift = 4px over 60s. One full repeat per cycle. */
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0,
+      rgba(0, 0, 0, 0) 3px,
+      rgba(0, 0, 0, 0.04) 3.5px,
+      rgba(0, 0, 0, 0) 4px
+    ),
+    radial-gradient(1200px 700px at 78% -8%, rgba(212, 168, 71, 0.10), rgba(11, 11, 12, 0) 60%),
+    radial-gradient(900px 600px at 8% 88%, rgba(212, 168, 71, 0.06), rgba(11, 11, 12, 0) 55%),
+    var(--bg-noir);
+  background-attachment: fixed, fixed, fixed, fixed;
+  background-size: 100% 4px, 100% 100%, 100% 100%, 100% 100%;
+  background-repeat: repeat-y, no-repeat, no-repeat, no-repeat;
+  animation: scanline-drift 60s linear infinite;
+  will-change: background-position;
+}
+
+@keyframes scanline-drift {
+  from { background-position: 0 0, 0 0, 0 0, 0 0; }
+  to { background-position: 0 4px, 0 0, 0 0, 0 0; }
 }
 
 img, svg, video { display: block; max-width: 100%; height: auto; }
@@ -233,7 +271,11 @@ main { padding-top: var(--s-9); padding-bottom: var(--s-9); }
      handles its own keyframe freeze (show first child statically);
      this rule covers every other transition + animation in the site
      (hover effects, nav backdrop, gallery fade-ins, etc.) without
-     touching the spotlight's special-cased behavior. */
+     touching the spotlight's special-cased behavior. The body
+     scanline-drift gets explicit `animation: none` here so the radial
+     glow + scanlines remain readable but don't move. */
+  body { animation: none; }
+
   *,
   *::before,
   *::after {
