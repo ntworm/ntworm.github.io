@@ -18,7 +18,7 @@ const audiovisualCases = [
     slug: 'trisal', act: 'ACT 02', title: 'Trisal — TV series, episode 2',
     role: 'Sound Director', year: '2026', type: 'TV Series',
     production: 'Artpalco Filmes',
-    summary: 'Sound direction end-to-end for Artpalco Filmes. 17-minute episode delivered June 2026. In post for episode 3.',
+    summary: 'Sound direction end-to-end for episode 2 of the Artpalco Filmes series. The 17-minute episode premiered at Cinesesc Araguaína on 10 June 2026.',
   },
   {
     slug: 'unveiling-new-futures', act: 'ACT 03', title: 'Unveiling New Futures',
@@ -30,7 +30,7 @@ const audiovisualCases = [
     slug: 'ticha-penicheiro', act: 'ACT 04', title: 'Feel the Magic – Ticha Penicheiro',
     role: 'Sound Editor', year: '2025', type: 'Documentary',
     production: 'Betclic Studios · dir. André Braz',
-    summary: 'Documentary feature on Portuguese basketball legend Ticha Penicheiro. Dialogue cleanup, archival mix, score shaping.',
+    summary: 'Documentary feature on Portuguese basketball legend Ticha Penicheiro. Sound-effects editing with Foley and ambiences.',
   },
   {
     slug: 'this-feminine-side', act: 'ACT 05', title: 'This Feminine Side',
@@ -42,7 +42,7 @@ const audiovisualCases = [
     slug: 'o-clube', act: 'ACT 06', title: 'O Clube (S6 + S7)',
     role: 'Sound Editor', year: '2024–2025', type: 'TV Series',
     production: 'AMMP — Audio & Music for Motion Picture',
-    summary: 'Portuguese TV series streaming on OPTO/SIC. Sound editor on seasons 6 and 7 at AMMP, working dialogue editorial layered on location sound and ADR.',
+    summary: 'Portuguese TV series streaming on OPTO/SIC. Sound Editor on seasons 6 and 7 at AMMP: production sound recording, Foley, ambiences, and sound-effects editing.',
   },
   {
     slug: 'bed-time', act: 'ACT 07', title: 'Bed Time',
@@ -120,7 +120,7 @@ const musicCases = [
     slug: 'em-agosto-chove', act: 'ACT 05', title: 'Em Agosto Chove',
     role: 'Composer + Guitarist + Producer', year: '2015–2021', type: 'Band (Palmas/TO)',
     production: 'Personal project',
-    summary: 'My band, 2015–2021. One album, one music video, one live recording. Local catalogue, kept in the Palmas scene.',
+    summary: 'My band, 2015–2021. Three singles, one album, and a live recording at Bem Ali Sessions.',
   },
 ];
 
@@ -477,17 +477,10 @@ const spotlightCycleSeconds = shufflerCases.length * 6;
     letter-spacing: 0.05em;
   }
 
-  /* Side spotlight — slideshow of project covers. Each cell is on
-     screen for ~6s, then off for ~138s. Stagger is also 6s, so one
-     cell fades in exactly as the previous fades out — no two cells
-     share the screen at the same instant.
-     Cycle = 24 cells × 6s = 144s. The cycle must be > n × stagger to
-     avoid the modulo-sync bug: with 23 cells in a 132s cycle, cell
-     k=22 ends up exactly one full cycle behind cell k=0. 144s gives
-     one cell of buffer before the sync reappears. Bump this when
-     the shuffler crosses 24 projects.
-     Pure opacity fade, no transform, no z-index manipulation. Hovering
-     the shuffler pauses the whole show. */
+  /* Side spotlight — seven project covers in 6s slots. Each incoming
+     image fades up for 1.4s while the outgoing image fades down over the
+     same interval. Their combined opacity therefore never falls to black.
+     Pure opacity fade, no transform or z-index manipulation. */
   .about-mini__shuffler {
     position: relative;
     aspect-ratio: 3 / 4;
@@ -549,14 +542,12 @@ const spotlightCycleSeconds = shufflerCases.length * 6;
     color: var(--accent-amber);
   }
   @keyframes spotlight-cycle {
-    /* Visible window = stagger (6s) inside cycle = cellCount × stagger.
-       Percentages tuned for 23 cells × 6s = 138s. If cell count changes,
-       recompute 1.2/cycle×100%, 5.4/cycle×100%, 6/cycle×100% to keep
-       the visible window equal to one stagger slot. */
+    /* 42s cycle: 1.4s fade-in, hold through the 6s slot boundary, then
+       a matching 1.4s fade-out overlapping the next image. */
     0%      { opacity: 0; }
-    0.87%   { opacity: 1; animation-timing-function: linear; }
-    3.91%   { opacity: 1; animation-timing-function: ease-in; }
-    4.35%   { opacity: 0; }
+    3.33%   { opacity: 1; animation-timing-function: linear; }
+    14.29%  { opacity: 1; animation-timing-function: linear; }
+    17.62%  { opacity: 0; }
     100%    { opacity: 0; }
   }
   @media (max-width: 880px) {
