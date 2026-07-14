@@ -11,6 +11,7 @@ const codeChapterSourcePath = join(
   'portfolio',
   'CodeChapter.astro',
 );
+const standaloneWorkSourcePath = join(process.cwd(), 'src', 'pages', 'work', 'index.astro');
 
 function walk(dir, extension) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -90,8 +91,8 @@ test('every root-relative image resolves to a built asset', () => {
   assert.deepEqual(failures, []);
 });
 
-test('homepage spotlight stays curated and lightweight', () => {
-  const home = readFileSync(join(distDir, 'index.html'), 'utf8');
+test('standalone Work spotlight stays curated and lightweight', () => {
+  const home = readFileSync(join(distDir, 'work', 'index.html'), 'utf8');
   const start = home.indexOf('<div class="about-mini__shuffler"');
   const end = home.indexOf('<section id="work"', start);
   assert.ok(start >= 0 && end > start, 'spotlight section not found');
@@ -107,8 +108,8 @@ test('homepage spotlight stays curated and lightweight', () => {
   assert.ok(totalBytes <= 2 * 1024 * 1024, `spotlight transfers ${(totalBytes / 1024 / 1024).toFixed(2)} MB`);
 });
 
-test('homepage spotlight crossfades continuously without a black gap', () => {
-  const source = readFileSync(join(process.cwd(), 'src', 'pages', 'index.astro'), 'utf8');
+test('standalone Work spotlight crossfades continuously without a black gap', () => {
+  const source = readFileSync(standaloneWorkSourcePath, 'utf8');
   const slugsBlock = source.match(/const spotlightSlugs = new Set\(\[([\s\S]*?)\]\);/)?.[1] ?? '';
   const spotlightCount = [...slugsBlock.matchAll(/'[^']+'/g)].length;
   const keyframes = source.match(/@keyframes spotlight-cycle\s*\{([\s\S]*?)\n\s*\}/)?.[1] ?? '';
@@ -124,7 +125,7 @@ test('homepage spotlight crossfades continuously without a black gap', () => {
 });
 
 test('featured-work copy contains only the confirmed credits', () => {
-  const home = readFileSync(join(process.cwd(), 'src', 'pages', 'index.astro'), 'utf8');
+  const home = readFileSync(standaloneWorkSourcePath, 'utf8');
   const projectsDir = join(process.cwd(), 'src', 'content', 'projects');
   const trisal = readFileSync(join(projectsDir, 'trisal.md'), 'utf8');
   const ticha = readFileSync(join(projectsDir, 'ticha-penicheiro.md'), 'utf8');
@@ -356,7 +357,7 @@ test('scroll progress resets safely after Astro page navigation', () => {
 });
 
 test('work hero keeps its intended desktop lines and portrait alignment', () => {
-  const source = readFileSync(join(process.cwd(), 'src', 'pages', 'index.astro'), 'utf8');
+  const source = readFileSync(standaloneWorkSourcePath, 'utf8');
 
   assert.match(source, /\.hero\s*\{[^}]*align-items:\s*center;/s);
   assert.match(source, /\.hero__title \.reveal-seg\s*\{[^}]*white-space:\s*nowrap;/s);
@@ -404,7 +405,7 @@ test('interactive artwork receives global iframe sizing and a capped balanced la
 });
 
 test('each primary page has its own hero copy and reveal language', () => {
-  const work = readFileSync(join(process.cwd(), 'src', 'pages', 'index.astro'), 'utf8');
+  const work = readFileSync(standaloneWorkSourcePath, 'utf8');
   const about = readFileSync(join(process.cwd(), 'src', 'pages', 'about.astro'), 'utf8');
   const code = readFileSync(codeChapterSourcePath, 'utf8');
 

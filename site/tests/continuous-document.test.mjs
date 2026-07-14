@@ -87,6 +87,15 @@ test('continuous preview renders five finite chapters once and in order', () => 
   for (const id of chapters) assert.match(html, new RegExp(`id="${id}"`));
 });
 
+test('public homepage serves the continuous portfolio as the primary experience', () => {
+  const html = readFileSync(join(distDir, 'index.html'), 'utf8');
+  const chapters = [...html.matchAll(/data-portfolio-chapter="(about|work|code|archive|contact)"/g)]
+    .map((match) => match[1]);
+
+  assert.deepEqual(chapters, ['about', 'work', 'code', 'archive', 'contact']);
+  assert.match(html, /<title>Sound, Music &amp; Creative Systems &mdash; Gabriel Worm/);
+});
+
 test('continuous preview renders the approved Work tiers', () => {
   const html = readFileSync(join(distDir, 'continuous', 'index.html'), 'utf8');
   const ids = (tier) => workTags(html, tier).map((tag) => attr(tag, 'data-work-id'));
