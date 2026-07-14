@@ -10,6 +10,10 @@
 
 ---
 
+## Approved visual-review revision
+
+The first browser review supersedes the original axis-mapped pointer snippets later in this execution record. Pointer X/Y must not affect pitch, phase, or speed. The implemented interaction converts distance from the marked focus at `72% × 54%` of the viewport into a `0..1` field and applies it only to radius: maximum proximity zooms toward `4.35`, while leaving the field eases back toward the ambient orbit. The pure module and integration tests enforce this corrected behavior.
+
 ## File map
 
 - Create `site/src/scripts/gaussian-camera-motion.mjs`: pure clamping, smooth curve, camera target sampling, and exponential damping.

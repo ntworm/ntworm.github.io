@@ -177,6 +177,9 @@ test('first Gaussian opts into camera motion around the fixed origin', () => {
   assert.match(hero, /data-camera-motion="1"/);
   assert.doesNotMatch(lower, /data-camera-motion="1"/);
   assert.match(gaussianSource, /sampleGaussianCamera/);
+  assert.match(gaussianSource, /gaussianFocusProximity/);
+  assert.match(gaussianSource, /focusProximity/);
+  assert.doesNotMatch(gaussianSource, /pointerX|pointerY/);
   assert.match(gaussianSource, /new SPLAT\.Vector3\(0, 0, 0\)/);
 });
 
