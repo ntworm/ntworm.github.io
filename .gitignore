@@ -24,6 +24,9 @@ site/node_modules/
 site/dist/
 site/.astro/
 
+# Isolated agent worktrees
+.worktrees/
+
 # Dev server log files (created when running npm run dev)
 .dev.log
 .dev.err.log
