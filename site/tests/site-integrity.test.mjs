@@ -4,6 +4,13 @@ import { join, relative } from 'node:path';
 import test from 'node:test';
 
 const distDir = join(process.cwd(), 'dist');
+const codeChapterSourcePath = join(
+  process.cwd(),
+  'src',
+  'components',
+  'portfolio',
+  'CodeChapter.astro',
+);
 
 function walk(dir, extension) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -129,6 +136,14 @@ test('featured-work copy contains only the confirmed credits', () => {
   assert.match(trisal, /premiered at Cinesesc Araguaína on 10 June 2026/);
 });
 
+test('code route delegates to the shared Code chapter', () => {
+  const page = readFileSync(join(process.cwd(), 'src', 'pages', 'code.astro'), 'utf8');
+
+  assert.match(page, /import CodeChapter from ['"]\.\.\/components\/portfolio\/CodeChapter\.astro['"]/);
+  assert.match(page, /<CodeChapter\s*\/>/);
+  assert.ok(statSync(codeChapterSourcePath).isFile());
+});
+
 test('code page stacks two scroll-bound borderless Gaussians', () => {
   const code = readFileSync(join(distDir, 'code', 'index.html'), 'utf8');
   const heroStart = code.indexOf('<header class="code__hero"');
@@ -174,7 +189,7 @@ test('code page stacks two scroll-bound borderless Gaussians', () => {
 });
 
 test('code cards stay above softened Gaussian spill', () => {
-  const source = readFileSync(join(process.cwd(), 'src', 'pages', 'code.astro'), 'utf8');
+  const source = readFileSync(codeChapterSourcePath, 'utf8');
 
   assert.match(source, /\.gh-card,\s*\.tools\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*2;/s);
   assert.match(source, /background:\s*rgba\(11, 11, 12, 0\.64\)/);
@@ -184,7 +199,7 @@ test('code cards stay above softened Gaussian spill', () => {
 });
 
 test('code hero removes the top bar and reaches farther into GitHub', () => {
-  const codeSource = readFileSync(join(process.cwd(), 'src', 'pages', 'code.astro'), 'utf8');
+  const codeSource = readFileSync(codeChapterSourcePath, 'utf8');
   const gaussianSource = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
 
   assert.match(codeSource, /:global\(main\)\s*\{\s*padding-top:\s*0;/);
@@ -334,7 +349,7 @@ test('interactive artwork receives global iframe sizing and a capped balanced la
 test('each primary page has its own hero copy and reveal language', () => {
   const work = readFileSync(join(process.cwd(), 'src', 'pages', 'index.astro'), 'utf8');
   const about = readFileSync(join(process.cwd(), 'src', 'pages', 'about.astro'), 'utf8');
-  const code = readFileSync(join(process.cwd(), 'src', 'pages', 'code.astro'), 'utf8');
+  const code = readFileSync(codeChapterSourcePath, 'utf8');
 
   assert.match(work, /<h1[^>]*data-reveal="cut"/);
   assert.match(work, /Sound direction,/);
