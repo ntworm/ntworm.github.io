@@ -129,7 +129,7 @@ test('code page stacks two scroll-bound borderless Gaussians', () => {
   assert.match(css, /\.code__lower-showcase/);
   assert.match(css, /inset:\s*-52vh 0/);
   assert.match(css, /\.code__lower-copy[^,{]*\{[^}]*grid-column:2/);
-  assert.match(css, /transform:translate\(18%\)translateY\(-18%\)scale\(1\.32\)/);
+  assert.match(css, /transform:translateX\(18%\)\s*translateY\(calc\(-18%\s*\+\s*var\(--gs-scroll-y,\s*0%\)\)\)\s*scale\(1\.32\)/);
   assert.match(css, /transform:translate\(-18%\)translateY\(-10%\)scale\(1\.32\)/);
   assert.match(css, /\.gs-bg__live-canvas/);
   assert.doesNotMatch(css, /\.gs-bg__live-canvas\[data-astro-cid-/);
@@ -160,7 +160,7 @@ test('code hero removes the top bar and reaches farther into GitHub', () => {
 test('hero Gaussian stays raised without moving the lower scene', () => {
   const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
 
-  assert.match(source, /translateX\(18%\) translateY\(-18%\) scale\(1\.32\)/);
+  assert.match(source, /translateX\(18%\) translateY\(calc\(-18% \+ var\(--gs-scroll-y, 0%\)\)\) scale\(1\.32\)/);
   assert.match(source, /translateX\(-18%\) translateY\(-10%\) scale\(1\.32\)/);
 });
 
@@ -179,6 +179,8 @@ test('first Gaussian opts into camera motion around the fixed origin', () => {
   assert.match(gaussianSource, /sampleGaussianCamera/);
   assert.match(gaussianSource, /gaussianFocusProximity/);
   assert.match(gaussianSource, /focusProximity/);
+  assert.match(gaussianSource, /sampled\.verticalOffset/);
+  assert.match(gaussianSource, /--gs-scroll-y/);
   assert.doesNotMatch(gaussianSource, /pointerX|pointerY/);
   assert.match(gaussianSource, /new SPLAT\.Vector3\(0, 0, 0\)/);
 });

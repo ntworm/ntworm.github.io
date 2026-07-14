@@ -12,7 +12,9 @@
 
 ## Approved visual-review revision
 
-The first browser review supersedes the original axis-mapped pointer snippets later in this execution record. Pointer X/Y must not affect pitch, phase, or speed. The implemented interaction converts distance from the marked focus at `72% × 54%` of the viewport into a `0..1` field and applies it only to radius: maximum proximity zooms toward `4.35`, while leaving the field eases back toward the ambient orbit. The pure module and integration tests enforce this corrected behavior.
+The browser reviews supersede the original axis-mapped pointer snippets later in this execution record. Pointer X/Y must not affect pitch, phase, or speed. The implemented interaction converts distance from the marked focus at `72% × 54%` of the viewport into three overlapping proximity bands and applies them only to radius. Influence remains subtle at the farthest yellow edge, increases through the light-red band, and reaches a protected radius of `3.45` in the dark-red core. Leaving the viewport eases back toward the ambient orbit. The pure module and integration tests enforce this corrected behavior.
+
+Scroll is also isolated from the orbit: it produces only a reversible `0..8%` canvas Y offset through `--gs-scroll-y`. Radius, pitch, phase, and angular speed remain identical for the same pointer/time inputs regardless of scroll position, preventing reverse scroll from visually cancelling the rotation.
 
 ## File map
 

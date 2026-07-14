@@ -127,6 +127,7 @@ async function loadSplatEngine(): Promise<void> {
     "  let pitch = -0.15;",
     "  let phaseOffset = 0;",
     "  let angularSpeed = 0.108;",
+    "  let verticalOffset = 0;",
     "  let focusProximity = 0;",
     "  const onPointerMove = (event) => {",
     "    focusProximity = motion.gaussianFocusProximity({",
@@ -183,12 +184,15 @@ async function loadSplatEngine(): Promise<void> {
     "      pitch = motion.damp(pitch, sampled.pitch, 2.4, deltaSeconds);",
     "      phaseOffset = motion.damp(phaseOffset, sampled.phaseOffset, 1.8, deltaSeconds);",
     "      angularSpeed = motion.damp(angularSpeed, sampled.angularSpeed, 1.6, deltaSeconds);",
+    "      verticalOffset = motion.damp(verticalOffset, sampled.verticalOffset, 1.8, deltaSeconds);",
     "    } else {",
     "      radius = motion ? motion.damp(radius, 6, 2.6, deltaSeconds) : 6;",
     "      pitch = motion ? motion.damp(pitch, -0.15, 2.4, deltaSeconds) : -0.15;",
     "      phaseOffset = motion ? motion.damp(phaseOffset, 0, 1.8, deltaSeconds) : 0;",
     "      angularSpeed = motion ? motion.damp(angularSpeed, 0.108, 1.6, deltaSeconds) : 0.108;",
+    "      verticalOffset = motion ? motion.damp(verticalOffset, 0, 1.8, deltaSeconds) : 0;",
     "    }",
+    "    renderer.canvas.style.setProperty('--gs-scroll-y', verticalOffset + '%');",
     "    angle += angularSpeed * deltaSeconds;",
     "    setCameraOnOrbit(angle + phaseOffset);",
     "    renderer.render(scene, camera);",
@@ -439,7 +443,7 @@ document.addEventListener('astro:page-load', attachAll);
   }
 
   .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
-    transform: translateX(18%) translateY(-18%) scale(1.32);
+    transform: translateX(18%) translateY(calc(-18% + var(--gs-scroll-y, 0%))) scale(1.32);
   }
 
   .gs-bg[data-placement="section-left"].gs-bg--live > :global(.gs-bg__live-canvas) {
@@ -513,7 +517,7 @@ document.addEventListener('astro:page-load', attachAll);
       transform: translateX(24%) translateY(-10%) scale(1.36);
     }
     .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
-      transform: translateX(24%) translateY(-18%) scale(1.36);
+      transform: translateX(24%) translateY(calc(-18% + var(--gs-scroll-y, 0%))) scale(1.36);
     }
     .gs-bg[data-placement="section-left"].gs-bg--live > :global(.gs-bg__live-canvas) {
       transform: translateX(-24%) translateY(-10%) scale(1.36);

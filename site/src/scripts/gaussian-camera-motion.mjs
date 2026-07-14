@@ -29,8 +29,21 @@ export function gaussianFocusProximity({
   const width = Math.max(1, viewportWidth);
   const height = Math.max(1, viewportHeight);
   const unit = Math.min(width, height);
-  const distance = Math.hypot(clientX - width * focusX, clientY - height * focusY);
-  return 1 - smoothstep(unit * 0.065, unit * 0.34, distance);
+  const focusPx = width * focusX;
+  const focusPy = height * focusY;
+  const distance = Math.hypot(clientX - focusPx, clientY - focusPy);
+  const farthestCorner = Math.hypot(
+    Math.max(focusPx, width - focusPx),
+    Math.max(focusPy, height - focusPy),
+  );
+
+  // Three overlapping fields create the yellow → light red → dark red
+  // progression from the visual review, without a dead zone or hard step.
+  const broad = 1 - smoothstep(0, farthestCorner, distance);
+  const middle = 1 - smoothstep(unit * 0.18, unit * 0.72, distance);
+  const core = 1 - smoothstep(unit * 0.055, unit * 0.28, distance);
+
+  return clamp(0.06 + 0.2 * broad + 0.3 * middle + 0.44 * core, 0, 1);
 }
 
 /**
@@ -46,8 +59,6 @@ export function sampleGaussianCamera({
 } = {}) {
   const progress = clamp(scrollProgress, 0, 1);
   const focus = clamp(focusProximity, 0, 1);
-  const approach = Math.sin(Math.PI * progress);
-  const exit = smoothstep(0.62, 1, progress);
 
   // 20s and 37s periods never settle into an obvious short loop.
   const slowA = Math.sin(timeSeconds * 0.31);
@@ -55,20 +66,21 @@ export function sampleGaussianCamera({
 
   return {
     radius: clamp(
-      6 - 0.72 * approach + 0.3 * exit + 0.09 * slowA + 0.04 * slowB - 1.35 * focus,
-      4.35,
+      6 + 0.09 * slowA + 0.04 * slowB - 2.65 * focus,
+      3.45,
       6.55,
     ),
     pitch: clamp(
-      -0.15 + 0.07 * approach + 0.022 * slowB,
+      -0.15 + 0.022 * slowB,
       -0.27,
       0.03,
     ),
-    phaseOffset: 0.28 * smoothstep(0, 1, progress) + 0.03 * slowA,
+    phaseOffset: 0.03 * slowA,
     angularSpeed: clamp(
-      0.108 * (1 + 0.13 * slowB + 0.09 * approach),
+      0.108 * (1 + 0.13 * slowB),
       0.075,
       0.14,
     ),
+    verticalOffset: 8 * smoothstep(0, 1, progress),
   };
 }
