@@ -93,6 +93,42 @@ test('homepage spotlight stays curated and lightweight', () => {
   assert.ok(totalBytes <= 2 * 1024 * 1024, `spotlight transfers ${(totalBytes / 1024 / 1024).toFixed(2)} MB`);
 });
 
+test('homepage spotlight crossfades continuously without a black gap', () => {
+  const source = readFileSync(join(process.cwd(), 'src', 'pages', 'index.astro'), 'utf8');
+  const slugsBlock = source.match(/const spotlightSlugs = new Set\(\[([\s\S]*?)\]\);/)?.[1] ?? '';
+  const spotlightCount = [...slugsBlock.matchAll(/'[^']+'/g)].length;
+  const keyframes = source.match(/@keyframes spotlight-cycle\s*\{([\s\S]*?)\n\s*\}/)?.[1] ?? '';
+  const phases = [...keyframes.matchAll(/([\d.]+)%\s*\{/g)].map((match) => Number(match[1]));
+
+  assert.equal(spotlightCount, 7);
+  assert.equal(phases.length, 5);
+  const [, fadeInEnd, holdEnd, fadeOutEnd] = phases;
+  const slotEnd = 100 / spotlightCount;
+  assert.ok(Math.abs(holdEnd - slotEnd) < 0.05, `expected hold through ${slotEnd.toFixed(2)}%, received ${holdEnd}%`);
+  assert.ok(fadeOutEnd > slotEnd, 'the outgoing image must overlap the incoming image');
+  assert.ok(Math.abs((fadeOutEnd - slotEnd) - fadeInEnd) < 0.05, 'incoming and outgoing fades must have matching durations');
+});
+
+test('featured-work copy contains only the confirmed credits', () => {
+  const home = readFileSync(join(process.cwd(), 'src', 'pages', 'index.astro'), 'utf8');
+  const projectsDir = join(process.cwd(), 'src', 'content', 'projects');
+  const trisal = readFileSync(join(projectsDir, 'trisal.md'), 'utf8');
+  const ticha = readFileSync(join(projectsDir, 'ticha-penicheiro.md'), 'utf8');
+  const clube = readFileSync(join(projectsDir, 'o-clube.md'), 'utf8');
+  const agosto = readFileSync(join(projectsDir, 'em-agosto-chove.md'), 'utf8');
+  const combined = [home, trisal, ticha, clube, agosto].join('\n');
+
+  assert.doesNotMatch(combined, /In post for episode 3/i);
+  assert.doesNotMatch(ticha, /dialogue cleanup|archival mix|shaping the score/i);
+  assert.doesNotMatch(clube, /dialogue cleanup|dialogue editorial|ADR matching|final premix|7\.1|Ambeo/i);
+  assert.doesNotMatch(agosto, /four standalone singles|one music video/i);
+
+  assert.match(home, /Three singles, one album, and a live recording at Bem Ali Sessions/);
+  assert.match(ticha, /Foley, ambiences, and sound-effects editing/);
+  assert.match(clube, /production sound recording, Foley, ambiences, and sound-effects editing/);
+  assert.match(trisal, /premiered at Cinesesc Araguaína on 10 June 2026/);
+});
+
 test('code page stacks two scroll-bound borderless Gaussians', () => {
   const code = readFileSync(join(distDir, 'code', 'index.html'), 'utf8');
   const heroStart = code.indexOf('<header class="code__hero"');
@@ -129,8 +165,8 @@ test('code page stacks two scroll-bound borderless Gaussians', () => {
   assert.match(css, /\.code__lower-showcase/);
   assert.match(css, /inset:\s*-52vh 0/);
   assert.match(css, /\.code__lower-copy[^,{]*\{[^}]*grid-column:2/);
-  assert.match(css, /transform:translateX\(18%\)\s*translateY\(calc\(-18%\s*\+\s*var\(--gs-scroll-y,\s*0%\)\)\)\s*scale\(1\.32\)/);
-  assert.match(css, /transform:translate\(-18%\)translateY\(-10%\)scale\(1\.32\)/);
+  assert.match(css, /transform:translateX\(18%\)\s*translateY\(calc\(-22%\s*\+\s*var\(--gs-scroll-y,\s*0%\)\)\)\s*scale\(1\.32\)/);
+  assert.match(css, /transform:translateX\(-18%\)\s*translateY\(calc\(-10%\s*\+\s*var\(--gs-scroll-y,\s*0%\)\)\)\s*scale\(1\.32\)/);
   assert.match(css, /\.gs-bg__live-canvas/);
   assert.doesNotMatch(css, /\.gs-bg__live-canvas\[data-astro-cid-/);
   assert.match(css, /\.gs-bg__live-canvas\{[^}]*pointer-events:none/);
@@ -157,14 +193,14 @@ test('code hero removes the top bar and reaches farther into GitHub', () => {
   assert.match(gaussianSource, /data-placement="hero-right"\]\[data-contained="1"\][^{]*\{[^}]*bottom:\s*-88vh;/s);
 });
 
-test('hero Gaussian stays raised without moving the lower scene', () => {
+test('Gaussian placements keep their independent raised compositions', () => {
   const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
 
-  assert.match(source, /translateX\(18%\) translateY\(calc\(-18% \+ var\(--gs-scroll-y, 0%\)\)\) scale\(1\.32\)/);
-  assert.match(source, /translateX\(-18%\) translateY\(-10%\) scale\(1\.32\)/);
+  assert.match(source, /translateX\(18%\) translateY\(calc\(-22% \+ var\(--gs-scroll-y, 0%\)\)\) scale\(1\.32\)/);
+  assert.match(source, /translateX\(-18%\) translateY\(calc\(-10% \+ var\(--gs-scroll-y, 0%\)\)\) scale\(1\.32\)/);
 });
 
-test('first Gaussian opts into camera motion around the fixed origin', () => {
+test('both Gaussians opt into smoothed camera motion around the fixed origin', () => {
   const code = readFileSync(join(distDir, 'code', 'index.html'), 'utf8');
   const gaussianSource = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
   const heroStart = code.indexOf('<header class="code__hero"');
@@ -175,14 +211,57 @@ test('first Gaussian opts into camera motion around the fixed origin', () => {
   const lower = code.slice(lowerStart, lowerEnd);
 
   assert.match(hero, /data-camera-motion="1"/);
-  assert.doesNotMatch(lower, /data-camera-motion="1"/);
+  assert.match(lower, /data-camera-motion="1"/);
   assert.match(gaussianSource, /sampleGaussianCamera/);
+  assert.match(gaussianSource, /createGaussianAutopilot/);
+  assert.match(gaussianSource, /gaussianFocusPoint/);
   assert.match(gaussianSource, /gaussianFocusProximity/);
-  assert.match(gaussianSource, /focusProximity/);
+  assert.match(gaussianSource, /gaussianPointerLook/);
+  assert.match(gaussianSource, /let pointerClientX = null;/);
+  assert.match(gaussianSource, /let pointerClientY = null;/);
+  assert.match(gaussianSource, /const focusX = stage\.dataset\.placement === 'section-left' \? 0\.28 : 0\.72;/);
+  assert.match(gaussianSource, /focusProximity = motion\.damp\(focusProximity, focusTarget,/);
+  assert.match(gaussianSource, /const zoomScale = stage\.dataset\.placement === 'section-left' \? 2\.5 : 1\.5;/);
+  assert.match(gaussianSource, /let radius = 6 \/ zoomScale;/);
+  assert.match(gaussianSource, /scrollProgress, focusProximity, zoomScale, timeSeconds:/);
+  assert.match(gaussianSource, /hostTop: rect\.top/);
   assert.match(gaussianSource, /sampled\.verticalOffset/);
   assert.match(gaussianSource, /--gs-scroll-y/);
   assert.doesNotMatch(gaussianSource, /pointerX|pointerY/);
   assert.match(gaussianSource, /new SPLAT\.Vector3\(0, 0, 0\)/);
+});
+
+test('both Gaussians run independent autonomous camera gestures with roll', () => {
+  const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
+
+  assert.match(source, /const autopilotSeed = .*Math\.random/);
+  assert.match(source, /const autopilot = .*createGaussianAutopilot\(autopilotSeed\)/);
+  assert.match(source, /sampled\.angularSpeed \* autonomous\.speedScale/);
+  assert.match(source, /pitch = motion\.damp\(pitch, sampled\.pitch,/);
+  assert.doesNotMatch(source, /autonomous\.pitchOffset/);
+  assert.match(source, /sampled\.phaseOffset \+ autonomous\.phaseOffset/);
+  assert.match(source, /setCameraOnOrbit\(angle \+ phaseOffset, roll, lookYaw, lookPitch\)/);
+  assert.match(source, /new SPLAT\.Vector3\(pch, yaw, cameraRoll\)/);
+});
+
+test('pointer gently biases camera aim without owning the autonomous orbit', () => {
+  const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
+
+  assert.match(source, /const pointerLookTarget = motion\.gaussianPointerLook/);
+  assert.match(source, /pointerLookTarget\.yaw \+ autonomous\.lookYaw/);
+  assert.match(source, /pointerLookTarget\.pitch \+ autonomous\.lookPitch/);
+  assert.match(source, /setCameraOnOrbit\(angle \+ phaseOffset, roll, lookYaw, lookPitch\)/);
+  assert.match(source, /const yaw = Math\.atan2\(ux, uz\) \+ cameraLookYaw;/);
+  assert.match(source, /const pch = .* \+ cameraLookPitch;/);
+});
+
+test('Gaussian masks open farther into the page while copy protection remains', () => {
+  const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
+
+  assert.match(source, /ellipse 78% 96% at 50% 48%/);
+  assert.match(source, /rgba\(11, 11, 12, 0\.86\) 12%/);
+  assert.match(source, /rgba\(11, 11, 12, 0\.55\) 28%/);
+  assert.match(source, /\.gs-bg__veil\s*\{[^}]*z-index:\s*2;/s);
 });
 
 test('primary navigation labels have no individual surface behind them', () => {
