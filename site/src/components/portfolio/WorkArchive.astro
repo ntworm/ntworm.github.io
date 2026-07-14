@@ -1,0 +1,54 @@
+---
+import WorkEntry from './WorkEntry.astro';
+
+interface Props {
+  projects: Parameters<typeof WorkEntry>[0]['project'][];
+}
+
+const { projects } = Astro.props;
+---
+
+<section
+  id="archive"
+  class="portfolio-archive wrap"
+  data-portfolio-chapter="archive"
+  aria-labelledby="archive-title"
+>
+  <span class="eyebrow">Archive</span>
+  <h2 id="archive-title">Complete project index.</h2>
+  <div class="portfolio-archive__grid">
+    {projects.map((project, index) => (
+      <WorkEntry project={project} tier="archive" index={index} />
+    ))}
+  </div>
+</section>
+
+<style>
+  .portfolio-archive {
+    position: relative;
+    z-index: 2;
+    isolation: isolate;
+    background: transparent;
+    padding-top: var(--s-10);
+    padding-bottom: var(--s-10);
+  }
+
+  .portfolio-archive > h2 {
+    margin-top: var(--s-2);
+    margin-bottom: var(--s-8);
+  }
+
+  .portfolio-archive__grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--s-7) var(--s-4);
+  }
+
+  @media (max-width: 980px) {
+    .portfolio-archive__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 700px) {
+    .portfolio-archive__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>

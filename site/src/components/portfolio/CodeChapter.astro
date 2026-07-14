@@ -195,15 +195,6 @@ const SPLATS = [
 </div>
 
 <style>
-  /* Code opens directly beneath a transparent navigation layer so the first
-     scene has no horizontal section bar at the top of the page. */
-  :global(main) { padding-top: 0; }
-  :global(.nav) {
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-
   .code { padding-top: 0; padding-bottom: var(--s-10); position: relative; z-index: 1; }
   /* The copy follows the About page's left edge. The Gaussian remains a
      full-bleed background layer, but its sharp focal area sits on the right. */

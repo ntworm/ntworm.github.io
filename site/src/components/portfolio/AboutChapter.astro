@@ -1,0 +1,314 @@
+---
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
+
+const PORTRAIT_DIR = join(process.cwd(), 'public', 'portrait');
+const IMG_EXTS = /\.(jpe?g|png|webp|avif|gif)$/i;
+
+function naturalSort(a: string, b: string) {
+  const an = a.match(/^(\d+)/)?.[1];
+  const bn = b.match(/^(\d+)/)?.[1];
+  if (an != null && bn != null) return (+an) - (+bn) || a.localeCompare(b);
+  if (an != null) return -1;
+  if (bn != null) return 1;
+  return a.localeCompare(b);
+}
+
+const portraitFiles = (() => {
+  try {
+    return readdirSync(PORTRAIT_DIR)
+      .filter((file) => IMG_EXTS.test(file))
+      .sort(naturalSort);
+  } catch {
+    return [];
+  }
+})();
+---
+
+<section id="about" class="portfolio-about wrap" data-portfolio-chapter="about">
+  <div class="portfolio-about__hero">
+    <div class="portfolio-about__copy">
+      <span class="eyebrow">About</span>
+      <h1
+        class="about-title"
+        data-reveal="focus"
+        aria-label="A practice shaped by listening, systems, and collaboration."
+      >
+        <span class="reveal-seg">A practice</span>
+        <span class="reveal-seg">shaped by</span>
+        <span class="reveal-seg reveal-amber">listening,</span>
+        <span class="reveal-seg">systems,</span>
+        <span class="reveal-seg">and collaboration.</span>
+      </h1>
+      <p class="portfolio-about__lead">
+        Sound direction, music production, and creative tooling — for cinema, performance,
+        and live instruments. Based in Palmas, Tocantins, Brazil.
+      </p>
+    </div>
+
+    <div class="portfolio-about__portraits" aria-label="Portraits">
+      {portraitFiles.map((file, index) => (
+        <figure>
+          <img
+            src={`/portrait/${file}`}
+            alt={`Portrait ${index + 1} of ${portraitFiles.length}`}
+            loading="lazy"
+          />
+        </figure>
+      ))}
+    </div>
+  </div>
+
+  <section class="portfolio-about__thread" aria-labelledby="about-thread-title">
+    <header class="portfolio-about__thread-heading">
+      <span class="eyebrow">Practice</span>
+      <h2 id="about-thread-title">Three movements. Four areas. One thread.</h2>
+    </header>
+
+    <div class="portfolio-about__thread-copy">
+      <p>
+        I work at the intersection of film sound, music production, and creative tooling. My practice
+        moves through <em>cinema</em> — sound direction, design, and mixing for film and television;
+        <em>music</em> — production, mix, and master for independent Brazilian artists and bands; and
+        <em>code</em> — Max4Live devices, generative audiovisual systems, and live instruments.
+      </p>
+      <p>
+        Across all three, the thread is the same: I build instruments — acoustic, digital, conceptual —
+        to make work that is specific, situated, and accountable to a place. Recent work includes
+        <a class="entity-link" href="/work/o-compositor">O Compositor</a>, nominated for Best Composition
+        at Prémio Curtas 2026; the <a class="entity-link" href="/work/ep-rinoceronte">EP Rinoceronte</a>
+        for Luzo Cairo; and <a class="entity-link" href="/work/rc-surface">RC Surface</a>, an MIT-licensed
+        Max4Live device for Ableton Live.
+      </p>
+      <p>
+        The path has been geographic as much as technical. I spent six years in the Palmas music scene
+        as a composer, guitarist, and producer, then worked between Brazil and Lisbon while completing
+        a BA in Sound at Universidade Lusófona. I returned to Palmas in 2025 carrying the tools and habits
+        of both scenes.
+      </p>
+      <p>
+        The work connects those scenes through Lusófona and REANIMA for audiovisual practice, AMMP for
+        Portuguese television, Artpalco for recent series work, the Madison Museum collection for
+        Kakofoni Orquestra, and the Aldir Blanc / PAAR grant behind Rinoceronte. None is a permanent home;
+        they are passages through one practice.
+      </p>
+    </div>
+
+    <div class="portfolio-about__areas">
+      <article data-practice-area="film-audio">
+        <h3><span class="mono">01</span> Film Audio</h3>
+        <p>
+          Sound direction, production recording, design, editing, and mix for short film, television,
+          animation, and documentary. The work moves from the first sonic idea through final delivery.
+        </p>
+      </article>
+      <article data-practice-area="music-production">
+        <h3><span class="mono">02</span> Music Production</h3>
+        <p>
+          Production, recording, mix, and master for independent artists, shaped by the Palmas and
+          Tocantins scene — small rooms, recurring collaborators, and records built from local continuity.
+        </p>
+      </article>
+      <article data-practice-area="creative-coding">
+        <h3><span class="mono">03</span> Creative Coding</h3>
+        <p>
+          Max4Live devices and generative audiovisual systems organized around real-time signal flow.
+          The tools feed the art, the art feeds the tools, and both share patches, modules, and live risk.
+        </p>
+      </article>
+      <article data-practice-area="live-experimental">
+        <h3><span class="mono">04</span> Live &amp; Experimental</h3>
+        <p>
+          Festival curation, live sound, livecoding, and installations rooted in collective production.
+          A piece either survives the room or it does not; the stage keeps the studio work honest.
+        </p>
+      </article>
+    </div>
+  </section>
+</section>
+
+<style>
+  .portfolio-about {
+    padding-top: var(--s-7);
+    padding-bottom: 0;
+  }
+
+  .portfolio-about__hero {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+    align-items: center;
+    gap: var(--s-9);
+    min-height: auto;
+    padding-bottom: var(--s-7);
+  }
+
+  .portfolio-about__copy h1 {
+    margin-top: var(--s-3);
+  }
+
+  .about-title {
+    min-height: 1.2em;
+  }
+
+  .reveal-seg { display: inline-block; margin-right: 0.18em; }
+  .reveal-seg.reveal-amber { color: var(--accent-amber); }
+
+  .about-title[data-reveal-initialized="true"] .reveal-seg {
+    opacity: 0;
+    filter: blur(16px);
+    transform: translateX(-14px) translateY(6px);
+  }
+
+  .about-title[data-reveal-ready="true"] .reveal-seg {
+    animation: about-focus-in 780ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: calc(140ms + var(--reveal-i, 0) * 105ms);
+  }
+
+  .portfolio-about__lead {
+    margin-top: var(--s-5);
+    font-size: var(--t-body);
+    max-width: 46ch;
+  }
+
+  .portfolio-about__portraits {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end;
+    gap: var(--s-4);
+  }
+
+  .portfolio-about__portraits figure {
+    margin: 0;
+    position: relative;
+    z-index: 0;
+    animation: about-float-a 13s ease-in-out infinite alternate;
+  }
+
+  .portfolio-about__portraits figure:nth-child(2) {
+    animation-name: about-float-b;
+    animation-duration: 16s;
+    animation-delay: -5s;
+  }
+
+  .portfolio-about__portraits figure:nth-child(3) {
+    animation-name: about-float-b;
+    animation-duration: 18s;
+    animation-delay: -11s;
+  }
+
+  .portfolio-about__portraits figure:nth-child(4) {
+    animation-duration: 15s;
+    animation-delay: -8s;
+  }
+
+  .portfolio-about__portraits img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 820ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes about-focus-in {
+    to { opacity: 1; filter: blur(0); transform: none; }
+  }
+
+  @keyframes about-float-a {
+    0% { transform: translate3d(-1px, 1px, 0) rotate(-0.08deg); }
+    50% { transform: translate3d(2px, -2px, 0) rotate(0.08deg); }
+    100% { transform: translate3d(-1px, -1px, 0) rotate(0.04deg); }
+  }
+
+  @keyframes about-float-b {
+    0% { transform: translate3d(1px, -1px, 0) rotate(0.06deg); }
+    50% { transform: translate3d(-2px, 1px, 0) rotate(-0.08deg); }
+    100% { transform: translate3d(1px, 2px, 0) rotate(0.03deg); }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .portfolio-about__portraits figure:hover img {
+      transform: translate3d(0, -3px, 0) scale(1.008);
+    }
+  }
+
+  .portfolio-about__thread {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.72fr) minmax(0, 1.28fr);
+    gap: var(--s-8) var(--s-9);
+    padding: var(--s-7) 0 var(--s-7);
+    border-top: 1px solid var(--muted-graphite);
+  }
+
+  .portfolio-about__thread-heading h2 {
+    margin-top: var(--s-3);
+    max-width: 11ch;
+  }
+
+  .portfolio-about__thread-copy {
+    columns: 2;
+    column-gap: var(--s-7);
+  }
+
+  .portfolio-about__thread-copy p {
+    margin: 0 0 var(--s-5);
+    break-inside: avoid;
+  }
+
+  .portfolio-about__areas {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 1px solid var(--muted-graphite);
+  }
+
+  .portfolio-about__areas article {
+    padding: var(--s-5) var(--s-6) var(--s-6) 0;
+    border-bottom: 1px solid var(--muted-graphite);
+  }
+
+  .portfolio-about__areas article:nth-child(even) {
+    padding-left: var(--s-6);
+    border-left: 1px solid var(--muted-graphite);
+  }
+
+  .portfolio-about__areas h3 {
+    display: flex;
+    gap: var(--s-3);
+    align-items: baseline;
+  }
+
+  .portfolio-about__areas h3 span { color: var(--accent-amber); }
+  .portfolio-about__areas p { max-width: 58ch; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .portfolio-about__portraits figure {
+      animation: none;
+    }
+    .portfolio-about__portraits img { transition: none; }
+    .about-title[data-reveal-initialized="true"] .reveal-seg {
+      opacity: 1;
+      filter: none;
+      transform: none;
+      animation: none;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .portfolio-about {
+      padding-top: var(--s-6);
+    }
+
+    .portfolio-about__hero,
+    .portfolio-about__thread {
+      grid-template-columns: 1fr;
+      gap: var(--s-7);
+    }
+
+    .portfolio-about__hero { min-height: auto; }
+    .portfolio-about__thread-copy { columns: 1; }
+    .portfolio-about__areas { grid-template-columns: 1fr; }
+    .portfolio-about__areas article:nth-child(even) {
+      padding-left: 0;
+      border-left: 0;
+    }
+  }
+</style>

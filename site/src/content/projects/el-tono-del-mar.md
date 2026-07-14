@@ -1,20 +1,26 @@
 ---
 title: "El Tono Del Mar"
 year: 2023
-role: "Sound Assistant (Sound Effects and Sound Design)"
-country: "Lisbon, Portugal"
-type: "REANIMA Animation"
-production: "Universidade Lusófona"
+role: "Sound Assistant + Sound Editor"
+country: "Mexico / Portugal"
+type: "Animated short"
+production: "RE:Anima / Lusófona Films"
 links:
   - url: "https://www.imdb.com/title/tt36543453/"
     label: "IMDB"
   - url: "https://youtu.be/bnQwnzXOQUs"
     label: "Watch"
+  - url: "https://lsf.ulusofona.pt/filmes/409-el-tono-del-mar"
+    label: "Lusófona Films"
+  - url: "https://elfestival.mx/en/2024/bitacora/48206fd6-a7d1-4e90-a924-a160dc77c00a/All_the_Winners_2024"
+    label: "Pixelatl 2024 award"
 tags: ["animation", "sound-design", "lisbon"]
 ---
 
 ## El Tono Del Mar
 
-Animation produced under the REANIMA program at <a class="entity-link" href="https://www.ulusofona.pt" target="_blank" rel="noopener noreferrer">Universidade Lusófona</a>. I worked as a Sound Assistant on this one, focusing on sound effects and sound design. Animation has a particular rhythm for sound: every small movement wants its own micro-event, every transition wants its own bed, and the budget for "real" recording is usually tiny. Most of the work here was library construction + granular synthesis in Max, tuned to land cleanly under dialogue-free picture.
+Mica Bolaños Meade’s 5:39 animated short follows a Mexican migrant worker trying to reconnect with home through voicemails while the unfamiliar sea reflects her dislocation. The film was produced through RE:Anima and Lusófona Films.
 
-The piece is on IMDB and YouTube — listed in the Lusófona student film output for that year.
+I worked as Sound Assistant and Sound Editor, recording Foley, editing sound effects, and contributing to sound design. The film’s public credits also list me for sound editing and mixing alongside Fernando Torres Viteri.
+
+The short won **Best Mexican Student Short Film at Pixelatl 2024**, screened in the official selection at the Guanajuato International Film Festival, and joined CINANIMA’s 2024 international student competition.

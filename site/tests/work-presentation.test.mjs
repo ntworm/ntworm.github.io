@@ -33,6 +33,49 @@ const expectedMoreIds = [
   'fxhash',
 ];
 
+const expectedFeaturedPresentation = {
+  'o-compositor': {
+    mediaLayout: 'portrait',
+    highlight: 'nominated for Best Composition at Prémio Curtas 2026',
+    summary: 'As Sound Director, I carried the film from on-set recording through orchestral composition and recording, editing, sound design, and final mix. The 18-minute horror short follows a renowned cellist-composer who imprisons his student and turns the student’s suffering into material for a new composition. The film screened at FESTin and competed for the MOTELX 2025 award for Best Portuguese Horror Short; its score was nominated for Best Composition at Prémio Curtas 2026.',
+  },
+  'unveiling-new-futures': {
+    mediaLayout: 'landscape',
+    highlight: 'Universidade Lusófona’s 2025 international campaign',
+    summary: 'Sound-directed and composed two films for Universidade Lusófona’s 2025 international campaign. I captured the production sound, built a shared musical and sonic language across both deliverables, and handled the original scores, mixes, and final delivery.',
+  },
+  'o-clube': {
+    mediaLayout: 'portrait',
+    highlight: 'Sound Editor on seasons 6 and 7 at AMMP',
+    summary: 'Worked as Sound Editor on seasons 6 and 7 at AMMP for the OPTO/SIC series. My edit centered on Foley, recurring club ambiences, and sound effects; I also recorded production sound and ambiences used as source material across the 2025 seasons.',
+  },
+  'this-feminine-side': {
+    mediaLayout: 'portrait',
+    highlight: 'animated documentary about Lisbon’s LGBTQ+ artistic scene',
+    summary: 'Directed and built the sound world for Alice Siniscalchi’s animated documentary about Lisbon’s LGBTQ+ artistic scene and femininity beyond the binary. I handled sound design and editing with assistance from Miguel Colimão, supporting its layered interviews, collaborative workshops, and mixed-media animation. The film joined the ITFS 2026 student competition.',
+  },
+  'ep-rinoceronte': {
+    mediaLayout: 'portrait',
+    highlight: 'funded through Política Nacional Aldir Blanc',
+    summary: 'Directed sound and video for Luzo Cairo’s six-track EP in Palmas. I carried composition support, recording, production, mix, master, video, distribution, and the live stream through release, completing the full arc of a locally made record funded through Política Nacional Aldir Blanc.',
+  },
+  trisal: {
+    mediaLayout: 'portrait',
+    highlight: 'premiered at CineSesc Araguaína on 10 June 2026',
+    summary: 'Led sound direction on “Isso de novo não tem nada!”, episode 2 of Artpalco’s Tocantins-made comedy about contemporary relationships. Produced with Grupo Tukan, it premiered at CineSesc Araguaína on 10 June 2026.',
+  },
+  'el-tono-del-mar': {
+    mediaLayout: 'landscape',
+    highlight: 'won Pixelatl’s 2024 Best Mexican Student Short Film award',
+    summary: 'Worked as Sound Assistant and Sound Editor on Mica Bolaños Meade’s animated short, recording Foley, editing sound effects, and contributing to its sound design. The film won Pixelatl’s 2024 Best Mexican Student Short Film award and screened at GIFF and in CINANIMA’s international student competition.',
+  },
+  'kakofoni-orquestra': {
+    mediaLayout: 'portrait',
+    highlight: 'entered the collection of the Madison Museum of Art and Technology',
+    summary: 'Built the Web Audio engine and FFT-driven Hydra colour reactivity with Rangga Purnama Aji, joining sound and image inside one running generative system. Published on fxhash in 2022, edition #37 entered the collection of the Madison Museum of Art and Technology.',
+  },
+};
+
 const disciplineGroups = {
   cinema: [
     'a-quermesse',
@@ -132,6 +175,30 @@ test('builds a frozen presentation of all 23 real projects', () => {
     assert.ok(Object.isFrozen(entry.data));
     assert.ok(Object.isFrozen(entry.presentation));
   }
+});
+
+test('decorates exactly eight featured projects with approved summaries and media layouts', () => {
+  const presentation = buildWorkPresentation(readProjects());
+  const featuredMetadata = Object.fromEntries(
+    presentation.featured.map(({ id, presentation: metadata }) => [id, {
+      mediaLayout: metadata.mediaLayout,
+      highlight: metadata.highlight,
+      summary: metadata.summary,
+    }]),
+  );
+  const summarizedArchiveEntries = presentation.archive.filter(
+    ({ presentation: metadata }) => typeof metadata.summary === 'string' && metadata.summary.trim() !== '',
+  );
+
+  assert.deepEqual(featuredMetadata, expectedFeaturedPresentation);
+  assert.equal(summarizedArchiveEntries.length, 8);
+  assert.deepEqual(summarizedArchiveEntries.map(({ id }) => id).sort(), [...expectedFeaturedIds].sort());
+  assert.ok(presentation.featured.every(({ presentation: metadata }) => (
+    ['portrait', 'landscape'].includes(metadata.mediaLayout)
+  )));
+  assert.ok(presentation.more.every(({ presentation: metadata }) => (
+    metadata.summary === undefined && metadata.mediaLayout === undefined
+  )));
 });
 
 test('sorts the archive by latest year descending and title ascending', () => {

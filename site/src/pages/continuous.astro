@@ -1,0 +1,34 @@
+---
+import { getCollection } from 'astro:content';
+import AboutChapter from '../components/portfolio/AboutChapter.astro';
+import CodeChapter from '../components/portfolio/CodeChapter.astro';
+import ContactChapter from '../components/portfolio/ContactChapter.astro';
+import WorkChapter from '../components/portfolio/WorkChapter.astro';
+import WorkArchive from '../components/portfolio/WorkArchive.astro';
+import { buildWorkPresentation } from '../data/work-presentation.mjs';
+import Layout from '../layouts/Layout.astro';
+import { getProjectMedia } from '../utils/project-images';
+
+const projects = (await getCollection('projects')).map((entry) => ({
+  ...entry,
+  media: getProjectMedia(entry.id),
+}));
+const work = buildWorkPresentation(projects);
+const SPLATS = [
+  { src: '/work/code/splats/luzoebreno/luzoebreno.splat' },
+  { src: '/work/code/splats/carro/carro.splat' },
+];
+---
+
+<Layout
+  title="Continuous Portfolio Preview"
+  image="/portrait/1.jpg"
+  mode="continuous"
+  preload={[SPLATS[0].src, SPLATS[1].src]}
+>
+  <AboutChapter />
+  <WorkChapter presentation={work} />
+  <CodeChapter />
+  <WorkArchive projects={work.archive} />
+  <ContactChapter />
+</Layout>

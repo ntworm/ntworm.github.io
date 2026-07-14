@@ -1,0 +1,91 @@
+---
+const links = [
+  { label: 'Email', value: 'gabrielwormm@gmail.com', href: 'mailto:gabrielwormm@gmail.com' },
+  { label: 'LinkedIn', value: 'gabrielworm', href: 'https://www.linkedin.com/in/gabrielworm' },
+  { label: 'IMDB', value: 'nm16356368', href: 'https://www.imdb.com/name/nm16356368/' },
+  { label: 'GitHub', value: '@ntworm', href: 'https://github.com/ntworm' },
+  { label: 'fxhash', value: '@nt_worm', href: 'https://www.fxhash.xyz/u/nt_worm' },
+];
+---
+
+<section id="contact" class="portfolio-contact wrap" data-portfolio-chapter="contact">
+  <header>
+    <span class="eyebrow">Contact</span>
+    <p class="mono">Available for cinema, music, and creative coding projects.</p>
+    <h2><a href="mailto:gabrielwormm@gmail.com">gabrielwormm@gmail.com</a></h2>
+  </header>
+
+  <ul>
+    {links.map((link) => (
+      <li>
+        <span class="mono">{link.label}</span>
+        <a href={link.href} rel="noopener">{link.value} <span aria-hidden="true">↗</span></a>
+      </li>
+    ))}
+  </ul>
+
+  <p class="portfolio-contact__location mono">Currently based in Palmas, Tocantins, Brazil.</p>
+</section>
+
+<style>
+  .portfolio-contact {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 0.8fr);
+    align-content: center;
+    align-items: end;
+    gap: var(--s-9);
+    min-height: 100vh;
+    padding-top: var(--s-10);
+    padding-bottom: var(--s-10);
+  }
+
+  .portfolio-contact header .mono { margin-top: var(--s-4); }
+
+  .portfolio-contact h2 {
+    margin-top: var(--s-3);
+    font-size: var(--t-display);
+    overflow-wrap: anywhere;
+  }
+
+  .portfolio-contact h2 a { border-bottom: 0; }
+
+  .portfolio-contact ul {
+    list-style: none;
+  }
+
+  .portfolio-contact li {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    align-items: baseline;
+    gap: var(--s-4);
+    padding: var(--s-4) 0;
+    border-top: 1px solid var(--muted-graphite);
+  }
+
+  .portfolio-contact li:last-child {
+    border-bottom: 1px solid var(--muted-graphite);
+  }
+
+  .portfolio-contact li a {
+    border-bottom: 0;
+    font-family: var(--font-display);
+    font-size: var(--t-h3);
+  }
+
+  .portfolio-contact li a:hover,
+  .portfolio-contact li a:focus-visible,
+  .portfolio-contact h2 a:hover,
+  .portfolio-contact h2 a:focus-visible {
+    color: var(--accent-amber);
+  }
+
+  .portfolio-contact__location {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 760px) {
+    .portfolio-contact { grid-template-columns: 1fr; }
+    .portfolio-contact li { grid-template-columns: 1fr; gap: var(--s-1); }
+    .portfolio-contact li a { font-size: var(--t-body); }
+  }
+</style>

@@ -11,6 +11,9 @@ interface Props {
   type?: 'website' | 'article';
   /** Canonical URL for the page. Auto-derived from Astro.url when omitted. */
   canonicalUrl?: string;
+  mode?: 'standard' | 'continuous';
+  immersive?: boolean;
+  preload?: string[];
 }
 
 const {
@@ -19,7 +22,12 @@ const {
   image = null,
   type = 'website',
   canonicalUrl = Astro.url.href,
+  mode = 'standard',
+  immersive = false,
+  preload = [],
 } = Astro.props;
+const isContinuous = mode === 'continuous';
+const isImmersive = immersive || isContinuous;
 
 // Resolve absolute URL for og:image (social platforms need absolute URLs).
 // Astro.site gives the configured site origin; on dev it falls back to localhost.
@@ -50,17 +58,19 @@ const ogImage = image ? (image.startsWith('http') ? image : `${siteOrigin}${imag
     {ogImage && <meta name="twitter:image" content={ogImage}>}
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    {preload.length > 0 && <link rel="preconnect" href="https://esm.sh">}
+    {preload.map((href) => <link rel="preload" href={href} as="fetch" type="application/octet-stream">)}
     <ClientRouter />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@500;700&family=Inter+Tight:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   </head>
-  <body>
+  <body data-layout={mode} data-immersive={isImmersive ? 'true' : 'false'}>
     <div class="page-curtain" transition:persist></div>
     <a href="#main" class="skip-link">Skip to content</a>
     <Nav />
     <main id="main"><slot /></main>
-    <Footer />
+    {!isContinuous && <Footer />}
     <script>
       import '../scripts/scroll-fade.ts';
       import '../scripts/scroll-progress.ts';
@@ -89,6 +99,13 @@ const ogImage = image ? (image.startsWith('http') ? image : `${siteOrigin}${imag
   :global(body.swap-done) .page-curtain {
     transform: translateY(100%);
   }
+  :global(body[data-immersive="true"] main) { padding-top: 0; }
+  :global(body[data-immersive="true"] .nav) {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  :global(body[data-layout="continuous"] main) { padding-bottom: 0; }
   @media (prefers-reduced-motion: reduce) {
     .page-curtain { transition: none; }
   }

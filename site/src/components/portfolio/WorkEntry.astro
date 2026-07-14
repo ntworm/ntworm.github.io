@@ -1,0 +1,279 @@
+---
+interface Props {
+  project: {
+    id: string;
+    data: {
+      title: string;
+      year: string | number;
+      role?: string;
+      type?: string;
+      production?: string;
+      awards?: string[];
+    };
+    media: { cover: string | null };
+    presentation: {
+      discipline: string;
+      highlight?: string;
+      summary?: string;
+      mediaLayout?: 'portrait' | 'landscape';
+    };
+  };
+  tier: 'featured' | 'more' | 'archive';
+  index: number;
+}
+
+const { project, tier, index } = Astro.props;
+const summary = project.presentation.summary;
+const highlight = project.presentation.highlight;
+const highlightIndex = summary && highlight ? summary.indexOf(highlight) : -1;
+const summaryParts = summary && highlight && highlightIndex >= 0
+  ? {
+      before: summary.slice(0, highlightIndex),
+      highlight,
+      after: summary.slice(highlightIndex + highlight.length),
+    }
+  : null;
+---
+
+<a
+  href={`/work/${project.id}`}
+  class:list={[
+    'work-entry',
+    `work-entry--${tier}`,
+    tier === 'featured' && `work-entry--${project.presentation.mediaLayout}`,
+    tier === 'featured' && index === 0 && 'is-lead',
+    tier === 'featured' && index % 2 === 1 && 'is-reversed',
+  ]}
+  data-work-tier={tier}
+  data-work-id={project.id}
+  data-media-layout={tier === 'featured' ? project.presentation.mediaLayout : undefined}
+>
+  <div class="work-entry__media">
+    {project.media.cover ? (
+      <img
+        src={project.media.cover}
+        alt={`${project.data.title} — cover`}
+        loading={tier === 'featured' && index === 0 ? 'eager' : 'lazy'}
+      />
+    ) : (
+      <div class="work-entry__placeholder"><span class="mono">image pending</span></div>
+    )}
+  </div>
+
+  <div class="work-entry__meta">
+    <span class="work-entry__index eyebrow">{String(index + 1).padStart(2, '0')}</span>
+    <span class="work-entry__discipline mono">{project.presentation.discipline}</span>
+    <h3 class="work-entry__title">{project.data.title}</h3>
+    <p class="work-entry__role mono">
+      {project.data.role && <span>{project.data.role} · </span>}{project.data.year}
+    </p>
+    {tier === 'featured' && summary && (
+      <p class="work-entry__summary">
+        {summaryParts ? (
+          <>{summaryParts.before}<span class="work-entry__summary-highlight">{summaryParts.highlight}</span>{summaryParts.after}</>
+        ) : summary}
+      </p>
+    )}
+    {project.data.type && <p class="work-entry__type">{project.data.type}</p>}
+    {project.data.production && <p class="work-entry__production mono">{project.data.production}</p>}
+    {tier !== 'featured' && project.data.awards?.[0] && <p class="work-entry__award">{project.data.awards[0]}</p>}
+  </div>
+</a>
+
+<style>
+  .work-entry {
+    color: inherit;
+    border-bottom: 0;
+    min-width: 0;
+  }
+
+  .work-entry--featured {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
+    align-items: center;
+    gap: var(--s-6);
+    padding: clamp(24px, 3vw, 44px) 0;
+  }
+
+  .work-entry--featured.is-lead {
+    grid-template-columns: minmax(0, 1.08fr) minmax(300px, 0.92fr);
+  }
+
+  .work-entry--featured.is-reversed .work-entry__media { order: 2; }
+  .work-entry--featured.is-reversed .work-entry__meta { order: 1; }
+
+  .work-entry__media {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid rgba(124, 124, 126, 0.35);
+  }
+
+  .work-entry--featured .work-entry__media {
+    position: relative;
+    align-self: center;
+    width: 100%;
+  }
+
+  .work-entry--featured.work-entry--portrait .work-entry__media {
+    max-width: 390px;
+    justify-self: center;
+  }
+
+  .work-entry--featured.is-lead .work-entry__media {
+    max-width: 420px;
+  }
+
+  .work-entry--featured.work-entry--landscape .work-entry__media {
+    max-width: 560px;
+    justify-self: center;
+  }
+
+  .work-entry--more {
+    display: block;
+    padding: 10px;
+    background: rgba(11, 11, 12, 0.14);
+    -webkit-backdrop-filter: blur(8px) brightness(0.94) saturate(0.9);
+    backdrop-filter: blur(8px) brightness(0.94) saturate(0.9);
+    box-shadow: inset 0 0 0 1px rgba(232, 231, 226, 0.045);
+  }
+
+  .work-entry--more .work-entry__media,
+  .work-entry--archive .work-entry__media {
+    aspect-ratio: 4 / 3;
+  }
+
+  .work-entry--archive {
+    display: grid;
+    align-content: start;
+  }
+
+  .work-entry__media img,
+  .work-entry__placeholder {
+    width: 100%;
+    height: 100%;
+  }
+
+  .work-entry__media img { object-fit: cover; }
+
+  .work-entry--featured .work-entry__media img {
+    display: block;
+    height: auto;
+  }
+
+  .work-entry__placeholder {
+    display: grid;
+    place-items: center;
+    min-height: inherit;
+    background: rgba(124, 124, 126, 0.08);
+  }
+
+  .work-entry__meta {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: baseline;
+    gap: var(--s-2) var(--s-4);
+    padding-top: var(--s-4);
+    min-width: 0;
+  }
+
+  .work-entry__discipline {
+    justify-self: end;
+    text-transform: uppercase;
+  }
+
+  .work-entry__title,
+  .work-entry__role,
+  .work-entry__summary,
+  .work-entry__type,
+  .work-entry__production,
+  .work-entry__award {
+    grid-column: 1 / -1;
+  }
+
+  .work-entry__title {
+    margin-top: var(--s-2);
+    overflow-wrap: anywhere;
+  }
+
+  .work-entry__role,
+  .work-entry__summary,
+  .work-entry__type,
+  .work-entry__production,
+  .work-entry__award {
+    margin-top: 0;
+  }
+
+  .work-entry__type,
+  .work-entry__award {
+    color: var(--muted-graphite);
+  }
+
+  .work-entry--featured .work-entry__title {
+    font-size: clamp(1.9rem, 2.8vw, 3.2rem);
+    line-height: 0.96;
+  }
+
+  .work-entry__summary {
+    max-width: 58ch;
+    color: var(--fg-bone);
+    font-size: clamp(1rem, 1.25vw, 1.16rem);
+    line-height: 1.58;
+    margin-top: var(--s-3);
+  }
+
+  .work-entry__summary-highlight {
+    color: inherit;
+    font-weight: 500;
+    transition: color 220ms ease;
+  }
+
+  .work-entry--archive .work-entry__meta {
+    gap: var(--s-1) var(--s-2);
+    padding-top: var(--s-3);
+  }
+
+  .work-entry--archive .work-entry__title {
+    font-size: var(--t-body);
+  }
+
+  .work-entry--archive .work-entry__role,
+  .work-entry--archive .work-entry__type,
+  .work-entry--archive .work-entry__production,
+  .work-entry--archive .work-entry__award,
+  .work-entry--archive .work-entry__discipline {
+    font-size: 0.72rem;
+  }
+
+  .work-entry:hover .work-entry__media,
+  .work-entry:focus-visible .work-entry__media {
+    border-color: var(--accent-amber);
+  }
+
+  .work-entry:hover .work-entry__title,
+  .work-entry:focus-visible .work-entry__title {
+    color: var(--accent-amber);
+  }
+
+  .work-entry:hover .work-entry__summary-highlight,
+  .work-entry:focus-visible .work-entry__summary-highlight {
+    color: var(--accent-amber);
+  }
+
+  @media (max-width: 760px) {
+    .work-entry--featured {
+      grid-template-columns: 1fr;
+      gap: var(--s-5);
+    }
+
+    .work-entry--featured.is-lead { grid-template-columns: 1fr; }
+
+    .work-entry--featured.work-entry--portrait .work-entry__media {
+      width: min(100%, 440px);
+    }
+
+    .work-entry--featured.is-reversed .work-entry__media,
+    .work-entry--featured.is-reversed .work-entry__meta {
+      order: initial;
+    }
+  }
+</style>

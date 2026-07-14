@@ -22,14 +22,27 @@
  */
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const typewriterText = new WeakMap<HTMLElement, string[]>();
+
+const revealObserver = reducedMotion || !('IntersectionObserver' in window)
+  ? null
+  : new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        revealObserver?.unobserve(entry.target);
+        startReveal(entry.target as HTMLElement);
+      });
+    },
+    { threshold: 0.18, rootMargin: '0px 0px -8% 0px' },
+  );
 
 function typewriter(el: HTMLElement): void {
   const segments = Array.from(el.querySelectorAll<HTMLElement>('.reveal-seg'));
   const caret = el.querySelector<HTMLElement>('.reveal-caret');
   if (!segments.length) return;
 
-  const originals = segments.map(s => s.textContent ?? '');
-  segments.forEach(s => (s.textContent = ''));
+  const originals = typewriterText.get(el) ?? segments.map(s => s.textContent ?? '');
 
   // Restore final state under reduced motion.
   if (reducedMotion) {
@@ -37,6 +50,12 @@ function typewriter(el: HTMLElement): void {
     if (caret) caret.style.display = 'none';
     return;
   }
+
+  // Freeze the complete headline's footprint before clearing it, so entering
+  // the chapter never causes the Gaussian or following cards to jump.
+  el.style.minHeight = `${Math.ceil(el.getBoundingClientRect().height)}px`;
+  segments.forEach(s => (s.textContent = ''));
+  if (caret) delete caret.dataset.visible;
 
   let segIdx = 0;
 
@@ -46,6 +65,7 @@ function typewriter(el: HTMLElement): void {
     if (segIdx >= segments.length) {
       // Done. Show static caret (CSS blinks it).
       if (caret) caret.dataset.visible = 'true';
+      el.style.removeProperty('min-height');
       return;
     }
 
@@ -71,8 +91,8 @@ function typewriter(el: HTMLElement): void {
     typeChar();
   };
 
-  // 300ms start delay so the page paints first.
-  setTimeout(tick, 300);
+  // A short pause after the title enters the viewport makes the start legible.
+  setTimeout(tick, 140);
 }
 
 function prepareSegments(el: HTMLElement): void {
@@ -82,11 +102,6 @@ function prepareSegments(el: HTMLElement): void {
   segments.forEach((s, i) => {
     s.style.setProperty('--reveal-i', String(i));
   });
-
-  if (reducedMotion) {
-    el.dataset.revealReady = 'true';
-    return;
-  }
 
   requestAnimationFrame(() => {
     if (el.isConnected) el.dataset.revealReady = 'true';
@@ -101,15 +116,35 @@ function focusReveal(el: HTMLElement): void {
   prepareSegments(el);
 }
 
+function startReveal(el: HTMLElement): void {
+  if (el.dataset.revealStarted === 'true') return;
+  el.dataset.revealStarted = 'true';
+
+  if (el.dataset.reveal === 'typewriter') typewriter(el);
+  if (el.dataset.reveal === 'cut') cutReveal(el);
+  if (el.dataset.reveal === 'focus') focusReveal(el);
+}
+
 function init() {
   const revealEls = document.querySelectorAll<HTMLElement>('[data-reveal]');
   revealEls.forEach((el) => {
     if (el.dataset.revealInitialized === 'true') return;
     el.dataset.revealInitialized = 'true';
 
-    if (el.dataset.reveal === 'typewriter') typewriter(el);
-    if (el.dataset.reveal === 'cut') cutReveal(el);
-    if (el.dataset.reveal === 'focus') focusReveal(el);
+    const segments = Array.from(el.querySelectorAll<HTMLElement>('.reveal-seg'));
+    segments.forEach((segment, index) => {
+      segment.style.setProperty('--reveal-i', String(index));
+    });
+    if (el.dataset.reveal === 'typewriter') {
+      typewriterText.set(el, segments.map(segment => segment.textContent ?? ''));
+    }
+
+    if (reducedMotion || !revealObserver) {
+      startReveal(el);
+      return;
+    }
+
+    revealObserver?.observe(el);
   });
 }
 

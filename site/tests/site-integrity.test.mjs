@@ -28,6 +28,13 @@ function htmlFiles() {
   }));
 }
 
+function builtCodeDocuments() {
+  return [
+    ['code/index.html', readFileSync(join(distDir, 'code', 'index.html'), 'utf8')],
+    ['continuous/index.html', readFileSync(join(distDir, 'continuous', 'index.html'), 'utf8')],
+  ];
+}
+
 function tags(html, name) {
   return [...html.matchAll(new RegExp(`<${name}\\b[^>]*>`, 'gi'))].map((match) => match[0]);
 }
@@ -122,18 +129,37 @@ test('featured-work copy contains only the confirmed credits', () => {
   const trisal = readFileSync(join(projectsDir, 'trisal.md'), 'utf8');
   const ticha = readFileSync(join(projectsDir, 'ticha-penicheiro.md'), 'utf8');
   const clube = readFileSync(join(projectsDir, 'o-clube.md'), 'utf8');
+  const feminine = readFileSync(join(projectsDir, 'this-feminine-side.md'), 'utf8');
+  const compositor = readFileSync(join(projectsDir, 'o-compositor.md'), 'utf8');
+  const aiAm = readFileSync(join(projectsDir, 'ai-am.md'), 'utf8');
   const agosto = readFileSync(join(projectsDir, 'em-agosto-chove.md'), 'utf8');
-  const combined = [home, trisal, ticha, clube, agosto].join('\n');
+  const tono = readFileSync(join(projectsDir, 'el-tono-del-mar.md'), 'utf8');
+  const combined = [home, trisal, ticha, clube, feminine, compositor, aiAm, agosto, tono].join('\n');
 
   assert.doesNotMatch(combined, /In post for episode 3/i);
   assert.doesNotMatch(ticha, /dialogue cleanup|archival mix|shaping the score/i);
   assert.doesNotMatch(clube, /dialogue cleanup|dialogue editorial|ADR matching|final premix|7\.1|Ambeo/i);
+  assert.doesNotMatch(trisal, /documentary \/ fictional hybrid|closer to an anthology/i);
+  assert.doesNotMatch(compositor, /composer (?:who )?can(?:not|'t) hear|unable to hear his own work/i);
+  assert.doesNotMatch(aiAm, /no synth pads|reverb tails longer than a breath|orchestral doubling/i);
   assert.doesNotMatch(agosto, /four standalone singles|one music video/i);
+  assert.doesNotMatch(tono, /granular synthesis|dialogue-free|library construction/i);
 
   assert.match(home, /Three singles, one album, and a live recording at Bem Ali Sessions/);
   assert.match(ticha, /Foley, ambiences, and sound-effects editing/);
   assert.match(clube, /production sound recording, Foley, ambiences, and sound-effects editing/);
-  assert.match(trisal, /premiered at Cinesesc Araguaína on 10 June 2026/);
+  assert.match(trisal, /“Isso de novo não tem nada!”/);
+  assert.match(trisal, /premiered at CineSesc Araguaína on 10 June 2026/);
+  assert.match(ticha, /Tribeca Festival Lisboa 2025/);
+  assert.match(tono, /recording Foley, editing sound effects, and contributing to sound design/i);
+  assert.match(tono, /Best Mexican Student Short Film at Pixelatl 2024/i);
+  assert.match(clube, /2025 seasons available on OPTO \/ SIC/i);
+  assert.match(feminine, /animated documentary/i);
+  assert.match(feminine, /ITFS 2026 Student Competition/i);
+  assert.match(compositor, /FESTin 2025/i);
+  assert.match(compositor, /MOTELX 2025/i);
+  assert.match(aiAm, /Alpha-30 and Mew/i);
+  assert.match(aiAm, /directed by Danny J/i);
 });
 
 test('code route delegates to the shared Code chapter', () => {
@@ -145,29 +171,30 @@ test('code route delegates to the shared Code chapter', () => {
 });
 
 test('code page stacks two scroll-bound borderless Gaussians', () => {
-  const code = readFileSync(join(distDir, 'code', 'index.html'), 'utf8');
-  const heroStart = code.indexOf('<header class="code__hero"');
-  const heroEnd = code.indexOf('</header>', heroStart);
-  assert.ok(heroStart >= 0 && heroEnd > heroStart, 'code hero not found');
+  for (const [label, code] of builtCodeDocuments()) {
+    const heroStart = code.indexOf('<header class="code__hero"');
+    const heroEnd = code.indexOf('</header>', heroStart);
+    assert.ok(heroStart >= 0 && heroEnd > heroStart, `${label}: code hero not found`);
 
-  const hero = code.slice(heroStart, heroEnd);
-  assert.match(hero, /class="code__hero-copy"/);
-  assert.match(hero, /data-placement="hero-right"/);
-  assert.match(hero, /data-contained="1"/);
-  assert.match(hero, /luzoebreno\.splat/);
-  assert.doesNotMatch(hero, /carro\.splat/);
+    const hero = code.slice(heroStart, heroEnd);
+    assert.match(hero, /class="code__hero-copy"/);
+    assert.match(hero, /data-placement="hero-right"/);
+    assert.match(hero, /data-contained="1"/);
+    assert.match(hero, /luzoebreno\.splat/);
+    assert.doesNotMatch(hero, /carro\.splat/);
 
-  const lowerStart = code.indexOf('<section class="code__lower-showcase"');
-  const lowerEnd = code.indexOf('</article>', lowerStart);
-  assert.ok(lowerStart >= 0 && lowerEnd > lowerStart, 'lower Gaussian showcase not found');
-  const lower = code.slice(lowerStart, lowerEnd);
-  assert.match(lower, /class="code__lower-copy"/);
-  assert.match(lower, /data-placement="section-left"/);
-  assert.match(lower, /data-contained="1"/);
-  assert.match(lower, /carro\.splat/);
-  assert.doesNotMatch(lower, /luzoebreno\.splat/);
-  assert.doesNotMatch(code, /class="splat-stage/);
-  assert.equal((code.match(/class="gs-bg"/g) ?? []).length, 2);
+    const lowerStart = code.indexOf('<section class="code__lower-showcase"');
+    const lowerEnd = code.indexOf('</article>', lowerStart);
+    assert.ok(lowerStart >= 0 && lowerEnd > lowerStart, `${label}: lower Gaussian showcase not found`);
+    const lower = code.slice(lowerStart, lowerEnd);
+    assert.match(lower, /class="code__lower-copy"/);
+    assert.match(lower, /data-placement="section-left"/);
+    assert.match(lower, /data-contained="1"/);
+    assert.match(lower, /carro\.splat/);
+    assert.doesNotMatch(lower, /luzoebreno\.splat/);
+    assert.doesNotMatch(code, /class="splat-stage/);
+    assert.equal((code.match(/class="gs-bg"/g) ?? []).length, 2);
+  }
 
   const css = walk(join(distDir, '_astro'), '.css')
     .map((path) => readFileSync(path, 'utf8'))
@@ -180,12 +207,36 @@ test('code page stacks two scroll-bound borderless Gaussians', () => {
   assert.match(css, /\.code__lower-showcase/);
   assert.match(css, /inset:\s*-52vh 0/);
   assert.match(css, /\.code__lower-copy[^,{]*\{[^}]*grid-column:2/);
-  assert.match(css, /transform:translateX\(18%\)\s*translateY\(calc\(-22%\s*\+\s*var\(--gs-scroll-y,\s*0%\)\)\)\s*scale\(1\.32\)/);
+  assert.match(css, /transform:translateX\(18%\)\s*translateY\(calc\(-22%\s*\+\s*var\(--gs-scroll-y,\s*0%\)\)\)\s*scale\(1\.4\)/);
   assert.match(css, /transform:translateX\(-18%\)\s*translateY\(calc\(-10%\s*\+\s*var\(--gs-scroll-y,\s*0%\)\)\)\s*scale\(1\.32\)/);
   assert.match(css, /\.gs-bg__live-canvas/);
   assert.doesNotMatch(css, /\.gs-bg__live-canvas\[data-astro-cid-/);
   assert.match(css, /\.gs-bg__live-canvas\{[^}]*pointer-events:none/);
   assert.match(js, /gs-bg__live-canvas/);
+});
+
+test('live Gaussian canvas overrides the renderer black surface', () => {
+  const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
+
+  assert.match(
+    source,
+    /\.gs-bg > :global\(\.gs-bg__live-canvas\)\s*\{[^}]*background:\s*transparent !important;/s,
+  );
+});
+
+test('continuous Gaussians begin loading before their chapters enter the viewport', () => {
+  const gaussianSource = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
+  const continuousSource = readFileSync(join(process.cwd(), 'src', 'pages', 'continuous.astro'), 'utf8');
+  const layoutSource = readFileSync(join(process.cwd(), 'src', 'layouts', 'Layout.astro'), 'utf8');
+  const attachAll = gaussianSource.slice(
+    gaussianSource.indexOf('function attachAll'),
+    gaussianSource.indexOf("if (document.readyState === 'loading')"),
+  );
+
+  assert.match(attachAll, /void mountGaussianBackground\(bg\)/);
+  assert.doesNotMatch(attachAll, /IntersectionObserver/);
+  assert.match(continuousSource, /preload=\{\[\s*SPLATS\[0\]\.src,\s*SPLATS\[1\]\.src\s*\]\}/s);
+  assert.match(layoutSource, /preload\.map\(\(href\) => <link rel="preload" href=\{href\} as="fetch"/);
 });
 
 test('code cards stay above softened Gaussian spill', () => {
@@ -200,33 +251,39 @@ test('code cards stay above softened Gaussian spill', () => {
 
 test('code hero removes the top bar and reaches farther into GitHub', () => {
   const codeSource = readFileSync(codeChapterSourcePath, 'utf8');
+  const codePageSource = readFileSync(join(process.cwd(), 'src', 'pages', 'code.astro'), 'utf8');
+  const layoutSource = readFileSync(join(process.cwd(), 'src', 'layouts', 'Layout.astro'), 'utf8');
   const gaussianSource = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
 
-  assert.match(codeSource, /:global\(main\)\s*\{\s*padding-top:\s*0;/);
-  assert.match(codeSource, /:global\(\.nav\)[^{]*\{[^}]*background:\s*transparent !important;/s);
+  assert.match(codePageSource, /<Layout[^>]*immersive=\{true\}/);
+  assert.match(layoutSource, /:global\(body\[data-immersive="true"\] main\)\s*\{\s*padding-top:\s*0;/);
+  assert.match(layoutSource, /:global\(body\[data-immersive="true"\] \.nav\)[^{]*\{[^}]*background:\s*transparent !important;/s);
   assert.match(codeSource, /\.code__hero\s*\{[^}]*background:\s*transparent;/s);
   assert.match(gaussianSource, /data-placement="hero-right"\]\[data-contained="1"\][^{]*\{[^}]*bottom:\s*-88vh;/s);
 });
 
-test('Gaussian placements keep their independent raised compositions', () => {
+test('Gaussian placements keep their independent raised compositions and overscan', () => {
   const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
 
-  assert.match(source, /translateX\(18%\) translateY\(calc\(-22% \+ var\(--gs-scroll-y, 0%\)\)\) scale\(1\.32\)/);
+  assert.match(source, /translateX\(18%\) translateY\(calc\(-22% \+ var\(--gs-scroll-y, 0%\)\)\) scale\(1\.40\)/);
+  assert.match(source, /translateX\(24%\) translateY\(calc\(-22% \+ var\(--gs-scroll-y, 0%\)\)\) scale\(1\.50\)/);
   assert.match(source, /translateX\(-18%\) translateY\(calc\(-10% \+ var\(--gs-scroll-y, 0%\)\)\) scale\(1\.32\)/);
 });
 
 test('both Gaussians opt into smoothed camera motion around the fixed origin', () => {
-  const code = readFileSync(join(distDir, 'code', 'index.html'), 'utf8');
   const gaussianSource = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
-  const heroStart = code.indexOf('<header class="code__hero"');
-  const heroEnd = code.indexOf('</header>', heroStart);
-  const lowerStart = code.indexOf('<section class="code__lower-showcase"');
-  const lowerEnd = code.indexOf('</article>', lowerStart);
-  const hero = code.slice(heroStart, heroEnd);
-  const lower = code.slice(lowerStart, lowerEnd);
 
-  assert.match(hero, /data-camera-motion="1"/);
-  assert.match(lower, /data-camera-motion="1"/);
+  for (const [, code] of builtCodeDocuments()) {
+    const heroStart = code.indexOf('<header class="code__hero"');
+    const heroEnd = code.indexOf('</header>', heroStart);
+    const lowerStart = code.indexOf('<section class="code__lower-showcase"');
+    const lowerEnd = code.indexOf('</article>', lowerStart);
+    const hero = code.slice(heroStart, heroEnd);
+    const lower = code.slice(lowerStart, lowerEnd);
+
+    assert.match(hero, /data-camera-motion="1"/);
+    assert.match(lower, /data-camera-motion="1"/);
+  }
   assert.match(gaussianSource, /sampleGaussianCamera/);
   assert.match(gaussianSource, /createGaussianAutopilot/);
   assert.match(gaussianSource, /gaussianFocusPoint/);
@@ -376,6 +433,10 @@ test('title reveals are owned by the shared Astro navigation lifecycle', () => {
   assert.match(script, /el\.dataset\.revealInitialized/);
   assert.match(script, /function cutReveal\(/);
   assert.match(script, /function focusReveal\(/);
+  assert.match(script, /new IntersectionObserver\(/);
+  assert.match(script, /if \(!entry\.isIntersecting\) return;/);
+  assert.match(script, /startReveal\(entry\.target as HTMLElement\)/);
+  assert.match(script, /revealObserver\?\.observe\(el\)/);
   assert.match(layout, /import '\.\.\/scripts\/title-reveal\.ts'/);
 });
 

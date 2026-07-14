@@ -302,18 +302,10 @@ function attachAll(): void {
     if (bg.dataset.gsAttached === '1') return;
     bg.dataset.gsAttached = '1';
 
-    // Lazy mount: only load gsplat.js once the background enters the viewport.
-    if ('IntersectionObserver' in window) {
-      const io = new IntersectionObserver((entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          io.disconnect();
-          void mountGaussianBackground(bg);
-        }
-      });
-      io.observe(bg);
-    } else {
-      void mountGaussianBackground(bg);
-    }
+    // Both continuous-page scenes mount immediately. Their .splat requests
+    // are already preloaded from <head>, so scrolling never triggers a late
+    // network/decoder/GPU setup pause at the Code chapter boundary.
+    void mountGaussianBackground(bg);
   });
 }
 
@@ -400,6 +392,7 @@ document.addEventListener('astro:page-load', attachAll);
     z-index: 1;
     opacity: 0;
     pointer-events: none;
+    background: transparent !important;
     transition: opacity 800ms var(--ease-out, ease-out);
   }
 
@@ -483,7 +476,7 @@ document.addEventListener('astro:page-load', attachAll);
   }
 
   .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
-    transform: translateX(18%) translateY(calc(-22% + var(--gs-scroll-y, 0%))) scale(1.32);
+    transform: translateX(18%) translateY(calc(-22% + var(--gs-scroll-y, 0%))) scale(1.40);
   }
 
   .gs-bg[data-placement="section-left"].gs-bg--live > :global(.gs-bg__live-canvas) {
@@ -557,7 +550,7 @@ document.addEventListener('astro:page-load', attachAll);
       transform: translateX(24%) translateY(-10%) scale(1.36);
     }
     .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
-      transform: translateX(24%) translateY(calc(-22% + var(--gs-scroll-y, 0%))) scale(1.36);
+      transform: translateX(24%) translateY(calc(-22% + var(--gs-scroll-y, 0%))) scale(1.50);
     }
     .gs-bg[data-placement="section-left"].gs-bg--live > :global(.gs-bg__live-canvas) {
       transform: translateX(-24%) translateY(calc(-10% + var(--gs-scroll-y, 0%))) scale(1.36);
