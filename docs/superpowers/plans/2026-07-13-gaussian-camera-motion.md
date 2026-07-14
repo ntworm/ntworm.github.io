@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Give only the first Code-page Gaussian a reversible, inertial scroll-and-pointer camera orbit while keeping its pivot fixed at the splat origin.
+**Goal:** Give both Code-page Gaussians reversible scroll/pointer camera interaction and independent autonomous camera performances while keeping their pivots fixed at the splat origins.
 
 **Architecture:** Add a pure ESM motion sampler for bounded camera targets and frame-rate-independent damping. The existing `GaussianBackground.astro` WebGL loop owns DOM input and camera application; an explicit prop enables the sampler only for the hero instance.
 
@@ -12,9 +12,17 @@
 
 ## Approved visual-review revision
 
-The browser reviews supersede the original axis-mapped pointer snippets later in this execution record. Pointer X/Y must not affect pitch, phase, or speed. The implemented interaction converts distance from the marked focus at `72% × 54%` of the viewport into three overlapping proximity bands and applies them only to radius. Influence remains subtle at the farthest yellow edge, increases through the light-red band, and reaches a protected radius of `3.45` in the dark-red core. Leaving the viewport eases back toward the ambient orbit. The pure module and integration tests enforce this corrected behavior.
+### Autonomous camera revision
 
-Scroll is also isolated from the orbit: it produces only a reversible `0..8%` canvas Y offset through `--gs-scroll-y`. Radius, pitch, phase, and angular speed remain identical for the same pointer/time inputs regardless of scroll position, preventing reverse scroll from visually cancelling the rotation.
+Both scenes now create an independent seeded autopilot on mount. Gestures use smooth five-to-fifteen-second attack and return envelopes, always cross the neutral base orbit between actions, and combine bounded speed, orbital phase, roll, and camera-aim changes. Speed remains within `0.62..1.28` of normal and roll within roughly three degrees. Autonomous up/down/left/right movement is applied to the point of attention, not to orbital pitch or radius, so it cannot suddenly pull the capture away. Gesture types run through a shuffled bag and strong horizontal/vertical directions alternate for long-term balance. The live renderer supplies a random per-load seed while unit tests supply fixed seeds, allowing the choreography to remain fresh in production and reproducible in verification. Reduced-motion mode bypasses the autopilot.
+
+The pointer has a second, deliberately subtle channel independent from radial zoom: the full viewport maps to at most `+/-0.045` radians of yaw and `+/-0.035` radians of pitch. These aim offsets are damped inside each scene and never alter orbit speed, phase, scroll position, or autonomous gesture state.
+
+The browser reviews supersede the original axis-mapped pointer snippets later in this execution record. Pointer X/Y must not affect pitch, phase, or speed. The implemented interaction converts distance from the marked focus, initially at `72% × 54%` for the hero and `28% × 54%` for the lower scene, into three overlapping proximity bands and applies them only to radius. The focus Y coordinate is recomputed from the owning section's current `getBoundingClientRect().top` every frame, so it follows each Gaussian during scroll even when the pointer is stationary. The proximity target itself is damped before camera sampling to absorb fast pointer gestures. Influence starts at a perceptible `0.14` at the farthest yellow edge, increases through the light-red band, and holds maximum zoom throughout a core radius equal to `16%` of the shorter viewport dimension.
+
+The entire radius range is divided by a placement-specific zoom scale: `1.5` for the hero and `2.5` for the lower Gaussian. This makes both their ambient and focused states closer while preserving the same proportional pointer gesture. The pure module and integration tests enforce the scale, enlarged maximum area, and whole-page influence.
+
+Scroll is also isolated from the orbit: it produces only a reversible `0..8%` canvas Y offset through `--gs-scroll-y` on both scenes. Radius, pitch, phase, and angular speed remain identical for the same pointer/time inputs regardless of scroll position, preventing reverse scroll from visually cancelling the rotation. The live masks and veils are widened symmetrically so more of each splat can spill into the surrounding page without changing card stacking.
 
 ## File map
 

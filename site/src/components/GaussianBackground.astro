@@ -58,7 +58,7 @@ if (!splats || splats.length === 0) {
 
 
 <script>
-import { damp, gaussianFocusProximity, sampleGaussianCamera } from '../scripts/gaussian-camera-motion.mjs';
+import { createGaussianAutopilot, damp, gaussianFocusPoint, gaussianFocusProximity, gaussianPointerLook, sampleGaussianCamera } from '../scripts/gaussian-camera-motion.mjs';
 
 type SplatEntry = { src: string; poster: string; label: string };
 
@@ -69,15 +69,18 @@ declare global {
     __gsBgReady?: Promise<void>;
     __gsBgReadyResolve?: () => void;
     __gsBgMotion?: {
+      createGaussianAutopilot: typeof createGaussianAutopilot;
       damp: typeof damp;
+      gaussianFocusPoint: typeof gaussianFocusPoint;
       gaussianFocusProximity: typeof gaussianFocusProximity;
+      gaussianPointerLook: typeof gaussianPointerLook;
       sampleGaussianCamera: typeof sampleGaussianCamera;
     };
   }
 }
 
 const SPLAT_LIB = 'https://esm.sh/gsplat';
-window.__gsBgMotion = { damp, gaussianFocusProximity, sampleGaussianCamera };
+window.__gsBgMotion = { createGaussianAutopilot, damp, gaussianFocusPoint, gaussianFocusProximity, gaussianPointerLook, sampleGaussianCamera };
 
 async function loadSplatEngine(): Promise<void> {
   if (window.__gsBgStart) return;
@@ -104,6 +107,9 @@ async function loadSplatEngine(): Promise<void> {
     "  controls.panSpeed = 0.6;",
     "  const motion = window.__gsBgMotion;",
     "  const hasCameraMotion = stage.dataset.cameraMotion === '1' && motion;",
+    "  const zoomScale = stage.dataset.placement === 'section-left' ? 2.5 : 1.5;",
+    "  const autopilotSeed = ((stage.dataset.placement === 'section-left' ? 8117 : 1469) ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;",
+    "  const autopilot = hasCameraMotion ? motion.createGaussianAutopilot(autopilotSeed) : null;",
     "  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;",
     "  // Force renderer to use the actual size. Contained mode fills the parent",
     "  // (hero); default mode fills the viewport.",
@@ -123,27 +129,35 @@ async function loadSplatEngine(): Promise<void> {
     "  window.addEventListener('resize', forceSize);",
     "  let angle = 0;",
     "  const target = new SPLAT.Vector3(0, 0, 0);",
-    "  let radius = 6;",
+    "  let radius = 6 / zoomScale;",
     "  let pitch = -0.15;",
     "  let phaseOffset = 0;",
     "  let angularSpeed = 0.108;",
+    "  let roll = 0;",
+    "  let lookYaw = 0;",
+    "  let lookPitch = 0;",
     "  let verticalOffset = 0;",
     "  let focusProximity = 0;",
+    "  let focusTarget = 0;",
+    "  let pointerClientX = null;",
+    "  let pointerClientY = null;",
     "  const onPointerMove = (event) => {",
-    "    focusProximity = motion.gaussianFocusProximity({",
-    "      clientX: event.clientX, clientY: event.clientY,",
-    "      viewportWidth: window.innerWidth, viewportHeight: window.innerHeight",
-    "    });",
+    "    pointerClientX = event.clientX;",
+    "    pointerClientY = event.clientY;",
     "  };",
     "  const onPointerOut = (event) => {",
-    "    if (event.relatedTarget === null) focusProximity = 0;",
+    "    if (event.relatedTarget === null) {",
+    "      pointerClientX = null;",
+    "      pointerClientY = null;",
+    "      focusTarget = 0;",
+    "    }",
     "  };",
     "  if (hasCameraMotion && !reducedMotion) {",
     "    window.addEventListener('pointermove', onPointerMove, { passive: true });",
     "    window.addEventListener('mouseout', onPointerOut, { passive: true });",
     "  }",
     "  // Set initial camera position",
-    "  function setCameraOnOrbit(a) {",
+    "  function setCameraOnOrbit(a, cameraRoll = 0, cameraLookYaw = 0, cameraLookPitch = 0) {",
     "    const cx = radius * Math.cos(pitch) * Math.sin(a);",
     "    const cy = radius * Math.sin(pitch);",
     "    const cz = radius * Math.cos(pitch) * Math.cos(a);",
@@ -154,12 +168,12 @@ async function loadSplatEngine(): Promise<void> {
     "    const flen = Math.sqrt(fx*fx + fy*fy + fz*fz) || 1;",
     "    const ux = fx/flen, uy = fy/flen, uz = fz/flen;",
     "    // Convert forward vector to euler (yaw + pitch), then to quaternion.",
-    "    const yaw = Math.atan2(ux, uz);",
-    "    const pch = Math.asin(Math.max(-0.99, Math.min(0.99, uy)));",
+    "    const yaw = Math.atan2(ux, uz) + cameraLookYaw;",
+    "    const pch = Math.asin(Math.max(-0.99, Math.min(0.99, uy))) + cameraLookPitch;",
     "    // gsplat Quaternion has FromEuler(eulerVector3)",
-    "    camera.rotation = SPLAT.Quaternion.FromEuler(new SPLAT.Vector3(pch, yaw, 0));",
+    "    camera.rotation = SPLAT.Quaternion.FromEuler(new SPLAT.Vector3(pch, yaw, cameraRoll));",
     "  }",
-    "  setCameraOnOrbit(0);",
+    "  setCameraOnOrbit(0, 0, 0, 0);",
     "  await SPLAT.Loader.LoadAsync(src, scene, () => {});",
     "  window.__gsBgLoaded = true;",
     "  let lastTime = performance.now();",
@@ -176,25 +190,51 @@ async function loadSplatEngine(): Promise<void> {
     "      const host = stage.parentElement || stage;",
     "      const rect = host.getBoundingClientRect();",
     "      const scrollProgress = Math.max(0, Math.min(1, -rect.top / Math.max(1, rect.height)));",
-    "      const sampled = motion.sampleGaussianCamera({",
-    "        scrollProgress, focusProximity, timeSeconds: now / 1000",
+    "      const focusX = stage.dataset.placement === 'section-left' ? 0.28 : 0.72;",
+    "      if (pointerClientX !== null && pointerClientY !== null) {",
+    "        const focusPoint = motion.gaussianFocusPoint({",
+    "          viewportHeight: window.innerHeight, hostTop: rect.top, focusX",
+    "        });",
+    "        focusTarget = motion.gaussianFocusProximity({",
+    "          clientX: pointerClientX, clientY: pointerClientY,",
+    "          viewportWidth: window.innerWidth, viewportHeight: window.innerHeight,",
+    "          focusX: focusPoint.focusX, focusY: focusPoint.focusY",
+    "        });",
+    "      } else {",
+    "        focusTarget = 0;",
+    "      }",
+    "      const pointerLookTarget = motion.gaussianPointerLook({",
+    "        clientX: pointerClientX ?? window.innerWidth * 0.5,",
+    "        clientY: pointerClientY ?? window.innerHeight * 0.5,",
+    "        viewportWidth: window.innerWidth, viewportHeight: window.innerHeight",
     "      });",
+    "      focusProximity = motion.damp(focusProximity, focusTarget, 5.5, deltaSeconds);",
+    "      const sampled = motion.sampleGaussianCamera({",
+    "        scrollProgress, focusProximity, zoomScale, timeSeconds: now / 1000",
+    "      });",
+    "      const autonomous = autopilot.sample(deltaSeconds);",
+    "      lookYaw = motion.damp(lookYaw, pointerLookTarget.yaw + autonomous.lookYaw, 1.35, deltaSeconds);",
+    "      lookPitch = motion.damp(lookPitch, pointerLookTarget.pitch + autonomous.lookPitch, 1.35, deltaSeconds);",
     "      const radiusResponse = sampled.radius < radius ? 2.4 : 1.25;",
     "      radius = motion.damp(radius, sampled.radius, radiusResponse, deltaSeconds);",
-    "      pitch = motion.damp(pitch, sampled.pitch, 2.4, deltaSeconds);",
-    "      phaseOffset = motion.damp(phaseOffset, sampled.phaseOffset, 1.8, deltaSeconds);",
-    "      angularSpeed = motion.damp(angularSpeed, sampled.angularSpeed, 1.6, deltaSeconds);",
+    "      pitch = motion.damp(pitch, sampled.pitch, 2.2, deltaSeconds);",
+    "      phaseOffset = motion.damp(phaseOffset, sampled.phaseOffset + autonomous.phaseOffset, 1.7, deltaSeconds);",
+    "      angularSpeed = motion.damp(angularSpeed, sampled.angularSpeed * autonomous.speedScale, 1.5, deltaSeconds);",
+    "      roll = motion.damp(roll, autonomous.roll, 1.9, deltaSeconds);",
     "      verticalOffset = motion.damp(verticalOffset, sampled.verticalOffset, 1.8, deltaSeconds);",
     "    } else {",
-    "      radius = motion ? motion.damp(radius, 6, 2.6, deltaSeconds) : 6;",
+    "      radius = motion ? motion.damp(radius, 6 / zoomScale, 2.6, deltaSeconds) : 6 / zoomScale;",
     "      pitch = motion ? motion.damp(pitch, -0.15, 2.4, deltaSeconds) : -0.15;",
     "      phaseOffset = motion ? motion.damp(phaseOffset, 0, 1.8, deltaSeconds) : 0;",
     "      angularSpeed = motion ? motion.damp(angularSpeed, 0.108, 1.6, deltaSeconds) : 0.108;",
+    "      roll = motion ? motion.damp(roll, 0, 1.9, deltaSeconds) : 0;",
+    "      lookYaw = motion ? motion.damp(lookYaw, 0, 1.35, deltaSeconds) : 0;",
+    "      lookPitch = motion ? motion.damp(lookPitch, 0, 1.35, deltaSeconds) : 0;",
     "      verticalOffset = motion ? motion.damp(verticalOffset, 0, 1.8, deltaSeconds) : 0;",
     "    }",
     "    renderer.canvas.style.setProperty('--gs-scroll-y', verticalOffset + '%');",
     "    angle += angularSpeed * deltaSeconds;",
-    "    setCameraOnOrbit(angle + phaseOffset);",
+    "    setCameraOnOrbit(angle + phaseOffset, roll, lookYaw, lookPitch);",
     "    renderer.render(scene, camera);",
     "    requestAnimationFrame(frame);",
     "  };",
@@ -425,7 +465,7 @@ document.addEventListener('astro:page-load', attachAll);
     transform: translateX(18%) translateY(-10%) scale(1.32);
     transform-origin: center;
     -webkit-mask-image: radial-gradient(
-      ellipse 60% 82% at 50% 48%,
+      ellipse 78% 96% at 50% 48%,
       #000 0%,
       #000 45%,
       rgba(0, 0, 0, 0.88) 62%,
@@ -433,7 +473,7 @@ document.addEventListener('astro:page-load', attachAll);
       transparent 100%
     );
     mask-image: radial-gradient(
-      ellipse 60% 82% at 50% 48%,
+      ellipse 78% 96% at 50% 48%,
       #000 0%,
       #000 45%,
       rgba(0, 0, 0, 0.88) 62%,
@@ -443,14 +483,14 @@ document.addEventListener('astro:page-load', attachAll);
   }
 
   .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
-    transform: translateX(18%) translateY(calc(-18% + var(--gs-scroll-y, 0%))) scale(1.32);
+    transform: translateX(18%) translateY(calc(-22% + var(--gs-scroll-y, 0%))) scale(1.32);
   }
 
   .gs-bg[data-placement="section-left"].gs-bg--live > :global(.gs-bg__live-canvas) {
-    transform: translateX(-18%) translateY(-10%) scale(1.32);
+    transform: translateX(-18%) translateY(calc(-10% + var(--gs-scroll-y, 0%))) scale(1.32);
     transform-origin: center;
     -webkit-mask-image: radial-gradient(
-      ellipse 60% 82% at 50% 48%,
+      ellipse 78% 96% at 50% 48%,
       #000 0%,
       #000 45%,
       rgba(0, 0, 0, 0.88) 62%,
@@ -458,7 +498,7 @@ document.addEventListener('astro:page-load', attachAll);
       transparent 100%
     );
     mask-image: radial-gradient(
-      ellipse 60% 82% at 50% 48%,
+      ellipse 78% 96% at 50% 48%,
       #000 0%,
       #000 45%,
       rgba(0, 0, 0, 0.88) 62%,
@@ -474,19 +514,19 @@ document.addEventListener('astro:page-load', attachAll);
     background:
       linear-gradient(
         90deg,
-        rgba(11, 11, 12, 0.98) 0%,
-        rgba(11, 11, 12, 0.92) 24%,
-        rgba(11, 11, 12, 0.64) 40%,
-        rgba(11, 11, 12, 0.16) 60%,
-        rgba(11, 11, 12, 0.04) 76%,
-        rgba(11, 11, 12, 0.34) 100%
+        rgba(11, 11, 12, 0.96) 0%,
+        rgba(11, 11, 12, 0.86) 12%,
+        rgba(11, 11, 12, 0.55) 28%,
+        rgba(11, 11, 12, 0.18) 48%,
+        rgba(11, 11, 12, 0.03) 72%,
+        rgba(11, 11, 12, 0.28) 100%
       ),
       linear-gradient(
         180deg,
-        rgba(11, 11, 12, 0.18) 0%,
-        rgba(11, 11, 12, 0.02) 52%,
-        rgba(11, 11, 12, 0.56) 86%,
-        rgba(11, 11, 12, 1) 100%
+        rgba(11, 11, 12, 0.14) 0%,
+        rgba(11, 11, 12, 0.01) 52%,
+        rgba(11, 11, 12, 0.32) 90%,
+        rgba(11, 11, 12, 0.88) 100%
       );
     pointer-events: none;
   }
@@ -495,19 +535,19 @@ document.addEventListener('astro:page-load', attachAll);
     background:
       linear-gradient(
         270deg,
-        rgba(11, 11, 12, 0.98) 0%,
-        rgba(11, 11, 12, 0.92) 24%,
-        rgba(11, 11, 12, 0.64) 40%,
-        rgba(11, 11, 12, 0.16) 60%,
-        rgba(11, 11, 12, 0.04) 76%,
-        rgba(11, 11, 12, 0.34) 100%
+        rgba(11, 11, 12, 0.96) 0%,
+        rgba(11, 11, 12, 0.86) 12%,
+        rgba(11, 11, 12, 0.55) 28%,
+        rgba(11, 11, 12, 0.18) 48%,
+        rgba(11, 11, 12, 0.03) 72%,
+        rgba(11, 11, 12, 0.28) 100%
       ),
       linear-gradient(
         180deg,
-        rgba(11, 11, 12, 0.18) 0%,
-        rgba(11, 11, 12, 0.02) 52%,
-        rgba(11, 11, 12, 0.56) 86%,
-        rgba(11, 11, 12, 1) 100%
+        rgba(11, 11, 12, 0.14) 0%,
+        rgba(11, 11, 12, 0.01) 52%,
+        rgba(11, 11, 12, 0.32) 90%,
+        rgba(11, 11, 12, 0.88) 100%
       );
   }
 
@@ -517,10 +557,10 @@ document.addEventListener('astro:page-load', attachAll);
       transform: translateX(24%) translateY(-10%) scale(1.36);
     }
     .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
-      transform: translateX(24%) translateY(calc(-18% + var(--gs-scroll-y, 0%))) scale(1.36);
+      transform: translateX(24%) translateY(calc(-22% + var(--gs-scroll-y, 0%))) scale(1.36);
     }
     .gs-bg[data-placement="section-left"].gs-bg--live > :global(.gs-bg__live-canvas) {
-      transform: translateX(-24%) translateY(-10%) scale(1.36);
+      transform: translateX(-24%) translateY(calc(-10% + var(--gs-scroll-y, 0%))) scale(1.36);
     }
     .gs-bg__veil {
       background:
