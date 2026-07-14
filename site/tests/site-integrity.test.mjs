@@ -164,6 +164,22 @@ test('hero Gaussian stays raised without moving the lower scene', () => {
   assert.match(source, /translateX\(-18%\) translateY\(-10%\) scale\(1\.32\)/);
 });
 
+test('first Gaussian opts into camera motion around the fixed origin', () => {
+  const code = readFileSync(join(distDir, 'code', 'index.html'), 'utf8');
+  const gaussianSource = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
+  const heroStart = code.indexOf('<header class="code__hero"');
+  const heroEnd = code.indexOf('</header>', heroStart);
+  const lowerStart = code.indexOf('<section class="code__lower-showcase"');
+  const lowerEnd = code.indexOf('</article>', lowerStart);
+  const hero = code.slice(heroStart, heroEnd);
+  const lower = code.slice(lowerStart, lowerEnd);
+
+  assert.match(hero, /data-camera-motion="1"/);
+  assert.doesNotMatch(lower, /data-camera-motion="1"/);
+  assert.match(gaussianSource, /sampleGaussianCamera/);
+  assert.match(gaussianSource, /new SPLAT\.Vector3\(0, 0, 0\)/);
+});
+
 test('primary navigation labels have no individual surface behind them', () => {
   const source = readFileSync(join(process.cwd(), 'src', 'components', 'Nav.astro'), 'utf8');
 
