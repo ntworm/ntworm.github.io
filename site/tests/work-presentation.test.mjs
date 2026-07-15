@@ -36,8 +36,8 @@ const expectedMoreIds = [
 const expectedFeaturedPresentation = {
   'o-compositor': {
     mediaLayout: 'portrait',
-    highlight: 'nominated for Best Composition at Prémio Curtas 2026',
-    summary: 'As Sound Director, I carried the film from on-set recording through orchestral composition and recording, editing, sound design, and final mix. The 18-minute horror short follows a renowned cellist-composer who imprisons his student and turns the student’s suffering into material for a new composition. The film screened at FESTin and competed for the MOTELX 2025 award for Best Portuguese Horror Short; its score was nominated for Best Composition at Prémio Curtas 2026.',
+    highlight: 'won Best Portuguese Horror Short at MOTELX 2025',
+    summary: 'As Sound Director, I carried the film from on-set recording through orchestral composition and recording, editing, sound design, and final mix. The 18-minute horror short follows a renowned cellist-composer who imprisons his student and turns the student’s suffering into material for a new composition. The film screened at FESTin and won Best Portuguese Horror Short at MOTELX 2025; its score was nominated for Best Composition at Prémio Curtas 2026.',
   },
   'unveiling-new-futures': {
     mediaLayout: 'landscape',

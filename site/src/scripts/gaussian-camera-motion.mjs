@@ -176,9 +176,9 @@ export function damp(current, target, response, deltaSeconds) {
 }
 
 /**
- * Maps the full viewport to a tiny camera-aim bias. Unlike proximity, this
- * never changes radius or orbit speed; it only lets the scene acknowledge the
- * pointer by a few degrees while damping in the renderer absorbs quick moves.
+ * Maps the full viewport to a small target displacement in the camera's view
+ * plane. Unlike proximity, this never changes radius or orbit speed: the
+ * autonomous camera keeps moving while its gaze drifts gently toward a corner.
  */
 export function gaussianPointerLook({
   clientX = 0,
@@ -192,9 +192,32 @@ export function gaussianPointerLook({
   const vertical = clamp((clientY / height - 0.5) * 2, -1, 1);
 
   return {
-    yaw: horizontal * 0.045,
-    pitch: (-vertical * 0.035) || 0,
+    targetX: horizontal * 0.08,
+    targetY: (-vertical * 0.065) || 0,
   };
+}
+
+/**
+ * Hit-tests the editorial ellipse around the visible Gaussian subject. The
+ * focus follows the section while it scrolls, so clicks elsewhere on the page
+ * never toggle a scene that only happens to share the same viewport x value.
+ */
+export function gaussianToggleHotspot({
+  clientX = 0,
+  clientY = 0,
+  viewportWidth = 1,
+  viewportHeight = 1,
+  focusX = 0.72,
+  focusY = 0.54,
+} = {}) {
+  const width = Math.max(1, viewportWidth);
+  const height = Math.max(1, viewportHeight);
+  const radiusX = width * 0.23;
+  const radiusY = height * 0.27;
+  const normalizedX = (clientX - width * focusX) / radiusX;
+  const normalizedY = (clientY - height * focusY) / radiusY;
+
+  return normalizedX * normalizedX + normalizedY * normalizedY <= 1;
 }
 
 /**

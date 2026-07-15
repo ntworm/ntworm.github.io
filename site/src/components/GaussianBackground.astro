@@ -36,6 +36,8 @@ interface Props {
   placement?: 'full' | 'hero-right' | 'section-right' | 'section-left';
   /** Enables the cinematic scroll/pointer orbit for this instance only. */
   cameraMotion?: boolean;
+  /** Enables reversible GPU digital-dust and scanline modulation. */
+  particleEffects?: boolean;
 }
 
 const {
@@ -44,6 +46,7 @@ const {
   contained = false,
   placement = 'full',
   cameraMotion = false,
+  particleEffects = false,
 } = Astro.props;
 
 if (!splats || splats.length === 0) {
@@ -51,14 +54,15 @@ if (!splats || splats.length === 0) {
 }
 ---
 
-<div class="gs-bg" data-mobile-breakpoint={mobileBreakpoint} data-splats={JSON.stringify(splats)} data-contained={contained ? '1' : '0'} data-placement={placement} data-camera-motion={cameraMotion ? '1' : undefined}>
+<div class="gs-bg" data-mobile-breakpoint={mobileBreakpoint} data-splats={JSON.stringify(splats)} data-contained={contained ? '1' : '0'} data-placement={placement} data-camera-motion={cameraMotion ? '1' : undefined} data-particle-effects={particleEffects ? '1' : undefined}>
   <canvas class="gs-bg__canvas" aria-hidden="true"></canvas>
   <div class="gs-bg__veil" aria-hidden="true"></div>
 </div>
 
 
 <script>
-import { createGaussianAutopilot, damp, gaussianFocusPoint, gaussianFocusProximity, gaussianPointerLook, sampleGaussianCamera } from '../scripts/gaussian-camera-motion.mjs';
+import { createGaussianAutopilot, damp, gaussianFocusPoint, gaussianFocusProximity, gaussianPointerLook, gaussianToggleHotspot, sampleGaussianCamera } from '../scripts/gaussian-camera-motion.mjs';
+import { calculateParticleBounds, createGaussianLightAutopilot, createGaussianParticleAutopilot, createGaussianParticleUniformController, createGaussianWorldTransition, gaussianParticleProfile, installGaussianParticleShaderPatch } from '../scripts/gaussian-particle-effects.mjs';
 
 type SplatEntry = { src: string; poster: string; label: string };
 
@@ -74,13 +78,24 @@ declare global {
       gaussianFocusPoint: typeof gaussianFocusPoint;
       gaussianFocusProximity: typeof gaussianFocusProximity;
       gaussianPointerLook: typeof gaussianPointerLook;
+      gaussianToggleHotspot: typeof gaussianToggleHotspot;
       sampleGaussianCamera: typeof sampleGaussianCamera;
+    };
+    __gsBgParticles?: {
+      calculateParticleBounds: typeof calculateParticleBounds;
+      createGaussianLightAutopilot: typeof createGaussianLightAutopilot;
+      createGaussianParticleAutopilot: typeof createGaussianParticleAutopilot;
+      createGaussianParticleUniformController: typeof createGaussianParticleUniformController;
+      createGaussianWorldTransition: typeof createGaussianWorldTransition;
+      gaussianParticleProfile: typeof gaussianParticleProfile;
+      installGaussianParticleShaderPatch: typeof installGaussianParticleShaderPatch;
     };
   }
 }
 
-const SPLAT_LIB = 'https://esm.sh/gsplat';
-window.__gsBgMotion = { createGaussianAutopilot, damp, gaussianFocusPoint, gaussianFocusProximity, gaussianPointerLook, sampleGaussianCamera };
+const SPLAT_LIB = 'https://esm.sh/gsplat@1.2.9';
+window.__gsBgMotion = { createGaussianAutopilot, damp, gaussianFocusPoint, gaussianFocusProximity, gaussianPointerLook, gaussianToggleHotspot, sampleGaussianCamera };
+window.__gsBgParticles = { calculateParticleBounds, createGaussianLightAutopilot, createGaussianParticleAutopilot, createGaussianParticleUniformController, createGaussianWorldTransition, gaussianParticleProfile, installGaussianParticleShaderPatch };
 
 async function loadSplatEngine(): Promise<void> {
   if (window.__gsBgStart) return;
@@ -93,24 +108,34 @@ async function loadSplatEngine(): Promise<void> {
     "window.__gsBgStart = async function(src, stage) {",
     "  const scene = new SPLAT.Scene();",
     "  const camera = new SPLAT.Camera();",
-    "  const renderer = new SPLAT.WebGLRenderer();",
+    "  const particles = window.__gsBgParticles;",
+    "  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;",
+    "  const hasParticleEffects = stage.dataset.particleEffects === '1' && !reducedMotion && particles;",
+    "  let renderer = null;",
+    "  let particleShaderActive = false;",
+    "  if (hasParticleEffects) {",
+    "    const particleShaderHook = particles.installGaussianParticleShaderPatch();",
+    "    try {",
+    "      renderer = new SPLAT.WebGLRenderer();",
+    "      particleShaderActive = particleShaderHook.wasApplied() && renderer.gl.getProgramParameter(renderer.renderProgram.program, renderer.gl.LINK_STATUS);",
+    "    } catch (error) {",
+    "      console.warn('[gs-bg] particle shader unavailable; using stock renderer', error);",
+    "    } finally { particleShaderHook.restore(); }",
+    "    if (!renderer || !particleShaderActive) {",
+    "      if (renderer) { renderer.dispose(); renderer.canvas.remove(); }",
+    "      renderer = new SPLAT.WebGLRenderer();",
+    "    }",
+    "  } else {",
+    "    renderer = new SPLAT.WebGLRenderer();",
+    "  }",
     "  renderer.canvas.classList.add('gs-bg__live-canvas');",
     "  renderer.canvas.style.cssText = 'width:100%;height:100%;display:block;position:absolute;inset:0';",
     "  stage.appendChild(renderer.canvas);",
-    "  // OrbitControls is created so user drag rotates the camera. We DON'T call",
-    "  // controls.update() during auto-rotate — instead we set camera.position +",
-    "  // camera.rotation directly so we have full control over the orbit math.",
-    "  const controls = new SPLAT.OrbitControls(camera, renderer.canvas);",
-    "  controls.dampening = 0.06;",
-    "  controls.orbitSpeed = 0.6;",
-    "  controls.zoomSpeed = 0.7;",
-    "  controls.panSpeed = 0.6;",
     "  const motion = window.__gsBgMotion;",
     "  const hasCameraMotion = stage.dataset.cameraMotion === '1' && motion;",
     "  const zoomScale = stage.dataset.placement === 'section-left' ? 2.5 : 1.5;",
     "  const autopilotSeed = ((stage.dataset.placement === 'section-left' ? 8117 : 1469) ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;",
     "  const autopilot = hasCameraMotion ? motion.createGaussianAutopilot(autopilotSeed) : null;",
-    "  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;",
     "  // Force renderer to use the actual size. Contained mode fills the parent",
     "  // (hero); default mode fills the viewport.",
     "  const forceSize = () => {",
@@ -128,7 +153,6 @@ async function loadSplatEngine(): Promise<void> {
     "  forceSize();",
     "  window.addEventListener('resize', forceSize);",
     "  let angle = 0;",
-    "  const target = new SPLAT.Vector3(0, 0, 0);",
     "  let radius = 6 / zoomScale;",
     "  let pitch = -0.15;",
     "  let phaseOffset = 0;",
@@ -136,6 +160,8 @@ async function loadSplatEngine(): Promise<void> {
     "  let roll = 0;",
     "  let lookYaw = 0;",
     "  let lookPitch = 0;",
+    "  let aimOffsetX = 0;",
+    "  let aimOffsetY = 0;",
     "  let verticalOffset = 0;",
     "  let focusProximity = 0;",
     "  let focusTarget = 0;",
@@ -157,14 +183,23 @@ async function loadSplatEngine(): Promise<void> {
     "    window.addEventListener('mouseout', onPointerOut, { passive: true });",
     "  }",
     "  // Set initial camera position",
-    "  function setCameraOnOrbit(a, cameraRoll = 0, cameraLookYaw = 0, cameraLookPitch = 0) {",
+    "  function setCameraOnOrbit(a, cameraRoll = 0, cameraLookYaw = 0, cameraLookPitch = 0, cameraAimX = 0, cameraAimY = 0) {",
     "    const cx = radius * Math.cos(pitch) * Math.sin(a);",
     "    const cy = radius * Math.sin(pitch);",
     "    const cz = radius * Math.cos(pitch) * Math.cos(a);",
     "    camera.position = new SPLAT.Vector3(cx, cy, cz);",
-    "    // Compute rotation so camera looks at (0,0,0).",
-    "    // forward = target - position, normalized",
-    "    const fx = -cx, fy = -cy, fz = -cz;",
+    "    // Shift the point of interest in the camera's own view plane. This lets",
+    "    // the pointer look toward the corners without taking over the orbit.",
+    "    const targetDistanceX = cameraAimX * radius;",
+    "    const targetDistanceY = cameraAimY * radius;",
+    "    const rightX = Math.cos(a), rightZ = -Math.sin(a);",
+    "    const upX = -Math.sin(a) * Math.sin(pitch);",
+    "    const upY = Math.cos(pitch);",
+    "    const upZ = -Math.cos(a) * Math.sin(pitch);",
+    "    const targetX = rightX * targetDistanceX + upX * targetDistanceY;",
+    "    const targetY = upY * targetDistanceY;",
+    "    const targetZ = rightZ * targetDistanceX + upZ * targetDistanceY;",
+    "    const fx = targetX - cx, fy = targetY - cy, fz = targetZ - cz;",
     "    const flen = Math.sqrt(fx*fx + fy*fy + fz*fz) || 1;",
     "    const ux = fx/flen, uy = fy/flen, uz = fz/flen;",
     "    // Convert forward vector to euler (yaw + pitch), then to quaternion.",
@@ -175,6 +210,38 @@ async function loadSplatEngine(): Promise<void> {
     "  }",
     "  setCameraOnOrbit(0, 0, 0, 0);",
     "  await SPLAT.Loader.LoadAsync(src, scene, () => {});",
+    "  const splatObject = scene.objects.find((object) => object && object.data && object.data.positions);",
+    "  const particleBounds = particleShaderActive ? particles.calculateParticleBounds(splatObject && splatObject.data.positions) : null;",
+    "  const particleSeed = ((stage.dataset.placement === 'section-left' ? 4253 : 9719) ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;",
+    "  const particleProfile = particles.gaussianParticleProfile(stage.dataset.placement);",
+    "  const particleAutopilot = particleShaderActive ? particles.createGaussianParticleAutopilot(particleSeed) : null;",
+    "  const lightAutopilot = particleShaderActive ? particles.createGaussianLightAutopilot(particleSeed ^ 0x51f15e) : null;",
+    "  const particleController = particleShaderActive ? particles.createGaussianParticleUniformController(renderer, particleBounds) : null;",
+    "  const worldTransition = particleShaderActive ? particles.createGaussianWorldTransition() : null;",
+    "  let worldReveal = 0;",
+    "  let worldRevealTarget = 0;",
+    "  const onWorldToggle = (event) => {",
+    "    if (!particleController || !particleController.active || event.button !== 0) return;",
+    "    const eventTarget = event.target;",
+    "    if (eventTarget instanceof Element && eventTarget.closest('a, button, input, textarea, select, label, [role=button]')) return;",
+    "    const host = stage.parentElement || stage;",
+    "    const rect = host.getBoundingClientRect();",
+    "    if (rect.bottom <= 0 || rect.top >= window.innerHeight) return;",
+    "    const focusX = stage.dataset.placement === 'section-left' ? 0.28 : 0.72;",
+    "    const focusPoint = motion.gaussianFocusPoint({",
+    "      viewportHeight: window.innerHeight, hostTop: rect.top, focusX",
+    "    });",
+    "    const insideFocus = motion.gaussianToggleHotspot({",
+    "      clientX: event.clientX, clientY: event.clientY,",
+    "      viewportWidth: window.innerWidth, viewportHeight: window.innerHeight,",
+    "      focusX: focusPoint.focusX, focusY: focusPoint.focusY",
+    "    });",
+    "    if (!insideFocus) return;",
+    "    worldRevealTarget = worldRevealTarget > 0.5 ? 0 : 1;",
+    "  };",
+    "  if (particleController && particleController.active) {",
+    "    window.addEventListener('click', onWorldToggle);",
+    "  }",
     "  window.__gsBgLoaded = true;",
     "  let lastTime = performance.now();",
     "  const frame = function(now) {",
@@ -182,6 +249,7 @@ async function loadSplatEngine(): Promise<void> {
     "      window.removeEventListener('resize', forceSize);",
     "      window.removeEventListener('pointermove', onPointerMove);",
     "      window.removeEventListener('mouseout', onPointerOut);",
+    "      window.removeEventListener('click', onWorldToggle);",
     "      return;",
     "    }",
     "    const deltaSeconds = Math.max(0, Math.min(0.05, (now - lastTime) / 1000));",
@@ -213,8 +281,10 @@ async function loadSplatEngine(): Promise<void> {
     "        scrollProgress, focusProximity, zoomScale, timeSeconds: now / 1000",
     "      });",
     "      const autonomous = autopilot.sample(deltaSeconds);",
-    "      lookYaw = motion.damp(lookYaw, pointerLookTarget.yaw + autonomous.lookYaw, 1.35, deltaSeconds);",
-    "      lookPitch = motion.damp(lookPitch, pointerLookTarget.pitch + autonomous.lookPitch, 1.35, deltaSeconds);",
+    "      aimOffsetX = motion.damp(aimOffsetX, pointerLookTarget.targetX, 1.15, deltaSeconds);",
+    "      aimOffsetY = motion.damp(aimOffsetY, pointerLookTarget.targetY, 1.15, deltaSeconds);",
+    "      lookYaw = motion.damp(lookYaw, autonomous.lookYaw, 1.35, deltaSeconds);",
+    "      lookPitch = motion.damp(lookPitch, autonomous.lookPitch, 1.35, deltaSeconds);",
     "      const radiusResponse = sampled.radius < radius ? 2.4 : 1.25;",
     "      radius = motion.damp(radius, sampled.radius, radiusResponse, deltaSeconds);",
     "      pitch = motion.damp(pitch, sampled.pitch, 2.2, deltaSeconds);",
@@ -230,11 +300,32 @@ async function loadSplatEngine(): Promise<void> {
     "      roll = motion ? motion.damp(roll, 0, 1.9, deltaSeconds) : 0;",
     "      lookYaw = motion ? motion.damp(lookYaw, 0, 1.35, deltaSeconds) : 0;",
     "      lookPitch = motion ? motion.damp(lookPitch, 0, 1.35, deltaSeconds) : 0;",
+    "      aimOffsetX = motion ? motion.damp(aimOffsetX, 0, 1.15, deltaSeconds) : 0;",
+    "      aimOffsetY = motion ? motion.damp(aimOffsetY, 0, 1.15, deltaSeconds) : 0;",
     "      verticalOffset = motion ? motion.damp(verticalOffset, 0, 1.8, deltaSeconds) : 0;",
     "    }",
     "    renderer.canvas.style.setProperty('--gs-scroll-y', verticalOffset + '%');",
     "    angle += angularSpeed * deltaSeconds;",
-    "    setCameraOnOrbit(angle + phaseOffset, roll, lookYaw, lookPitch);",
+    "    setCameraOnOrbit(angle + phaseOffset, roll, lookYaw, lookPitch, aimOffsetX, aimOffsetY);",
+    "    if (particleController && particleController.active && particleAutopilot && lightAutopilot) {",
+    "      const transitionFrame = worldTransition.sample(worldRevealTarget, deltaSeconds);",
+    "      worldReveal = transitionFrame.progress;",
+    "      const particleFrame = particleAutopilot.sample(deltaSeconds);",
+    "      const lightFrame = lightAutopilot.sample(deltaSeconds);",
+    "      particleController.update({",
+    "        ...particleFrame,",
+    "        ...lightFrame,",
+    "        coreRadius: 1.5,",
+    "        worldReveal: worldReveal,",
+    "        transitionActivity: transitionFrame.activity,",
+    "        transitionDirection: transitionFrame.direction,",
+    "        transitionOpacity: particleProfile.transitionOpacity,",
+    "        flowTime: transitionFrame.time,",
+    "        nearDistance: Math.max(0.55, radius * 0.67),",
+    "        nearStrength: 0.72,",
+    "        displacement: particleProfile.displacement",
+    "      });",
+    "    }",
     "    renderer.render(scene, camera);",
     "    requestAnimationFrame(frame);",
     "  };",

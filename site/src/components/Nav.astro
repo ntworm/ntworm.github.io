@@ -1,15 +1,14 @@
 ---
 const { pathname } = Astro.url;
 const links = [
-  { href: '/', label: 'Work' },
-  { href: '/about', label: 'About' },
-  { href: '/code', label: 'Code' },
-  { href: '/contact', label: 'Contact' },
+  { href: '/#work', label: 'Work' },
+  { href: '/#about', label: 'About' },
+  { href: '/#code', label: 'Code' },
+  { href: '/#contact', label: 'Contact' },
 ];
 
 function isActive(href: string): boolean {
-  if (href === '/') return pathname === '/' || pathname.startsWith('/work');
-  return pathname === href || pathname.startsWith(href + '/');
+  return href === '/#work' && pathname.startsWith('/work/');
 }
 ---
 <header class="nav">

@@ -78,8 +78,8 @@ function codeSignature(html) {
   };
 }
 
-test('continuous preview renders five finite chapters once and in order', () => {
-  const html = readFileSync(join(distDir, 'continuous', 'index.html'), 'utf8');
+test('homepage renders five finite chapters once and in order', () => {
+  const html = readFileSync(join(distDir, 'index.html'), 'utf8');
   const chapters = [...html.matchAll(/data-portfolio-chapter="(about|work|code|archive|contact)"/g)]
     .map((match) => match[1]);
 
@@ -96,8 +96,8 @@ test('public homepage serves the continuous portfolio as the primary experience'
   assert.match(html, /<title>Sound, Music &amp; Creative Systems &mdash; Gabriel Worm/);
 });
 
-test('continuous preview renders the approved Work tiers', () => {
-  const html = readFileSync(join(distDir, 'continuous', 'index.html'), 'utf8');
+test('homepage renders the approved Work tiers', () => {
+  const html = readFileSync(join(distDir, 'index.html'), 'utf8');
   const ids = (tier) => workTags(html, tier).map((tag) => attr(tag, 'data-work-id'));
 
   assert.deepEqual(ids('featured'), FEATURED_WORK_IDS);
@@ -108,8 +108,8 @@ test('continuous preview renders the approved Work tiers', () => {
   );
 });
 
-test('continuous Work contains one link per tier entry and no empty href', () => {
-  const html = readFileSync(join(distDir, 'continuous', 'index.html'), 'utf8');
+test('homepage Work contains one link per tier entry and no empty href', () => {
+  const html = readFileSync(join(distDir, 'index.html'), 'utf8');
 
   assert.equal(workTags(html, 'featured').length, 8);
   assert.equal(workTags(html, 'more').length, 6);
@@ -121,7 +121,7 @@ test('continuous Work contains one link per tier entry and no empty href', () =>
 });
 
 test('About portraits remain four static editorial images', () => {
-  const html = readFileSync(join(distDir, 'continuous', 'index.html'), 'utf8');
+  const html = readFileSync(join(distDir, 'index.html'), 'utf8');
   const about = chapterSlice(html, 'about', 'work');
   const portraits = [...about.matchAll(/<img\b[^>]*src="(\/portrait\/[^"]+)"[^>]*>/g)];
 
@@ -154,7 +154,7 @@ test('About headline and portrait choreography are progressive and motion-safe',
 });
 
 test('About carries the existing manifesto and four practice areas into one editorial thread', () => {
-  const html = readFileSync(join(distDir, 'continuous', 'index.html'), 'utf8');
+  const html = readFileSync(join(distDir, 'index.html'), 'utf8');
   const about = chapterSlice(html, 'about', 'work');
 
   assert.match(about, /Three movements\. Four areas\. One thread\./);
@@ -169,7 +169,7 @@ test('About carries the existing manifesto and four practice areas into one edit
 });
 
 test('Work intro pairs the editorial statement with the original project spotlight and practice tags', () => {
-  const html = readFileSync(join(distDir, 'continuous', 'index.html'), 'utf8');
+  const html = readFileSync(join(distDir, 'index.html'), 'utf8');
   const work = chapterSlice(html, 'work', 'code');
   const source = readFileSync(workChapterPath, 'utf8');
 
@@ -194,7 +194,7 @@ test('Work intro pairs the editorial statement with the original project spotlig
 });
 
 test('featured entries alone render summaries and explicit orientation classes', () => {
-  const html = readFileSync(join(distDir, 'continuous', 'index.html'), 'utf8');
+  const html = readFileSync(join(distDir, 'index.html'), 'utf8');
   const work = chapterSlice(html, 'work', 'code');
   const archiveChapter = chapterSlice(html, 'archive', 'contact');
   const featured = workEntries(work, 'featured');
@@ -278,12 +278,10 @@ test('Work and relocated Archive stack above Code content without masking Gaussi
   assert.doesNotMatch(archiveSource, /\.portfolio-archive::before/);
 });
 
-test('continuous and standalone routes render the same Code structure', () => {
-  const standalone = readFileSync(join(distDir, 'code', 'index.html'), 'utf8');
-  const continuous = readFileSync(join(distDir, 'continuous', 'index.html'), 'utf8');
-  const code = chapterSlice(continuous, 'code', 'archive');
+test('homepage renders the complete Code structure once', () => {
+  const homepage = readFileSync(join(distDir, 'index.html'), 'utf8');
+  const code = chapterSlice(homepage, 'code', 'archive');
 
-  assert.deepEqual(codeSignature(code), codeSignature(standalone));
   assert.deepEqual(codeSignature(code), {
     hero: 1,
     article: 1,
@@ -299,10 +297,11 @@ test('continuous and standalone routes render the same Code structure', () => {
   });
 });
 
-test('standalone and continuous routes import the same Code chapter', () => {
-  const standalone = readFileSync(join(process.cwd(), 'src', 'pages', 'code.astro'), 'utf8');
-  const continuous = readFileSync(join(process.cwd(), 'src', 'pages', 'continuous.astro'), 'utf8');
+test('homepage owns Code while the legacy Code route redirects to its chapter', () => {
+  const homepage = readFileSync(join(process.cwd(), 'src', 'pages', 'index.astro'), 'utf8');
+  const legacy = readFileSync(join(process.cwd(), 'src', 'pages', 'code.astro'), 'utf8');
 
-  assert.match(standalone, /import CodeChapter/);
-  assert.match(continuous, /import CodeChapter/);
+  assert.match(homepage, /import CodeChapter/);
+  assert.match(homepage, /<CodeChapter\s*\/>/);
+  assert.match(legacy, /Astro\.redirect\(['"]\/#code['"]\)/);
 });

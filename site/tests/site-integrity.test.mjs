@@ -11,7 +11,7 @@ const codeChapterSourcePath = join(
   'portfolio',
   'CodeChapter.astro',
 );
-const standaloneWorkSourcePath = join(process.cwd(), 'src', 'pages', 'work', 'index.astro');
+const homepageSourcePath = join(process.cwd(), 'src', 'pages', 'index.astro');
 
 function walk(dir, extension) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -31,8 +31,7 @@ function htmlFiles() {
 
 function builtCodeDocuments() {
   return [
-    ['code/index.html', readFileSync(join(distDir, 'code', 'index.html'), 'utf8')],
-    ['continuous/index.html', readFileSync(join(distDir, 'continuous', 'index.html'), 'utf8')],
+    ['index.html', readFileSync(join(distDir, 'index.html'), 'utf8')],
   ];
 }
 
@@ -91,41 +90,7 @@ test('every root-relative image resolves to a built asset', () => {
   assert.deepEqual(failures, []);
 });
 
-test('standalone Work spotlight stays curated and lightweight', () => {
-  const home = readFileSync(join(distDir, 'work', 'index.html'), 'utf8');
-  const start = home.indexOf('<div class="about-mini__shuffler"');
-  const end = home.indexOf('<section id="work"', start);
-  assert.ok(start >= 0 && end > start, 'spotlight section not found');
-  const section = home.slice(start, end);
-  const sources = tags(section, 'img').map((tag) => attr(tag, 'src')).filter(Boolean);
-  const uniqueSources = [...new Set(sources)];
-  const totalBytes = uniqueSources.reduce((sum, src) => {
-    const path = join(distDir, src.replace(/^\/+/, ''));
-    return sum + statSync(path).size;
-  }, 0);
-
-  assert.ok(uniqueSources.length <= 8, `spotlight contains ${uniqueSources.length} images`);
-  assert.ok(totalBytes <= 2 * 1024 * 1024, `spotlight transfers ${(totalBytes / 1024 / 1024).toFixed(2)} MB`);
-});
-
-test('standalone Work spotlight crossfades continuously without a black gap', () => {
-  const source = readFileSync(standaloneWorkSourcePath, 'utf8');
-  const slugsBlock = source.match(/const spotlightSlugs = new Set\(\[([\s\S]*?)\]\);/)?.[1] ?? '';
-  const spotlightCount = [...slugsBlock.matchAll(/'[^']+'/g)].length;
-  const keyframes = source.match(/@keyframes spotlight-cycle\s*\{([\s\S]*?)\n\s*\}/)?.[1] ?? '';
-  const phases = [...keyframes.matchAll(/([\d.]+)%\s*\{/g)].map((match) => Number(match[1]));
-
-  assert.equal(spotlightCount, 7);
-  assert.equal(phases.length, 5);
-  const [, fadeInEnd, holdEnd, fadeOutEnd] = phases;
-  const slotEnd = 100 / spotlightCount;
-  assert.ok(Math.abs(holdEnd - slotEnd) < 0.05, `expected hold through ${slotEnd.toFixed(2)}%, received ${holdEnd}%`);
-  assert.ok(fadeOutEnd > slotEnd, 'the outgoing image must overlap the incoming image');
-  assert.ok(Math.abs((fadeOutEnd - slotEnd) - fadeInEnd) < 0.05, 'incoming and outgoing fades must have matching durations');
-});
-
 test('featured-work copy contains only the confirmed credits', () => {
-  const home = readFileSync(standaloneWorkSourcePath, 'utf8');
   const projectsDir = join(process.cwd(), 'src', 'content', 'projects');
   const trisal = readFileSync(join(projectsDir, 'trisal.md'), 'utf8');
   const ticha = readFileSync(join(projectsDir, 'ticha-penicheiro.md'), 'utf8');
@@ -135,7 +100,7 @@ test('featured-work copy contains only the confirmed credits', () => {
   const aiAm = readFileSync(join(projectsDir, 'ai-am.md'), 'utf8');
   const agosto = readFileSync(join(projectsDir, 'em-agosto-chove.md'), 'utf8');
   const tono = readFileSync(join(projectsDir, 'el-tono-del-mar.md'), 'utf8');
-  const combined = [home, trisal, ticha, clube, feminine, compositor, aiAm, agosto, tono].join('\n');
+  const combined = [trisal, ticha, clube, feminine, compositor, aiAm, agosto, tono].join('\n');
 
   assert.doesNotMatch(combined, /In post for episode 3/i);
   assert.doesNotMatch(ticha, /dialogue cleanup|archival mix|shaping the score/i);
@@ -146,7 +111,7 @@ test('featured-work copy contains only the confirmed credits', () => {
   assert.doesNotMatch(agosto, /four standalone singles|one music video/i);
   assert.doesNotMatch(tono, /granular synthesis|dialogue-free|library construction/i);
 
-  assert.match(home, /Three singles, one album, and a live recording at Bem Ali Sessions/);
+  assert.match(agosto, /three singles, one album, and a live recording made for/i);
   assert.match(ticha, /Foley, ambiences, and sound-effects editing/);
   assert.match(clube, /production sound recording, Foley, ambiences, and sound-effects editing/);
   assert.match(trisal, /“Isso de novo não tem nada!”/);
@@ -158,17 +123,9 @@ test('featured-work copy contains only the confirmed credits', () => {
   assert.match(feminine, /animated documentary/i);
   assert.match(feminine, /ITFS 2026 Student Competition/i);
   assert.match(compositor, /FESTin 2025/i);
-  assert.match(compositor, /MOTELX 2025/i);
+  assert.match(compositor, /won[\s\S]*?Best Portuguese Horror Short at MOTELX 2025/i);
   assert.match(aiAm, /Alpha-30 and Mew/i);
   assert.match(aiAm, /directed by Danny J/i);
-});
-
-test('code route delegates to the shared Code chapter', () => {
-  const page = readFileSync(join(process.cwd(), 'src', 'pages', 'code.astro'), 'utf8');
-
-  assert.match(page, /import CodeChapter from ['"]\.\.\/components\/portfolio\/CodeChapter\.astro['"]/);
-  assert.match(page, /<CodeChapter\s*\/>/);
-  assert.ok(statSync(codeChapterSourcePath).isFile());
 });
 
 test('code page stacks two scroll-bound borderless Gaussians', () => {
@@ -227,7 +184,7 @@ test('live Gaussian canvas overrides the renderer black surface', () => {
 
 test('continuous Gaussians begin loading before their chapters enter the viewport', () => {
   const gaussianSource = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
-  const continuousSource = readFileSync(join(process.cwd(), 'src', 'pages', 'continuous.astro'), 'utf8');
+  const homepageSource = readFileSync(homepageSourcePath, 'utf8');
   const layoutSource = readFileSync(join(process.cwd(), 'src', 'layouts', 'Layout.astro'), 'utf8');
   const attachAll = gaussianSource.slice(
     gaussianSource.indexOf('function attachAll'),
@@ -236,7 +193,7 @@ test('continuous Gaussians begin loading before their chapters enter the viewpor
 
   assert.match(attachAll, /void mountGaussianBackground\(bg\)/);
   assert.doesNotMatch(attachAll, /IntersectionObserver/);
-  assert.match(continuousSource, /preload=\{\[\s*SPLATS\[0\]\.src,\s*SPLATS\[1\]\.src\s*\]\}/s);
+  assert.match(homepageSource, /preload=\{\[\s*SPLATS\[0\]\.src,\s*SPLATS\[1\]\.src\s*\]\}/s);
   assert.match(layoutSource, /preload\.map\(\(href\) => <link rel="preload" href=\{href\} as="fetch"/);
 });
 
@@ -252,11 +209,11 @@ test('code cards stay above softened Gaussian spill', () => {
 
 test('code hero removes the top bar and reaches farther into GitHub', () => {
   const codeSource = readFileSync(codeChapterSourcePath, 'utf8');
-  const codePageSource = readFileSync(join(process.cwd(), 'src', 'pages', 'code.astro'), 'utf8');
+  const homepageSource = readFileSync(homepageSourcePath, 'utf8');
   const layoutSource = readFileSync(join(process.cwd(), 'src', 'layouts', 'Layout.astro'), 'utf8');
   const gaussianSource = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
 
-  assert.match(codePageSource, /<Layout[^>]*immersive=\{true\}/);
+  assert.match(homepageSource, /<Layout[^>]*mode="continuous"/);
   assert.match(layoutSource, /:global\(body\[data-immersive="true"\] main\)\s*\{\s*padding-top:\s*0;/);
   assert.match(layoutSource, /:global\(body\[data-immersive="true"\] \.nav\)[^{]*\{[^}]*background:\s*transparent !important;/s);
   assert.match(codeSource, /\.code__hero\s*\{[^}]*background:\s*transparent;/s);
@@ -301,7 +258,7 @@ test('both Gaussians opt into smoothed camera motion around the fixed origin', (
   assert.match(gaussianSource, /sampled\.verticalOffset/);
   assert.match(gaussianSource, /--gs-scroll-y/);
   assert.doesNotMatch(gaussianSource, /pointerX|pointerY/);
-  assert.match(gaussianSource, /new SPLAT\.Vector3\(0, 0, 0\)/);
+  assert.doesNotMatch(gaussianSource, /OrbitControls|controls\./);
 });
 
 test('both Gaussians run independent autonomous camera gestures with roll', () => {
@@ -313,17 +270,55 @@ test('both Gaussians run independent autonomous camera gestures with roll', () =
   assert.match(source, /pitch = motion\.damp\(pitch, sampled\.pitch,/);
   assert.doesNotMatch(source, /autonomous\.pitchOffset/);
   assert.match(source, /sampled\.phaseOffset \+ autonomous\.phaseOffset/);
-  assert.match(source, /setCameraOnOrbit\(angle \+ phaseOffset, roll, lookYaw, lookPitch\)/);
+  assert.match(source, /setCameraOnOrbit\(angle \+ phaseOffset, roll, lookYaw, lookPitch, aimOffsetX, aimOffsetY\)/);
   assert.match(source, /new SPLAT\.Vector3\(pch, yaw, cameraRoll\)/);
+});
+
+test('both Gaussians opt into independent reduced-motion-safe digital dust', () => {
+  const gaussianSource = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
+  const codeSource = readFileSync(codeChapterSourcePath, 'utf8');
+
+  assert.equal((codeSource.match(/particleEffects=\{true\}/g) ?? []).length, 2);
+  assert.match(gaussianSource, /particleEffects\?: boolean/);
+  assert.match(gaussianSource, /data-particle-effects=\{particleEffects \? '1' : undefined\}/);
+  assert.match(gaussianSource, /https:\/\/esm\.sh\/gsplat@1\.2\.9/);
+  assert.match(gaussianSource, /installGaussianParticleShaderPatch/);
+  assert.match(gaussianSource, /createGaussianParticleAutopilot/);
+  assert.match(gaussianSource, /createGaussianLightAutopilot/);
+  assert.match(gaussianSource, /createGaussianParticleUniformController/);
+  assert.doesNotMatch(gaussianSource, /createGaussianPointerDissolve/);
+  assert.match(gaussianSource, /calculateParticleBounds/);
+  assert.match(gaussianSource, /hasParticleEffects = stage\.dataset\.particleEffects === '1' && !reducedMotion/);
+  assert.match(gaussianSource, /finally\s*\{\s*particleShaderHook\.restore\(\);\s*\}/s);
+  assert.match(gaussianSource, /particleController\.update/);
+  assert.match(gaussianSource, /coreRadius: 1\.5/);
+  assert.match(gaussianSource, /worldReveal: worldReveal/);
+  assert.match(gaussianSource, /gaussianToggleHotspot/);
+  assert.match(gaussianSource, /window\.addEventListener\('click', onWorldToggle/);
+  assert.match(gaussianSource, /worldRevealTarget = worldRevealTarget > 0\.5 \? 0 : 1/);
+  assert.match(gaussianSource, /createGaussianWorldTransition/);
+  assert.match(gaussianSource, /worldTransition\.sample\(worldRevealTarget, deltaSeconds\)/);
+  assert.match(gaussianSource, /transitionActivity: transitionFrame\.activity/);
+  assert.match(gaussianSource, /transitionDirection: transitionFrame\.direction/);
+  assert.match(gaussianSource, /const particleProfile = particles\.gaussianParticleProfile\(stage\.dataset\.placement\)/);
+  assert.match(gaussianSource, /const lightAutopilot = particleShaderActive \? particles\.createGaussianLightAutopilot\(particleSeed \^ 0x51f15e\) : null/);
+  assert.match(gaussianSource, /const lightFrame = lightAutopilot\.sample\(deltaSeconds\)/);
+  assert.match(gaussianSource, /transitionOpacity: particleProfile\.transitionOpacity/);
+  assert.match(gaussianSource, /displacement: particleProfile\.displacement/);
+  assert.match(gaussianSource, /\.\.\.lightFrame/);
+  assert.match(gaussianSource, /flowTime: transitionFrame\.time/);
+  assert.doesNotMatch(gaussianSource, /window\.addEventListener\('pointerdown', onPointerDown|pointerDissolve|pointerFrame/);
 });
 
 test('pointer gently biases camera aim without owning the autonomous orbit', () => {
   const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
 
   assert.match(source, /const pointerLookTarget = motion\.gaussianPointerLook/);
-  assert.match(source, /pointerLookTarget\.yaw \+ autonomous\.lookYaw/);
-  assert.match(source, /pointerLookTarget\.pitch \+ autonomous\.lookPitch/);
-  assert.match(source, /setCameraOnOrbit\(angle \+ phaseOffset, roll, lookYaw, lookPitch\)/);
+  assert.match(source, /aimOffsetX = motion\.damp\(aimOffsetX, pointerLookTarget\.targetX,/);
+  assert.match(source, /aimOffsetY = motion\.damp\(aimOffsetY, pointerLookTarget\.targetY,/);
+  assert.match(source, /const targetDistanceX = cameraAimX \* radius;/);
+  assert.match(source, /const targetDistanceY = cameraAimY \* radius;/);
+  assert.match(source, /setCameraOnOrbit\(angle \+ phaseOffset, roll, lookYaw, lookPitch, aimOffsetX, aimOffsetY\)/);
   assert.match(source, /const yaw = Math\.atan2\(ux, uz\) \+ cameraLookYaw;/);
   assert.match(source, /const pch = .* \+ cameraLookPitch;/);
 });
@@ -354,15 +349,6 @@ test('scroll progress resets safely after Astro page navigation', () => {
 
   assert.match(source, /Math\.min\(100,\s*Math\.max\(0,/);
   assert.match(source, /document\.addEventListener\('astro:page-load'/);
-});
-
-test('work hero keeps its intended desktop lines and portrait alignment', () => {
-  const source = readFileSync(standaloneWorkSourcePath, 'utf8');
-
-  assert.match(source, /\.hero\s*\{[^}]*align-items:\s*center;/s);
-  assert.match(source, /\.hero__title \.reveal-seg\s*\{[^}]*white-space:\s*nowrap;/s);
-  assert.doesNotMatch(source, /\.hero__title\s*\{[^}]*max-width:\s*10\.5ch;/s);
-  assert.match(source, /@media \(max-width: 720px\)[\s\S]*\.hero__title \.reveal-seg\s*\{[^}]*white-space:\s*normal;/s);
 });
 
 test('Kakofoni case lazy-loads the live fxhash work and foregrounds the museum acquisition', () => {
@@ -404,16 +390,15 @@ test('interactive artwork receives global iframe sizing and a capped balanced la
   assert.match(template, /:global\(\.case__interactive-frame\.is-ready\)/);
 });
 
-test('each primary page has its own hero copy and reveal language', () => {
-  const work = readFileSync(standaloneWorkSourcePath, 'utf8');
-  const about = readFileSync(join(process.cwd(), 'src', 'pages', 'about.astro'), 'utf8');
+test('each homepage chapter keeps its own hero copy and reveal language', () => {
+  const work = readFileSync(join(process.cwd(), 'src', 'components', 'portfolio', 'WorkChapter.astro'), 'utf8');
+  const about = readFileSync(join(process.cwd(), 'src', 'components', 'portfolio', 'AboutChapter.astro'), 'utf8');
   const code = readFileSync(codeChapterSourcePath, 'utf8');
 
-  assert.match(work, /<h1[^>]*data-reveal="cut"/);
+  assert.match(work, /<h1[^>]*[\s\S]*?data-work-title-reveal/);
   assert.match(work, /Sound direction,/);
   assert.match(work, /music production,/);
-  assert.match(work, /creative tooling\./);
-  assert.match(work, /Gabriel Worm · Palmas, Tocantins, Brazil/);
+  assert.match(work, /creative systems\./);
 
   assert.match(about, /<h1[^>]*data-reveal="focus"/);
   assert.match(about, /A practice shaped by/);

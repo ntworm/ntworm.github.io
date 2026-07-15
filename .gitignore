@@ -30,6 +30,7 @@ site/.astro/
 # Dev server log files (created when running npm run dev)
 .dev.log
 .dev.err.log
+site/.astro-dev-*.log
 
 # Agent context files (internal working notes, never published)
 .agent-context/

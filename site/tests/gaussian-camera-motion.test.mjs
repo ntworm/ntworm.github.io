@@ -87,22 +87,40 @@ test('autonomous gestures stay cinematic and return fully to the base orbit', ()
   assert.ok(completedGestureLengths.every((seconds) => seconds >= 9.8 && seconds <= 30.2));
 });
 
-test('pointer look biases only the camera aim by a few degrees', () => {
+test('pointer look shifts the camera target gently across the view plane', () => {
   assert.equal(typeof cameraMotion.gaussianPointerLook, 'function');
   const viewport = { viewportWidth: 1000, viewportHeight: 800 };
 
-  assert.deepEqual(cameraMotion.gaussianPointerLook({ clientX: 500, clientY: 400, ...viewport }), { yaw: 0, pitch: 0 });
+  assert.deepEqual(cameraMotion.gaussianPointerLook({ clientX: 500, clientY: 400, ...viewport }), { targetX: 0, targetY: 0 });
   const upperRight = cameraMotion.gaussianPointerLook({ clientX: 1000, clientY: 0, ...viewport });
   const lowerLeft = cameraMotion.gaussianPointerLook({ clientX: 0, clientY: 800, ...viewport });
 
-  assert.ok(upperRight.yaw > 0 && upperRight.yaw <= 0.05);
-  assert.ok(upperRight.pitch > 0 && upperRight.pitch <= 0.04);
-  assert.equal(lowerLeft.yaw, -upperRight.yaw);
-  assert.equal(lowerLeft.pitch, -upperRight.pitch);
+  assert.ok(upperRight.targetX > 0 && upperRight.targetX <= 0.08);
+  assert.ok(upperRight.targetY > 0 && upperRight.targetY <= 0.065);
+  assert.equal(lowerLeft.targetX, -upperRight.targetX);
+  assert.equal(lowerLeft.targetY, -upperRight.targetY);
   assert.deepEqual(
     cameraMotion.gaussianPointerLook({ clientX: 9999, clientY: -9999, ...viewport }),
     upperRight,
   );
+});
+
+test('world toggle accepts only clicks inside the visible Gaussian focus ellipse', () => {
+  assert.equal(typeof cameraMotion.gaussianToggleHotspot, 'function');
+  const viewport = { viewportWidth: 1200, viewportHeight: 800 };
+
+  assert.equal(cameraMotion.gaussianToggleHotspot({
+    clientX: 864, clientY: 432, focusX: 0.72, focusY: 0.54, ...viewport,
+  }), true);
+  assert.equal(cameraMotion.gaussianToggleHotspot({
+    clientX: 540, clientY: 432, focusX: 0.72, focusY: 0.54, ...viewport,
+  }), false);
+  assert.equal(cameraMotion.gaussianToggleHotspot({
+    clientX: 336, clientY: 432, focusX: 0.28, focusY: 0.54, ...viewport,
+  }), true);
+  assert.equal(cameraMotion.gaussianToggleHotspot({
+    clientX: 1180, clientY: 40, focusX: 0.72, focusY: 0.54, ...viewport,
+  }), false);
 });
 
 test('scroll changes only the reversible vertical composition', () => {
