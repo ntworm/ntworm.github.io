@@ -4,6 +4,7 @@ year: 2021
 role: "Creator"
 country: "Web-based (Tezos / fxhash + Teia)"
 type: "Digital Arts (generative audiovisual)"
+production: "Independent project / nt_worm"
 links:
   - url: "https://teia.art/lucy"
     label: "Teia collection"

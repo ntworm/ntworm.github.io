@@ -15,6 +15,9 @@ test('primary navigation targets the continuous homepage chapters', () => {
     assert.match(footer, new RegExp(`href="/#${chapter}"`));
   }
 
+  const navOrder = [...nav.matchAll(/href: '\/#([^']+)'/g)].map((match) => match[1]);
+  assert.deepEqual(navOrder, ['about', 'work', 'code', 'contact']);
+
   assert.doesNotMatch(nav, /href:\s*['"]\/(?:about|code|contact)['"]/);
   assert.doesNotMatch(footer, /href="\/(?:about|code|contact)"/);
 });

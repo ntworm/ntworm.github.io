@@ -4,6 +4,7 @@ year: 2024
 role: "Composer + Sound Mixer"
 country: "Lisbon, Portugal"
 type: "Short film (horror)"
+production: "Independent project"
 tags: ["film", "horror", "lisbon", "composer", "mix"]
 ---
 

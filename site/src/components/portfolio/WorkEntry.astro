@@ -48,6 +48,12 @@ const summaryParts = summary && highlight && highlightIndex >= 0
   data-work-id={project.id}
   data-media-layout={tier === 'featured' ? project.presentation.mediaLayout : undefined}
 >
+  {tier === 'featured' && project.media.cover && (
+    <div class="work-entry__backdrop" aria-hidden="true">
+      <img src={project.media.cover} alt="" loading="lazy" decoding="async" />
+    </div>
+  )}
+
   <div class="work-entry__media">
     {project.media.cover ? (
       <img
@@ -88,11 +94,63 @@ const summaryParts = summary && highlight && highlightIndex >= 0
   }
 
   .work-entry--featured {
+    position: relative;
+    isolation: isolate;
+    overflow: visible;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
     align-items: center;
     gap: var(--s-6);
     padding: clamp(24px, 3vw, 44px) 0;
+  }
+
+  .work-entry--featured .work-entry__backdrop {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    z-index: 0;
+    overflow: hidden;
+    opacity: 0.3;
+    pointer-events: none;
+    -webkit-mask-image:
+      linear-gradient(90deg, transparent 0%, #000 4%, #000 96%, transparent 100%),
+      linear-gradient(180deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(90deg, transparent 0%, #000 4%, #000 96%, transparent 100%),
+      linear-gradient(180deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+    mask-composite: intersect;
+    transition: opacity 680ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .work-entry--featured .work-entry__backdrop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.9  0 0 0 0 0.88  0 0 0 0 0.84  0 0 0 0.34 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+      linear-gradient(90deg, rgba(12, 12, 13, 0.34), rgba(12, 12, 13, 0.12) 50%, rgba(12, 12, 13, 0.4));
+    background-size: 180px 180px, 100% 100%;
+    opacity: 0.72;
+  }
+
+  .work-entry__backdrop img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(26px) saturate(0.9) brightness(0.58);
+    transform: scale(1.08);
+    transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .work-entry--featured .work-entry__media,
+  .work-entry--featured .work-entry__meta {
+    position: relative;
+    z-index: 1;
   }
 
   .work-entry--featured.is-lead {
@@ -158,6 +216,8 @@ const summaryParts = summary && highlight && highlightIndex >= 0
   .work-entry--featured .work-entry__media img {
     display: block;
     height: auto;
+    transform: scale(1);
+    transition: transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .work-entry__placeholder {
@@ -259,6 +319,21 @@ const summaryParts = summary && highlight && highlightIndex >= 0
     color: var(--accent-amber);
   }
 
+  .work-entry--featured:hover .work-entry__backdrop,
+  .work-entry--featured:focus-visible .work-entry__backdrop {
+    opacity: 0.9;
+  }
+
+  .work-entry--featured:hover .work-entry__backdrop img,
+  .work-entry--featured:focus-visible .work-entry__backdrop img {
+    transform: scale(1.18);
+  }
+
+  .work-entry--featured:hover .work-entry__media img,
+  .work-entry--featured:focus-visible .work-entry__media img {
+    transform: scale(1.1);
+  }
+
   @media (max-width: 760px) {
     .work-entry--featured {
       grid-template-columns: 1fr;
@@ -274,6 +349,21 @@ const summaryParts = summary && highlight && highlightIndex >= 0
     .work-entry--featured.is-reversed .work-entry__media,
     .work-entry--featured.is-reversed .work-entry__meta {
       order: initial;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .work-entry__backdrop,
+    .work-entry__backdrop img,
+    .work-entry--featured .work-entry__media img {
+      transition: none;
+    }
+
+    .work-entry--featured:hover .work-entry__backdrop img,
+    .work-entry--featured:focus-visible .work-entry__backdrop img,
+    .work-entry--featured:hover .work-entry__media img,
+    .work-entry--featured:focus-visible .work-entry__media img {
+      transform: none;
     }
   }
 </style>

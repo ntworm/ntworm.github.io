@@ -1,0 +1,156 @@
+---
+const linesAndCellsUrl = 'https://dweb.link/ipfs/Qmb4ktMbn1Sef6i5sMYy17MTzGmjRT8TuWsgLAhsQMRbrU?fxhash=opTgZfTemeT4UtGTA95AUh97CWnCstz2XW359tw1Hv7588x551j';
+---
+
+<div class="portfolio-about__live-bg" aria-hidden="true">
+  <div class="portfolio-about__live-stage">
+    <iframe
+      src="about:blank"
+      data-hydra-src={linesAndCellsUrl}
+      title="Lines and Cells live generative background"
+      width="1280"
+      height="720"
+      loading="eager"
+      sandbox="allow-scripts allow-same-origin"
+      referrerpolicy="no-referrer"
+    ></iframe>
+  </div>
+</div>
+
+<style>
+  .portfolio-about__live-bg {
+    --hydra-scale-x: 1;
+    --hydra-scale-y: 1;
+    position: absolute;
+    top: -18vh;
+    bottom: 0;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0.72;
+    mix-blend-mode: screen;
+    background: transparent;
+    -webkit-mask-image:
+      linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.24) 5%, rgba(0, 0, 0, 0.86) 14%, #000 25%, #000 75%, rgba(0, 0, 0, 0.78) 89%, transparent 100%),
+      linear-gradient(180deg, #000 0%, #000 86%, rgba(0, 0, 0, 0.72) 90%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.24) 5%, rgba(0, 0, 0, 0.86) 14%, #000 25%, #000 75%, rgba(0, 0, 0, 0.78) 89%, transparent 100%),
+      linear-gradient(180deg, #000 0%, #000 86%, rgba(0, 0, 0, 0.72) 90%, transparent 100%);
+    mask-composite: intersect;
+  }
+
+  .portfolio-about__live-stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .portfolio-about__live-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background:
+      linear-gradient(90deg, rgba(18, 18, 19, 0.46), transparent 34%, transparent 78%, rgba(18, 18, 19, 0.32)),
+      linear-gradient(180deg, rgba(18, 18, 19, 0.22), transparent 20%, transparent 80%, rgba(18, 18, 19, 0.44));
+  }
+
+  .portfolio-about__live-bg iframe {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(100vw, 1280px);
+    height: min(100vh, 720px);
+    border: 0;
+    z-index: 1;
+    opacity: 0.92;
+    mix-blend-mode: screen;
+    filter: saturate(1.18) contrast(1.12) brightness(0.82) blur(0.55px);
+    transform: translate(-50%, -50%) scale(var(--hydra-scale-x), var(--hydra-scale-y));
+    transform-origin: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .portfolio-about__live-bg iframe { display: none; }
+  }
+
+  @media (max-width: 760px) {
+    .portfolio-about__live-bg {
+      top: -12vh;
+      bottom: 0;
+      width: 100vw;
+      opacity: 0.46;
+    }
+  }
+</style>
+
+<script>
+  type HydraSurfaceWindow = Window & {
+    __portfolioHydraSurfaceCleanup?: () => void;
+  };
+
+  const setupHydraSurface = () => {
+    const background = document.querySelector<HTMLElement>('.portfolio-about__live-bg');
+    const stage = background?.querySelector<HTMLElement>('.portfolio-about__live-stage');
+    const iframe = stage?.querySelector<HTMLIFrameElement>('iframe[data-hydra-src]');
+    if (!background || !stage || !iframe) return;
+
+    const liveWindow = window as HydraSurfaceWindow;
+    liveWindow.__portfolioHydraSurfaceCleanup?.();
+
+    const controller = new AbortController();
+    let frame = 0;
+
+    const render = () => {
+      frame = 0;
+      const baseWidth = Math.min(window.innerWidth, 1280);
+      const baseHeight = Math.min(window.innerHeight, 720);
+      const scaleX = Math.max(1, (stage.clientWidth / baseWidth) * 1.08);
+      const scaleY = Math.max(1, (stage.clientHeight / baseHeight) * 1.08);
+
+      background.style.setProperty('--hydra-scale-x', `${scaleX}`);
+      background.style.setProperty('--hydra-scale-y', `${scaleY}`);
+    };
+
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(render);
+    };
+
+    const observer = new ResizeObserver(schedule);
+    observer.observe(stage);
+    window.addEventListener('resize', schedule, {
+      passive: true,
+      signal: controller.signal,
+    });
+
+    liveWindow.__portfolioHydraSurfaceCleanup = () => {
+      controller.abort();
+      observer.disconnect();
+      if (frame) cancelAnimationFrame(frame);
+    };
+
+    schedule();
+
+    const loadHydra = () => {
+      const source = iframe.dataset.hydraSrc;
+      if (!source || iframe.dataset.hydraLoaded === 'true') return;
+      if (stage.clientWidth < 1 || stage.clientHeight < 1) {
+        requestAnimationFrame(loadHydra);
+        return;
+      }
+
+      iframe.dataset.hydraLoaded = 'true';
+      iframe.src = source;
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(loadHydra));
+  };
+
+  document.addEventListener('astro:page-load', setupHydraSurface);
+  setupHydraSurface();
+</script>

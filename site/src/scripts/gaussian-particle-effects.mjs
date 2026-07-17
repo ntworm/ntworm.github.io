@@ -38,13 +38,29 @@ const LIGHT_PALETTES = Object.freeze([
 const mixValue = (from, to, amount) => from + (to - from) * amount;
 const mixVector = (from, to, amount) => from.map((value, index) => mixValue(value, to[index], amount));
 
+const LIGHT_PROFILES = Object.freeze({
+  'hero-right': Object.freeze({
+    drift: [0.48, 0.42, 0.38],
+    intensityScale: 1,
+    pulseScale: 1,
+    chromaticScale: 1,
+  }),
+  'section-left': Object.freeze({
+    drift: [0.34, 0.3, 0.3],
+    intensityScale: 0.78,
+    pulseScale: 0.66,
+    chromaticScale: 0.86,
+  }),
+});
+
 /**
  * Slow, seeded volumetric lighting episodes. Visual parameters interpolate
  * for the full episode, so even extreme palettes arrive as light rather than
  * as a hard color correction.
  */
-export function createGaussianLightAutopilot(seed = 1) {
+export function createGaussianLightAutopilot(seed = 1, placement = 'hero-right') {
   const random = createRandom(seed);
+  const lightProfile = LIGHT_PROFILES[placement] ?? LIGHT_PROFILES['hero-right'];
   let time = 0;
   let elapsed = 0;
   let duration = 8;
@@ -83,14 +99,14 @@ export function createGaussianLightAutopilot(seed = 1) {
       chromatic = 0.08 + random() * 0.42;
     }
     target = {
-      lightCenter: [-0.48 + random() * 0.96, -0.42 + random() * 0.84, -0.38 + random() * 0.76],
+      lightCenter: lightProfile.drift.map((extent) => -extent + random() * extent * 2),
       lightRadius,
-      lightIntensity,
+      lightIntensity: lightIntensity * lightProfile.intensityScale,
       ambient,
       tintA: [...palette.tintA],
       tintB: [...palette.tintB],
-      chromatic,
-      pulseAmount: 0.14 + random() * 0.72,
+      chromatic: chromatic * lightProfile.chromaticScale,
+      pulseAmount: (0.14 + random() * 0.72) * lightProfile.pulseScale,
     };
   };
 
@@ -121,13 +137,26 @@ export function createGaussianLightAutopilot(seed = 1) {
 
       const wave = 0.5 + 0.5 * Math.sin(time * 0.46 + seed * 0.013)
         * Math.sin(time * 0.19 + seed * 0.007);
+      const paletteName = LIGHT_PALETTES[paletteIndex].name;
+      let lightIntensity = current.lightIntensity;
+      let lightRadius = current.lightRadius;
+      let energyPulse = clamp(wave * current.pulseAmount, 0, 1);
+      if (placement === 'section-left' && paletteName === 'red-blue' && current.ambient < 0.22) {
+        const redBreath = Math.pow(0.5 + 0.5 * Math.sin(time * 1.35 + seed * 0.021), 1.45);
+        const redExpansion = ease(redBreath);
+        lightIntensity = mixValue(0.012, Math.max(current.lightIntensity, 1.68), redBreath);
+        lightRadius = mixValue(0.18, Math.min(1.18, Math.max(current.lightRadius, 0.98)), redExpansion);
+        energyPulse = clamp(energyPulse * (0.18 + redBreath * 0.82), 0, 0.72);
+      }
       return {
         ...current,
+        lightRadius,
+        lightIntensity,
         lightCenter: [...current.lightCenter],
         tintA: [...current.tintA],
         tintB: [...current.tintB],
-        energyPulse: clamp(wave * current.pulseAmount, 0, 1),
-        palette: LIGHT_PALETTES[paletteIndex].name,
+        energyPulse,
+        palette: paletteName,
       };
     },
   };
@@ -548,7 +577,10 @@ float particleHash(float value) {
   vColor.rgb += particleChannelNoise * particleFringe * uParticleChromatic * 0.28;
   vColor.rgb *= 1.0 + uParticlePulse * 0.08 + particleFringe * 0.16 + particleWorldDust * 0.1;
   vColor.rgb += particleFringe * particlePalette * vec3(0.045, 0.025, 0.065);
-  vColor.rgb += particleWorldDust * particlePalette * 0.032;`);
+  vColor.rgb += particleWorldDust * particlePalette * 0.032;
+  float particleLightCeiling = max(vColor.r, max(vColor.g, vColor.b));
+  float particleToneCompress = 1.0 + max(0.0, particleLightCeiling - 0.82) * 0.42;
+  vColor.rgb /= particleToneCompress;`);
 
   return { source: next, patched: true };
 }

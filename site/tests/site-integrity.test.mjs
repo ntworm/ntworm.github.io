@@ -108,16 +108,20 @@ test('featured-work copy contains only the confirmed credits', () => {
   assert.doesNotMatch(trisal, /documentary \/ fictional hybrid|closer to an anthology/i);
   assert.doesNotMatch(compositor, /composer (?:who )?can(?:not|'t) hear|unable to hear his own work/i);
   assert.doesNotMatch(aiAm, /no synth pads|reverb tails longer than a breath|orchestral doubling/i);
+  assert.doesNotMatch(aiAm, /Universidade Lusófona/i);
+  assert.match(aiAm, /production:\s*"Independent project"/i);
   assert.doesNotMatch(agosto, /four standalone singles|one music video/i);
   assert.doesNotMatch(tono, /granular synthesis|dialogue-free|library construction/i);
 
   assert.match(agosto, /three singles, one album, and a live recording made for/i);
   assert.match(ticha, /Foley, ambiences, and sound-effects editing/);
-  assert.match(clube, /production sound recording, Foley, ambiences, and sound-effects editing/);
+  assert.match(clube, /recording surround ambiences across Lisbon, editing ambiences, and creating sound effects/i);
+  assert.doesNotMatch(clube, /Foley/i);
   assert.match(trisal, /“Isso de novo não tem nada!”/);
   assert.match(trisal, /premiered at CineSesc Araguaína on 10 June 2026/);
   assert.match(ticha, /Tribeca Festival Lisboa 2025/);
-  assert.match(tono, /recording Foley, editing sound effects, and contributing to sound design/i);
+  assert.match(tono, /sound assistance, sound editing, and sound design/i);
+  assert.doesNotMatch(tono, /Foley/i);
   assert.match(tono, /Best Mexican Student Short Film at Pixelatl 2024/i);
   assert.match(clube, /2025 seasons available on OPTO \/ SIC/i);
   assert.match(feminine, /animated documentary/i);
@@ -163,10 +167,13 @@ test('code page stacks two scroll-bound borderless Gaussians', () => {
   assert.match(css, /mask-image:\s*radial-gradient/);
   assert.match(css, /\.code__hero-copy/);
   assert.match(css, /\.code__lower-showcase/);
-  assert.match(css, /inset:\s*-52vh 0/);
+  assert.match(css, /inset:\s*-52vh auto -52vh 50%/);
   assert.match(css, /\.code__lower-copy[^,{]*\{[^}]*grid-column:2/);
-  assert.match(css, /transform:translateX\(18%\)\s*translateY\(calc\(-22%\s*\+\s*var\(--gs-scroll-y,\s*0%\)\)\)\s*scale\(1\.4\)/);
-  assert.match(css, /transform:translateX\(-18%\)\s*translateY\(calc\(-10%\s*\+\s*var\(--gs-scroll-y,\s*0%\)\)\)\s*scale\(1\.32\)/);
+  assert.match(css, /width:132%!important/);
+  assert.match(css, /height:132%!important/);
+  assert.match(css, /inset:-16%!important/);
+  assert.match(css, /transform:translateX\(8%\)\s*translateY\(calc\(-18%\s*\+\s*var\(--gs-scroll-y,\s*0%\)\)\)\s*scale\(1\.3\)/);
+  assert.match(css, /transform:translateX\(-8%\)\s*translateY\(calc\(-8%\s*\+\s*var\(--gs-scroll-y,\s*0%\)\)\)\s*scale\(1\.24\)/);
   assert.match(css, /\.gs-bg__live-canvas/);
   assert.doesNotMatch(css, /\.gs-bg__live-canvas\[data-astro-cid-/);
   assert.match(css, /\.gs-bg__live-canvas\{[^}]*pointer-events:none/);
@@ -223,9 +230,13 @@ test('code hero removes the top bar and reaches farther into GitHub', () => {
 test('Gaussian placements keep their independent raised compositions and overscan', () => {
   const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
 
-  assert.match(source, /translateX\(18%\) translateY\(calc\(-22% \+ var\(--gs-scroll-y, 0%\)\)\) scale\(1\.40\)/);
-  assert.match(source, /translateX\(24%\) translateY\(calc\(-22% \+ var\(--gs-scroll-y, 0%\)\)\) scale\(1\.50\)/);
-  assert.match(source, /translateX\(-18%\) translateY\(calc\(-10% \+ var\(--gs-scroll-y, 0%\)\)\) scale\(1\.32\)/);
+  assert.match(source, /left:\s*50%;/);
+  assert.match(source, /transform:\s*translateX\(-50%\);/);
+  assert.match(source, /inset:\s*-16% !important;/);
+  assert.match(source, /width:\s*132% !important;/);
+  assert.match(source, /translateX\(8%\) translateY\(calc\(-18% \+ var\(--gs-scroll-y, 0%\)\)\) scale\(1\.30\)/);
+  assert.match(source, /translateX\(10%\) translateY\(calc\(-18% \+ var\(--gs-scroll-y, 0%\)\)\) scale\(1\.36\)/);
+  assert.match(source, /translateX\(-8%\) translateY\(calc\(-8% \+ var\(--gs-scroll-y, 0%\)\)\) scale\(1\.24\)/);
 });
 
 test('both Gaussians opt into smoothed camera motion around the fixed origin', () => {
@@ -301,7 +312,7 @@ test('both Gaussians opt into independent reduced-motion-safe digital dust', () 
   assert.match(gaussianSource, /transitionActivity: transitionFrame\.activity/);
   assert.match(gaussianSource, /transitionDirection: transitionFrame\.direction/);
   assert.match(gaussianSource, /const particleProfile = particles\.gaussianParticleProfile\(stage\.dataset\.placement\)/);
-  assert.match(gaussianSource, /const lightAutopilot = particleShaderActive \? particles\.createGaussianLightAutopilot\(particleSeed \^ 0x51f15e\) : null/);
+  assert.match(gaussianSource, /const lightAutopilot = particleShaderActive \? particles\.createGaussianLightAutopilot\(particleSeed \^ 0x51f15e, stage\.dataset\.placement\) : null/);
   assert.match(gaussianSource, /const lightFrame = lightAutopilot\.sample\(deltaSeconds\)/);
   assert.match(gaussianSource, /transitionOpacity: particleProfile\.transitionOpacity/);
   assert.match(gaussianSource, /displacement: particleProfile\.displacement/);
@@ -326,7 +337,7 @@ test('pointer gently biases camera aim without owning the autonomous orbit', () 
 test('Gaussian masks open farther into the page while copy protection remains', () => {
   const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
 
-  assert.match(source, /ellipse 78% 96% at 50% 48%/);
+  assert.match(source, /ellipse 82% 98% at 50% 48%/);
   assert.match(source, /rgba\(11, 11, 12, 0\.86\) 12%/);
   assert.match(source, /rgba\(11, 11, 12, 0\.55\) 28%/);
   assert.match(source, /\.gs-bg__veil\s*\{[^}]*z-index:\s*2;/s);

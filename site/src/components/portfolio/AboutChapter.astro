@@ -1,6 +1,7 @@
 ---
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import HydraBackground from '../HydraBackground.astro';
 
 const PORTRAIT_DIR = join(process.cwd(), 'public', 'portrait');
 const IMG_EXTS = /\.(jpe?g|png|webp|avif|gif)$/i;
@@ -23,9 +24,11 @@ const portraitFiles = (() => {
     return [];
   }
 })();
+
 ---
 
 <section id="about" class="portfolio-about wrap" data-portfolio-chapter="about">
+  <HydraBackground />
   <div class="portfolio-about__hero">
     <div class="portfolio-about__copy">
       <span class="eyebrow">About</span>
@@ -68,16 +71,16 @@ const portraitFiles = (() => {
     <div class="portfolio-about__thread-copy">
       <p>
         I work at the intersection of film sound, music production, and creative tooling. My practice
-        moves through <em>cinema</em> — sound direction, design, and mixing for film and television;
-        <em>music</em> — production, mix, and master for independent Brazilian artists and bands; and
+        moves through <em>cinema</em> — sound direction, design, and mixing for film and television;{' '}
+        <em>music</em> — production, mix, and master for independent Brazilian artists and bands; and{' '}
         <em>code</em> — Max4Live devices, generative audiovisual systems, and live instruments.
       </p>
       <p>
         Across all three, the thread is the same: I build instruments — acoustic, digital, conceptual —
-        to make work that is specific, situated, and accountable to a place. Recent work includes
+        to make work that is specific, situated, and accountable to a place. Recent work includes{' '}
         <a class="entity-link" href="/work/o-compositor">O Compositor</a>, winner of Best Portuguese Horror Short
         at MOTELX 2025; the <a class="entity-link" href="/work/ep-rinoceronte">EP Rinoceronte</a>
-        for Luzo Cairo; and <a class="entity-link" href="/work/rc-surface">RC Surface</a>, an MIT-licensed
+        {' '}for Luzo Cairo; and <a class="entity-link" href="/work/rc-surface">RC Surface</a>, an MIT-licensed
         Max4Live device for Ableton Live.
       </p>
       <p>
@@ -129,17 +132,21 @@ const portraitFiles = (() => {
 
 <style>
   .portfolio-about {
+    position: relative;
     padding-top: var(--s-7);
     padding-bottom: 0;
   }
 
   .portfolio-about__hero {
+    position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
     align-items: center;
     gap: var(--s-9);
     min-height: auto;
-    padding-bottom: var(--s-7);
+    padding-bottom: var(--s-8);
+    border-bottom: 1px solid var(--muted-graphite);
   }
 
   .portfolio-about__copy h1 {
@@ -231,11 +238,13 @@ const portraitFiles = (() => {
   }
 
   .portfolio-about__thread {
+    position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: minmax(260px, 0.72fr) minmax(0, 1.28fr);
     gap: var(--s-8) var(--s-9);
-    padding: var(--s-7) 0 var(--s-7);
-    border-top: 1px solid var(--muted-graphite);
+    padding: var(--s-8) 0 var(--s-7);
+    border-top: 0;
   }
 
   .portfolio-about__thread-heading h2 {
@@ -251,12 +260,14 @@ const portraitFiles = (() => {
   .portfolio-about__thread-copy p {
     margin: 0 0 var(--s-5);
     break-inside: avoid;
+    line-height: 1.58;
   }
 
   .portfolio-about__areas {
     grid-column: 1 / -1;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: var(--s-3);
     border-top: 1px solid var(--muted-graphite);
   }
 

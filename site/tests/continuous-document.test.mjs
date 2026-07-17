@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import test from 'node:test';
 
@@ -12,6 +12,9 @@ import {
 const distDir = join(process.cwd(), 'dist');
 const projectsDir = join(process.cwd(), 'src', 'content', 'projects');
 const aboutChapterPath = join(process.cwd(), 'src', 'components', 'portfolio', 'AboutChapter.astro');
+const hydraBackgroundPath = join(process.cwd(), 'src', 'components', 'HydraBackground.astro');
+const homepagePath = join(process.cwd(), 'src', 'pages', 'index.astro');
+const layoutPath = join(process.cwd(), 'src', 'layouts', 'Layout.astro');
 const workChapterPath = join(process.cwd(), 'src', 'components', 'portfolio', 'WorkChapter.astro');
 const workArchivePath = join(process.cwd(), 'src', 'components', 'portfolio', 'WorkArchive.astro');
 const workEntryPath = join(process.cwd(), 'src', 'components', 'portfolio', 'WorkEntry.astro');
@@ -111,8 +114,8 @@ test('homepage renders the approved Work tiers', () => {
 test('homepage Work contains one link per tier entry and no empty href', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
 
-  assert.equal(workTags(html, 'featured').length, 8);
-  assert.equal(workTags(html, 'more').length, 6);
+  assert.equal(workTags(html, 'featured').length, 13);
+  assert.equal(workTags(html, 'more').length, 5);
   assert.equal(workTags(html, 'archive').length, 23);
   assert.ok(
     [...workTags(html, 'featured'), ...workTags(html, 'more'), ...workTags(html, 'archive')]
@@ -166,6 +169,47 @@ test('About carries the existing manifesto and four practice areas into one edit
   assert.match(about, /href="\/work\/o-compositor"/);
   assert.match(about, /href="\/work\/ep-rinoceronte"/);
   assert.match(about, /href="\/work\/rc-surface"/);
+  assert.match(about, /television;\s+<em[^>]*>music<\/em>/);
+  assert.match(about, /Recent work includes\s+<a[^>]*>O Compositor<\/a>/);
+});
+
+test('Lines and Cells stays anchored to About and scrolls out before Work', () => {
+  const html = readFileSync(join(distDir, 'index.html'), 'utf8');
+  const about = chapterSlice(html, 'about', 'work');
+  const work = chapterSlice(html, 'work', 'code');
+  const source = existsSync(hydraBackgroundPath) ? readFileSync(hydraBackgroundPath, 'utf8') : '';
+  const aboutSource = readFileSync(aboutChapterPath, 'utf8');
+  const homepage = readFileSync(homepagePath, 'utf8');
+  const layout = readFileSync(layoutPath, 'utf8');
+
+  assert.match(about, /class="portfolio-about__live-bg"/);
+  assert.ok(about.indexOf('class="portfolio-about__live-bg"') < about.indexOf('class="portfolio-about__hero"'));
+  assert.match(html, /class="portfolio-about__live-stage"/);
+  assert.match(html, /title="Lines and Cells live generative background"/);
+  assert.match(html, /width="1280"/);
+  assert.match(html, /height="720"/);
+  assert.match(html, /data-hydra-src="https:\/\/dweb\.link\/ipfs\/Qmb4ktMbn1Sef6i5sMYy17MTzGmjRT8TuWsgLAhsQMRbrU\?fxhash=opTgZfTemeT4UtGTA95AUh97CWnCstz2XW359tw1Hv7588x551j"/);
+  assert.match(html, /https:\/\/dweb\.link\/ipfs\/Qmb4ktMbn1Sef6i5sMYy17MTzGmjRT8TuWsgLAhsQMRbrU\?fxhash=opTgZfTemeT4UtGTA95AUh97CWnCstz2XW359tw1Hv7588x551j/);
+  assert.match(html, /loading="eager"/);
+  assert.match(html, /sandbox="allow-scripts allow-same-origin"/);
+  assert.doesNotMatch(source, /portfolio-about__live-bg-fallback|lines-and-cells\.webp/);
+  assert.doesNotMatch(work, /portfolio-(?:about|work)__live-bg|Lines and Cells live generative background/);
+  assert.doesNotMatch(homepage, /HydraBackground/);
+  assert.doesNotMatch(layout, /<slot name="backdrop"/);
+  assert.match(aboutSource, /import HydraBackground from '\.\.\/HydraBackground\.astro';/);
+  assert.match(aboutSource, /<HydraBackground\s*\/>/);
+  assert.match(source, /\.portfolio-about__live-bg\s*\{[^}]*position:\s*absolute;[^}]*top:\s*-?[\d.]+vh;[^}]*bottom:\s*0;[^}]*left:\s*50%;[^}]*width:\s*100vw;[^}]*transform:\s*translateX\(-50%\);[^}]*z-index:\s*0;[^}]*pointer-events:\s*none;[^}]*overflow:\s*hidden;/s);
+  assert.doesNotMatch(source, /position:\s*fixed/);
+  assert.doesNotMatch(source, /getBoundingClientRect\(\)/);
+  assert.match(source, /\.portfolio-about__live-stage\s*\{[^}]*position:\s*relative;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*overflow:\s*hidden;/s);
+  assert.match(source, /linear-gradient\(180deg,\s*#000 0%,\s*#000 86%,\s*rgba\(0, 0, 0, 0\.72\) 90%,\s*transparent 100%\)/s);
+  assert.match(source, /\.portfolio-about__live-bg iframe\s*\{[^}]*width:\s*min\(100vw,\s*1280px\);[^}]*height:\s*min\(100vh,\s*720px\);[^}]*transform:\s*translate\(-50%,\s*-50%\) scale\(var\(--hydra-scale-x\),\s*var\(--hydra-scale-y\)\);/s);
+  assert.match(source, /Math\.min\(window\.innerWidth,\s*1280\)/);
+  assert.match(source, /Math\.min\(window\.innerHeight,\s*720\)/);
+  assert.match(source, /stage\.clientHeight\s*\/\s*baseHeight/);
+  assert.match(source, /requestAnimationFrame\(\(\)\s*=>\s*requestAnimationFrame\(loadHydra\)\)/);
+  assert.match(aboutSource, /\.portfolio-about__hero\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1;/s);
+  assert.match(aboutSource, /\.portfolio-about__thread\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1;/s);
 });
 
 test('Work intro pairs the editorial statement with the original project spotlight and practice tags', () => {
@@ -185,9 +229,9 @@ test('Work intro pairs the editorial statement with the original project spotlig
   assert.match(source, /\.portfolio-work__spotlight:hover \.work-spotlight-cell/);
   assert.match(source, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(work, /class="portfolio-work__runway"/);
-  assert.match(work, /class="portfolio-work__runway-count mono"[^>]*>01—08<\/span>/);
+  assert.match(work, /class="portfolio-work__runway-count mono"[^>]*>01—13<\/span>/);
   assert.match(work, /class="portfolio-work__runway-rule"/);
-  assert.match(work, /<h2 id="selected-work-title"[^>]*>Eight defining projects\.<\/h2>/);
+  assert.match(work, /<h2 id="selected-work-title"[^>]*>Defining Projects\.<\/h2>/);
   assert.match(work, /data-work-title-reveal/);
   assert.match(readFileSync(workChapterPath, 'utf8'), /IntersectionObserver/);
   assert.match(readFileSync(workChapterPath, 'utf8'), /animation:\s*work-line-in\s+760ms/);
@@ -206,7 +250,7 @@ test('featured entries alone render summaries and explicit orientation classes',
     attr(tag, 'data-media-layout'),
   ]));
 
-  assert.equal(featured.length, 8);
+  assert.equal(featured.length, 13);
   assert.ok(featured.every((entry) => (entry.match(/class="work-entry__summary"/g) ?? []).length === 1));
   assert.ok(featured.every((entry) => (entry.match(/class="work-entry__summary-highlight"/g) ?? []).length === 1));
   assert.ok([...more, ...archive].every((entry) => !entry.includes('work-entry__summary')));
@@ -220,6 +264,11 @@ test('featured entries alone render summaries and explicit orientation classes',
     trisal: 'portrait',
     'el-tono-del-mar': 'landscape',
     'kakofoni-orquestra': 'portrait',
+    'em-agosto-chove': 'landscape',
+    'ai-am': 'portrait',
+    'unconscious-vision': 'portrait',
+    'arvore-seca': 'portrait',
+    lucy: 'portrait',
   });
   assert.match(featuredTags[0], /\bis-lead\b/);
   assert.ok(featuredTags.slice(1).every((tag) => !/\bis-lead\b/.test(tag)));
@@ -234,13 +283,30 @@ test('featured factual highlights live inside the existing summary and turn ambe
   assert.match(source, /\.work-entry:hover \.work-entry__summary-highlight,[^}]*\{[^}]*color:\s*var\(--accent-amber\);/s);
 });
 
+test('featured projects reveal a diffused poster backdrop and zoom both image layers on hover', () => {
+  const html = readFileSync(join(distDir, 'index.html'), 'utf8');
+  const work = chapterSlice(html, 'work', 'code');
+  const featured = workEntries(work, 'featured');
+  const source = readFileSync(workEntryPath, 'utf8');
+
+  assert.equal(featured.length, 13);
+  assert.ok(featured.every((entry) => (entry.match(/class="work-entry__backdrop"/g) ?? []).length === 1));
+  assert.match(source, /\.work-entry--featured\s*\{[^}]*overflow:\s*visible;/s);
+  assert.match(source, /\.work-entry--featured \.work-entry__backdrop\s*\{[^}]*position:\s*absolute;[^}]*top:\s*0;[^}]*bottom:\s*0;[^}]*left:\s*50%;[^}]*width:\s*100vw;[^}]*transform:\s*translateX\(-50%\);[^}]*opacity:\s*0\.3;[^}]*mask-image:[^}]*linear-gradient\(90deg, transparent 0%, #000 4%, #000 96%, transparent 100%\)/s);
+  assert.match(source, /\.work-entry__backdrop img\s*\{[^}]*filter:\s*blur\(26px\)[^}]*transform:\s*scale\(1\.08\);/s);
+  assert.match(source, /\.work-entry--featured:hover \.work-entry__backdrop,[^}]*\{[^}]*opacity:\s*0\.9;/s);
+  assert.match(source, /\.work-entry--featured:hover \.work-entry__backdrop img,[^}]*\{[^}]*transform:\s*scale\(1\.18\);/s);
+  assert.match(source, /\.work-entry--featured:hover \.work-entry__media img,[^}]*\{[^}]*transform:\s*scale\(1\.1\);/s);
+});
+
 test('About transitions stay compact from the navigation through Work', () => {
   const aboutSource = readFileSync(aboutChapterPath, 'utf8');
   const workSource = readFileSync(workChapterPath, 'utf8');
 
   assert.match(aboutSource, /\.portfolio-about\s*\{[^}]*padding-top:\s*var\(--s-7\);[^}]*padding-bottom:\s*0;/s);
-  assert.match(aboutSource, /\.portfolio-about__hero\s*\{[^}]*min-height:\s*auto;[^}]*padding-bottom:\s*var\(--s-7\);/s);
-  assert.match(aboutSource, /\.portfolio-about__thread\s*\{[^}]*padding:\s*var\(--s-7\) 0 var\(--s-7\);/s);
+  assert.match(aboutSource, /\.portfolio-about__hero\s*\{[^}]*min-height:\s*auto;[^}]*padding-bottom:\s*var\(--s-8\);[^}]*border-bottom:/s);
+  assert.match(aboutSource, /\.portfolio-about__thread\s*\{[^}]*padding:\s*var\(--s-8\) 0 var\(--s-7\);[^}]*border-top:\s*0;/s);
+  assert.match(aboutSource, /\.portfolio-about__areas\s*\{[^}]*margin-top:\s*var\(--s-3\);/s);
   assert.match(workSource, /\.portfolio-work\s*\{[^}]*padding-top:\s*var\(--s-7\);/s);
 });
 

@@ -4,6 +4,7 @@ year: 2024
 role: "Artist (via Em Agosto Chove) + Mix Engineer"
 country: "Palmas, Tocantins, Brazil"
 type: "Music video / Album track"
+production: "Em Agosto Chove / independent"
 tags: ["music", "music-video", "palmas", "tocantins", "mix", "artist"]
 ---
 

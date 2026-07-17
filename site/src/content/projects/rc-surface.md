@@ -4,6 +4,7 @@ year: 2025
 role: "Author"
 country: "Palmas, Tocantins, Brazil"
 type: "Max4Live device"
+production: "Open-source MIT project"
 links:
   - url: "https://github.com/ntworm/ableton-rc-surface"
     label: "GitHub"

@@ -5,6 +5,7 @@ role: "Collaborator + Programmer (audio + reactivity)"
 country: "Web-based (Tezos / fxhash)"
 type: "Generative audiovisual"
 collaborator: "Rangga Purnama Aji (main visuals)"
+production: "Rangga Purnama Aji + nt_worm / fxhash"
 links:
   - url: "https://www.fxhash.xyz/article/kakofoni-orquestra"
     label: "Read the fxhash article"

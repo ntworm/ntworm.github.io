@@ -215,7 +215,7 @@ async function loadSplatEngine(): Promise<void> {
     "  const particleSeed = ((stage.dataset.placement === 'section-left' ? 4253 : 9719) ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;",
     "  const particleProfile = particles.gaussianParticleProfile(stage.dataset.placement);",
     "  const particleAutopilot = particleShaderActive ? particles.createGaussianParticleAutopilot(particleSeed) : null;",
-    "  const lightAutopilot = particleShaderActive ? particles.createGaussianLightAutopilot(particleSeed ^ 0x51f15e) : null;",
+    "  const lightAutopilot = particleShaderActive ? particles.createGaussianLightAutopilot(particleSeed ^ 0x51f15e, stage.dataset.placement) : null;",
     "  const particleController = particleShaderActive ? particles.createGaussianParticleUniformController(renderer, particleBounds) : null;",
     "  const worldTransition = particleShaderActive ? particles.createGaussianWorldTransition() : null;",
     "  let worldReveal = 0;",
@@ -418,6 +418,7 @@ document.addEventListener('astro:page-load', attachAll);
     pointer-events: none;
     background: var(--bg-noir, #050505);
     isolation: isolate;
+    contain: paint;
   }
 
   /* A low-cost blurred continuation of the selected scene. The live WebGL
@@ -445,9 +446,13 @@ document.addEventListener('astro:page-load', attachAll);
      from ever becoming a visible top/bottom edge during the transition. */
   .gs-bg[data-contained="1"] {
     position: absolute;
-    inset: -52vh 0;
+    top: -52vh;
+    bottom: -52vh;
+    left: 50%;
+    right: auto;
     width: 100vw;
-    margin-left: calc((100% - 100vw) / 2);
+    margin-left: 0;
+    transform: translateX(-50%);
     background: transparent;
     -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 72%, transparent 100%);
     mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 72%, transparent 100%);
@@ -480,6 +485,9 @@ document.addEventListener('astro:page-load', attachAll);
   /* The renderer appends this canvas at runtime, so its class must stay global;
      otherwise Astro's scoped attribute makes every transform/mask miss it. */
   .gs-bg > :global(.gs-bg__live-canvas) {
+    inset: -16% !important;
+    width: 132% !important;
+    height: 132% !important;
     z-index: 1;
     opacity: 0;
     pointer-events: none;
@@ -546,47 +554,47 @@ document.addEventListener('astro:page-load', attachAll);
 
   .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas),
   .gs-bg[data-placement="section-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
-    transform: translateX(18%) translateY(-10%) scale(1.32);
+    transform: translateX(8%) translateY(-8%) scale(1.24);
     transform-origin: center;
     -webkit-mask-image: radial-gradient(
-      ellipse 78% 96% at 50% 48%,
+      ellipse 82% 98% at 50% 48%,
       #000 0%,
       #000 45%,
-      rgba(0, 0, 0, 0.88) 62%,
-      rgba(0, 0, 0, 0.4) 84%,
+      rgba(0, 0, 0, 0.9) 66%,
+      rgba(0, 0, 0, 0.34) 90%,
       transparent 100%
     );
     mask-image: radial-gradient(
-      ellipse 78% 96% at 50% 48%,
+      ellipse 82% 98% at 50% 48%,
       #000 0%,
       #000 45%,
-      rgba(0, 0, 0, 0.88) 62%,
-      rgba(0, 0, 0, 0.4) 84%,
+      rgba(0, 0, 0, 0.9) 66%,
+      rgba(0, 0, 0, 0.34) 90%,
       transparent 100%
     );
   }
 
   .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
-    transform: translateX(18%) translateY(calc(-22% + var(--gs-scroll-y, 0%))) scale(1.40);
+    transform: translateX(8%) translateY(calc(-18% + var(--gs-scroll-y, 0%))) scale(1.30);
   }
 
   .gs-bg[data-placement="section-left"].gs-bg--live > :global(.gs-bg__live-canvas) {
-    transform: translateX(-18%) translateY(calc(-10% + var(--gs-scroll-y, 0%))) scale(1.32);
+    transform: translateX(-8%) translateY(calc(-8% + var(--gs-scroll-y, 0%))) scale(1.24);
     transform-origin: center;
     -webkit-mask-image: radial-gradient(
-      ellipse 78% 96% at 50% 48%,
+      ellipse 82% 98% at 50% 48%,
       #000 0%,
       #000 45%,
-      rgba(0, 0, 0, 0.88) 62%,
-      rgba(0, 0, 0, 0.4) 84%,
+      rgba(0, 0, 0, 0.9) 66%,
+      rgba(0, 0, 0, 0.34) 90%,
       transparent 100%
     );
     mask-image: radial-gradient(
-      ellipse 78% 96% at 50% 48%,
+      ellipse 82% 98% at 50% 48%,
       #000 0%,
       #000 45%,
-      rgba(0, 0, 0, 0.88) 62%,
-      rgba(0, 0, 0, 0.4) 84%,
+      rgba(0, 0, 0, 0.9) 66%,
+      rgba(0, 0, 0, 0.34) 90%,
       transparent 100%
     );
   }
@@ -638,13 +646,13 @@ document.addEventListener('astro:page-load', attachAll);
   @media (max-width: 880px) {
     .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas),
     .gs-bg[data-placement="section-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
-      transform: translateX(24%) translateY(-10%) scale(1.36);
+      transform: translateX(10%) translateY(-8%) scale(1.28);
     }
     .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
-      transform: translateX(24%) translateY(calc(-22% + var(--gs-scroll-y, 0%))) scale(1.50);
+      transform: translateX(10%) translateY(calc(-18% + var(--gs-scroll-y, 0%))) scale(1.36);
     }
     .gs-bg[data-placement="section-left"].gs-bg--live > :global(.gs-bg__live-canvas) {
-      transform: translateX(-24%) translateY(calc(-10% + var(--gs-scroll-y, 0%))) scale(1.36);
+      transform: translateX(-10%) translateY(calc(-8% + var(--gs-scroll-y, 0%))) scale(1.28);
     }
     .gs-bg__veil {
       background:

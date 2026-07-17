@@ -6,6 +6,7 @@ country: "Palmas, Tocantins, Brazil"
 type: "EP — 6 tracks"
 artist: "Luzo Cairo"
 funding: "Política Nacional Aldir Blanc / PAAR 2024"
+production: "Política Nacional Aldir Blanc / PAAR 2024"
 youtubeId: "_U5ojnvYNVk"
 links:
   - url: "https://luzocairo.bandcamp.com/"

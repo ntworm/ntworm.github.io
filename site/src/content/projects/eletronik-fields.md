@@ -4,6 +4,7 @@ year: 2023
 role: "Creator"
 country: "Palmas, Tocantins, Brazil"
 type: "Generative audiovisual"
+production: "Independent project"
 links:
   - url: "https://vimeo.com/672483901"
     label: "Vimeo"

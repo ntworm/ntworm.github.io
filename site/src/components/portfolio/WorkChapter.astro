@@ -78,10 +78,10 @@ const spotlightCycleSeconds = spotlightProjects.length * 6;
   <section class="portfolio-work__selected" aria-labelledby="selected-work-title">
     <div class="portfolio-work__runway">
       <span class="eyebrow">Selected Work</span>
-      <span class="portfolio-work__runway-count mono">01—08</span>
+      <span class="portfolio-work__runway-count mono">01—13</span>
       <span class="portfolio-work__runway-rule" aria-hidden="true"></span>
     </div>
-    <h2 id="selected-work-title">Eight defining projects.</h2>
+    <h2 id="selected-work-title">Defining Projects.</h2>
     <div class="portfolio-work__featured">
       {presentation.featured.map((project, index) => (
         <WorkEntry project={project} tier="featured" index={index} />
@@ -134,14 +134,26 @@ const spotlightCycleSeconds = spotlightProjects.length * 6;
   }
 
   .portfolio-work__header {
+    position: relative;
+    isolation: isolate;
+    overflow: visible;
     margin-bottom: var(--s-5);
+    padding: var(--s-5) 0;
   }
 
   .portfolio-work__hero {
+    position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: minmax(0, 1.18fr) minmax(300px, 0.72fr);
     align-items: center;
     gap: clamp(36px, 6vw, 96px);
+  }
+
+  .portfolio-work__selected,
+  .portfolio-work__more {
+    position: relative;
+    z-index: 1;
   }
 
   .portfolio-work__hero-copy {

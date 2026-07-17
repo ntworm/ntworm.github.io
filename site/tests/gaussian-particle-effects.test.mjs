@@ -53,6 +53,64 @@ test('lighting autopilot is seeded, smooth, bounded, and visits psychedelic stat
   }
 });
 
+test('car lighting avoids stacked whiteout while preserving red blackout glow', () => {
+  const car = createGaussianLightAutopilot(4223, 'section-left');
+  let strongestFrame = null;
+  let sawDarkRedGlow = false;
+
+  for (let index = 0; index < 6_000; index += 1) {
+    const frame = car.sample(0.1);
+    const tintAverage = [...frame.tintA, ...frame.tintB].reduce((sum, value) => sum + value, 0) / 6;
+    const brightnessBudget = frame.ambient
+      + frame.lightIntensity * 0.72
+      + frame.energyPulse * 0.55
+      + frame.chromatic * tintAverage * 0.36;
+
+    strongestFrame = strongestFrame && strongestFrame.brightnessBudget > brightnessBudget
+      ? strongestFrame
+      : { ...frame, brightnessBudget };
+
+    if (frame.ambient < 0.18 && frame.palette === 'red-blue' && frame.lightIntensity > 0.9) {
+      sawDarkRedGlow = true;
+    }
+  }
+
+  assert.ok(sawDarkRedGlow, 'second Gaussian should still visit the red low-light car state');
+  assert.ok(
+    strongestFrame.brightnessBudget <= 1.95,
+    `stacked light budget should stay below whiteout, got ${strongestFrame.brightnessBudget}`,
+  );
+  assert.ok(strongestFrame.lightIntensity <= 1.35);
+  assert.ok(strongestFrame.energyPulse <= 0.72);
+});
+
+test('car red blackout breathes from near-dark to expanded illumination', () => {
+  const car = createGaussianLightAutopilot(4223, 'section-left');
+  const redBlackoutFrames = [];
+
+  for (let index = 0; index < 6_000; index += 1) {
+    const frame = car.sample(0.1);
+    if (frame.ambient < 0.18 && frame.palette === 'red-blue') {
+      redBlackoutFrames.push(frame);
+    }
+  }
+
+  assert.ok(redBlackoutFrames.length > 120, 'seed should visit a sustained red car blackout');
+  assert.ok(
+    Math.min(...redBlackoutFrames.map((frame) => frame.lightIntensity)) <= 0.04,
+    'red blackout should fall almost to darkness before breathing back up',
+  );
+  assert.ok(
+    Math.max(...redBlackoutFrames.map((frame) => frame.lightIntensity)) >= 1.55,
+    'red blackout should expand into a visibly strong light',
+  );
+  assert.ok(
+    Math.max(...redBlackoutFrames.map((frame) => frame.lightRadius))
+      - Math.min(...redBlackoutFrames.map((frame) => frame.lightRadius)) >= 0.42,
+    'red blackout should expand the illuminated volume, not only brighten in place',
+  );
+});
+
 test('world transition builds slowly and reverses without jumping', () => {
   assert.equal(typeof createGaussianWorldTransition, 'function');
   const transition = createGaussianWorldTransition({
@@ -230,6 +288,8 @@ void main () {
   assert.match(first.source, /uParticleEnergyPulse/);
   assert.match(first.source, /particleLightField/);
   assert.match(first.source, /particleEnergyShell/);
+  assert.match(first.source, /particleLightCeiling/);
+  assert.match(first.source, /particleToneCompress/);
   assert.match(first.source, /particleFlowNoise/);
   assert.match(first.source, /particleWorldThreshold/);
   assert.match(first.source, /particleWorldFront/);

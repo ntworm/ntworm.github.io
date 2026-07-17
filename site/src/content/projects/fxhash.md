@@ -4,6 +4,7 @@ year: "2022–2026"
 role: "Creator (as nt_worm)"
 country: "Web-based (Tezos / fxhash)"
 type: "Generative art platform"
+production: "nt_worm / fxhash"
 links:
   - url: "https://www.fxhash.xyz/u/nt_worm"
     label: "fxhash profile (nt_worm)"
