@@ -114,6 +114,7 @@ export const DISCIPLINE_BY_ID = Object.freeze({
   'kakofoni-orquestra': 'generative',
   lucy: 'generative',
   'rc-surface': 'tools',
+  'rc-setlist': 'tools',
 });
 
 const REQUIRED_WORK_IDS = [...FEATURED_WORK_IDS, ...MORE_WORK_IDS];
