@@ -334,6 +334,15 @@ test('More Work cards use only a faint glass separation over the Gaussian', () =
   assert.doesNotMatch(source, /\.work-entry--more\s*\{[^}]*border:/s);
 });
 
+test('Work media prewarms before native lazy loading can leave visible cards blank', () => {
+  const source = readFileSync(workEntryPath, 'utf8');
+
+  assert.match(source, /data-prewarm-image/);
+  assert.match(source, /new IntersectionObserver/);
+  assert.match(source, /rootMargin:\s*['"]200% 0px['"]/);
+  assert.match(source, /image\.loading\s*=\s*['"]eager['"]/);
+});
+
 test('Work and relocated Archive stack above Code content without masking Gaussian overscan', () => {
   const source = readFileSync(workChapterPath, 'utf8');
   const archiveSource = readFileSync(workArchivePath, 'utf8');

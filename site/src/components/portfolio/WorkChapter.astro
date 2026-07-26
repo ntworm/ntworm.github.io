@@ -64,7 +64,7 @@ const spotlightCycleSeconds = spotlightProjects.length * 6;
             style={`--i: ${index}`}
             aria-label={`${project.data.title} — ${project.data.role ?? 'Work'} (${project.data.year})`}
           >
-            <img src={project.media.cover} alt="" loading={index === 0 ? 'eager' : 'lazy'} />
+            <img src={project.media.cover} alt="" loading="eager" decoding="async" />
             <span class="work-spotlight-caption">
               <strong>{project.data.title}</strong>
               <span class="mono">{project.data.role} · {project.data.year}</span>

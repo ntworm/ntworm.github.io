@@ -50,7 +50,13 @@ const summaryParts = summary && highlight && highlightIndex >= 0
 >
   {tier === 'featured' && project.media.cover && (
     <div class="work-entry__backdrop" aria-hidden="true">
-      <img src={project.media.cover} alt="" loading="lazy" decoding="async" />
+      <img
+        src={project.media.cover}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        data-prewarm-image
+      />
     </div>
   )}
 
@@ -59,7 +65,8 @@ const summaryParts = summary && highlight && highlightIndex >= 0
       <img
         src={project.media.cover}
         alt={`${project.data.title} — cover`}
-        loading={tier === 'featured' && index === 0 ? 'eager' : 'lazy'}
+        loading={tier === 'featured' && index < 4 ? 'eager' : 'lazy'}
+        data-prewarm-image={tier === 'featured' && index < 4 ? undefined : true}
       />
     ) : (
       <div class="work-entry__placeholder"><span class="mono">image pending</span></div>
@@ -85,6 +92,39 @@ const summaryParts = summary && highlight && highlightIndex >= 0
     {tier !== 'featured' && project.data.awards?.[0] && <p class="work-entry__award">{project.data.awards[0]}</p>}
   </div>
 </a>
+
+<script>
+  function attachWorkImagePrewarm() {
+    const images = document.querySelectorAll<HTMLImageElement>('img[data-prewarm-image]');
+    if (images.length === 0) return;
+
+    if (!('IntersectionObserver' in window)) {
+      images.forEach((image) => {
+        image.loading = 'eager';
+      });
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+
+        const image = entry.target as HTMLImageElement;
+        image.loading = 'eager';
+        observer.unobserve(image);
+      });
+    }, { rootMargin: '200% 0px' });
+
+    images.forEach((image) => {
+      if (image.dataset.prewarmReady === '1') return;
+      image.dataset.prewarmReady = '1';
+      observer.observe(image);
+    });
+  }
+
+  attachWorkImagePrewarm();
+  document.addEventListener('astro:page-load', attachWorkImagePrewarm);
+</script>
 
 <style>
   .work-entry {
