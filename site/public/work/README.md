@@ -11,7 +11,7 @@ public/work/
 ├── this-feminine-side/      # Audiovisual (2024)
 ├── ep-rinoceronte/          # Music EP (2025)
 ├── eletronik-fields/        # Generative audiovisual (2022)
-├── rc-surface/             # Max4Live device (2025)
+├── rc-surface/             # Ableton Live extension (2025)
 └── trisal/                 # TV series (2026)
 ```
 
