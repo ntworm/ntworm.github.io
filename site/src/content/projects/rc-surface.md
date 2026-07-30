@@ -3,7 +3,7 @@ title: "RC Surface"
 year: 2026
 role: "Author"
 country: "Palmas, Tocantins, Brazil"
-type: "Max4Live device"
+type: "Ableton Live Extension"
 production: "Source-available · PolyForm Noncommercial 1.0.0"
 links:
   - url: "https://github.com/ntworm/ableton-rc-surface"
