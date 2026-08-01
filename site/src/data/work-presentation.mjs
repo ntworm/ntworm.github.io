@@ -56,7 +56,7 @@ export const FEATURED_PRESENTATION_BY_ID = Object.freeze({
   'el-tono-del-mar': Object.freeze({
     mediaLayout: 'landscape',
     highlight: 'won Pixelatl’s 2024 Best Mexican Student Short Film award',
-    summary: 'Worked as Sound Assistant and Sound Editor on Mica Bolaños Meade’s animated short, contributing through sound editing and sound design. The film won Pixelatl’s 2024 Best Mexican Student Short Film award and screened at GIFF and in CINANIMA’s international student competition.',
+    summary: 'Worked as Sound Assistant and Sound Editor on Mica Bolaños Meade’s animated short, contributing through sound assistance, sound editing, and sound design. The film won Pixelatl’s 2024 Best Mexican Student Short Film award and screened at GIFF and in CINANIMA’s international student competition.',
   }),
   'kakofoni-orquestra': Object.freeze({
     mediaLayout: 'portrait',
@@ -115,6 +115,7 @@ export const DISCIPLINE_BY_ID = Object.freeze({
   lucy: 'generative',
   'rc-surface': 'tools',
   'rc-setlist': 'tools',
+  'ableton-mcp-server': 'tools',
 });
 
 const REQUIRED_WORK_IDS = [...FEATURED_WORK_IDS, ...MORE_WORK_IDS];

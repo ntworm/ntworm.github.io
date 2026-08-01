@@ -21,6 +21,6 @@ tags: ["animation", "sound-design", "lisbon"]
 
 Mica Bolaños Meade’s 5:39 animated short follows a Mexican migrant worker trying to reconnect with home through voicemails while the unfamiliar sea reflects her dislocation. The film was produced through RE:Anima and Lusófona Films.
 
-I worked as Sound Assistant and Sound Editor, contributing through sound editing and sound design alongside Fernando Torres Viteri.
+I worked as Sound Assistant and Sound Editor, contributing through sound assistance, sound editing, and sound design alongside Fernando Torres Viteri.
 
 The short won **Best Mexican Student Short Film at Pixelatl 2024**, screened in the official selection at the Guanajuato International Film Festival, and joined CINANIMA’s 2024 international student competition.

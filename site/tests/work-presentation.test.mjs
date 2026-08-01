@@ -134,7 +134,7 @@ const disciplineGroups = {
     'kakofoni-orquestra',
     'lucy',
   ],
-  tools: ['rc-surface'],
+  tools: ['rc-surface', 'rc-setlist', 'ableton-mcp-server'],
 };
 
 const expectedDisciplineById = Object.fromEntries(
@@ -185,20 +185,20 @@ test('exports the exact frozen tiers and discipline map', () => {
   const tierIds = [...FEATURED_WORK_IDS, ...MORE_WORK_IDS];
   assert.equal(tierIds.length, 18);
   assert.equal(new Set(tierIds).size, 18);
-  assert.equal(Object.keys(DISCIPLINE_BY_ID).length, 23);
+  assert.equal(Object.keys(DISCIPLINE_BY_ID).length, 25);
   assert.ok(Object.isFrozen(FEATURED_WORK_IDS));
   assert.ok(Object.isFrozen(MORE_WORK_IDS));
   assert.ok(Object.isFrozen(DISCIPLINE_BY_ID));
 });
 
-test('builds a frozen presentation of all 23 real projects', () => {
+test('builds a frozen presentation of all 25 real projects', () => {
   const projects = readProjects();
   const presentation = buildWorkPresentation(projects);
 
-  assert.equal(projects.length, 23);
+  assert.equal(projects.length, 25);
   assert.deepEqual(presentation.featured.map(({ id }) => id), expectedFeaturedIds);
   assert.deepEqual(presentation.more.map(({ id }) => id), expectedMoreIds);
-  assert.equal(presentation.archive.length, 23);
+  assert.equal(presentation.archive.length, 25);
   assert.deepEqual(
     Object.fromEntries(presentation.archive.map(({ id, presentation: metadata }) => [id, metadata.discipline])),
     expectedDisciplineById,
@@ -257,12 +257,14 @@ test('sorts the archive by latest year descending and title ascending', () => {
 
   assert.deepEqual(archiveIds, [
     'a-quermesse',
+    'ableton-mcp-server',
     'fxhash',
+    'rc-setlist',
+    'rc-surface',
     'trisal',
     'ep-rinoceronte',
     'ticha-penicheiro',
     'o-clube',
-    'rc-surface',
     'this-feminine-side',
     'unveiling-new-futures',
     'ai-am',

@@ -116,7 +116,7 @@ test('homepage Work contains one link per tier entry and no empty href', () => {
 
   assert.equal(workTags(html, 'featured').length, 13);
   assert.equal(workTags(html, 'more').length, 5);
-  assert.equal(workTags(html, 'archive').length, 23);
+  assert.equal(workTags(html, 'archive').length, 25);
   assert.ok(
     [...workTags(html, 'featured'), ...workTags(html, 'more'), ...workTags(html, 'archive')]
       .every((tag) => /^\/work\/[a-z0-9-]+$/.test(attr(tag, 'href') ?? '')),
@@ -365,7 +365,7 @@ test('homepage renders the complete Code structure once', () => {
     lowerPlacement: 1,
     cameraMotion: 2,
     github: 1,
-    tools: 4,
+    tools: 6,
     lower: 1,
     fxhash: 1,
     splats: 1,
