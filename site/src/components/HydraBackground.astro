@@ -1,5 +1,5 @@
 ---
-const linesAndCellsUrl = 'https://dweb.link/ipfs/Qmb4ktMbn1Sef6i5sMYy17MTzGmjRT8TuWsgLAhsQMRbrU?fxhash=opTgZfTemeT4UtGTA95AUh97CWnCstz2XW359tw1Hv7588x551j';
+const linesAndCellsUrl = '/hydra/lines-and-cells.html?fxhash=opTgZfTemeT4UtGTA95AUh97CWnCstz2XW359tw1Hv7588x551j';
 ---
 
 <div class="portfolio-about__live-bg" aria-hidden="true">
@@ -8,9 +8,9 @@ const linesAndCellsUrl = 'https://dweb.link/ipfs/Qmb4ktMbn1Sef6i5sMYy17MTzGmjRT8
       src="about:blank"
       data-hydra-src={linesAndCellsUrl}
       title="Lines and Cells live generative background"
-      width="1280"
-      height="720"
-      loading="eager"
+      width="640"
+      height="360"
+      loading="lazy"
       sandbox="allow-scripts allow-same-origin"
       referrerpolicy="no-referrer"
     ></iframe>
@@ -19,8 +19,6 @@ const linesAndCellsUrl = 'https://dweb.link/ipfs/Qmb4ktMbn1Sef6i5sMYy17MTzGmjRT8
 
 <style>
   .portfolio-about__live-bg {
-    --hydra-scale-x: 1;
-    --hydra-scale-y: 1;
     position: absolute;
     top: -18vh;
     bottom: 0;
@@ -62,17 +60,14 @@ const linesAndCellsUrl = 'https://dweb.link/ipfs/Qmb4ktMbn1Sef6i5sMYy17MTzGmjRT8
 
   .portfolio-about__live-bg iframe {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: min(100vw, 1280px);
-    height: min(100vh, 720px);
+    inset: 0;
+    width: 100%;
+    height: 100%;
     border: 0;
     z-index: 1;
     opacity: 0.92;
     mix-blend-mode: screen;
     filter: saturate(1.18) contrast(1.12) brightness(0.82) blur(0.55px);
-    transform: translate(-50%, -50%) scale(var(--hydra-scale-x), var(--hydra-scale-y));
-    transform-origin: center;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -94,53 +89,39 @@ const linesAndCellsUrl = 'https://dweb.link/ipfs/Qmb4ktMbn1Sef6i5sMYy17MTzGmjRT8
     __portfolioHydraSurfaceCleanup?: () => void;
   };
 
+  type NavigatorWithConnection = Navigator & {
+    connection?: { saveData?: boolean };
+  };
+
   const setupHydraSurface = () => {
+    const liveWindow = window as HydraSurfaceWindow;
+    liveWindow.__portfolioHydraSurfaceCleanup?.();
+
     const background = document.querySelector<HTMLElement>('.portfolio-about__live-bg');
     const stage = background?.querySelector<HTMLElement>('.portfolio-about__live-stage');
     const iframe = stage?.querySelector<HTMLIFrameElement>('iframe[data-hydra-src]');
     if (!background || !stage || !iframe) return;
 
-    const liveWindow = window as HydraSurfaceWindow;
-    liveWindow.__portfolioHydraSurfaceCleanup?.();
-
-    const controller = new AbortController();
     let frame = 0;
-
-    const render = () => {
-      frame = 0;
-      const baseWidth = Math.min(window.innerWidth, 1280);
-      const baseHeight = Math.min(window.innerHeight, 720);
-      const scaleX = Math.max(1, (stage.clientWidth / baseWidth) * 1.08);
-      const scaleY = Math.max(1, (stage.clientHeight / baseHeight) * 1.08);
-
-      background.style.setProperty('--hydra-scale-x', `${scaleX}`);
-      background.style.setProperty('--hydra-scale-y', `${scaleY}`);
-    };
-
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(render);
-    };
-
-    const observer = new ResizeObserver(schedule);
-    observer.observe(stage);
-    window.addEventListener('resize', schedule, {
-      passive: true,
-      signal: controller.signal,
-    });
+    let disposed = false;
 
     liveWindow.__portfolioHydraSurfaceCleanup = () => {
-      controller.abort();
-      observer.disconnect();
+      disposed = true;
       if (frame) cancelAnimationFrame(frame);
     };
 
-    schedule();
+    const connection = (navigator as NavigatorWithConnection).connection;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion || connection?.saveData === true) return;
 
     const loadHydra = () => {
+      frame = 0;
+      if (disposed) return;
+
       const source = iframe.dataset.hydraSrc;
       if (!source || iframe.dataset.hydraLoaded === 'true') return;
       if (stage.clientWidth < 1 || stage.clientHeight < 1) {
-        requestAnimationFrame(loadHydra);
+        frame = requestAnimationFrame(loadHydra);
         return;
       }
 
@@ -148,7 +129,9 @@ const linesAndCellsUrl = 'https://dweb.link/ipfs/Qmb4ktMbn1Sef6i5sMYy17MTzGmjRT8
       iframe.src = source;
     };
 
-    requestAnimationFrame(() => requestAnimationFrame(loadHydra));
+    frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(loadHydra);
+    });
   };
 
   document.addEventListener('astro:page-load', setupHydraSurface);
