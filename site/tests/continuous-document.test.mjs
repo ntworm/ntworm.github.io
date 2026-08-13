@@ -81,6 +81,16 @@ function codeSignature(html) {
   };
 }
 
+function builtCaseDocuments() {
+  return readdirSync(join(distDir, 'work'), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .filter((entry) => existsSync(join(distDir, 'work', entry.name, 'index.html')))
+    .map((entry) => {
+      const label = `work/${entry.name}/index.html`;
+      return { label, html: readFileSync(join(distDir, label), 'utf8') };
+    });
+}
+
 test('homepage renders five finite chapters once and in order', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
   const chapters = [...html.matchAll(/data-portfolio-chapter="(about|work|code|archive|contact)"/g)]
@@ -389,6 +399,8 @@ test('homepage renders the complete Code structure once', () => {
     fxhash: 1,
     splats: 1,
   });
+  assert.equal((code.match(/<a\b[^>]*class="tool-card__media"/g) ?? []).length, 0);
+  assert.equal((code.match(/<div\b[^>]*class="tool-card__media"[^>]*aria-hidden="true"/g) ?? []).length, 6);
 });
 
 test('homepage owns Code while the legacy Code route redirects to its chapter', () => {
@@ -398,4 +410,33 @@ test('homepage owns Code while the legacy Code route redirects to its chapter', 
   assert.match(homepage, /import CodeChapter/);
   assert.match(homepage, /<CodeChapter\s*\/>/);
   assert.match(legacy, /Astro\.redirect\(['"]\/#code['"]\)/);
+});
+
+test('built case studies preserve accessible media fallbacks across optional case features', () => {
+  const cases = builtCaseDocuments();
+  const trailers = cases.filter(({ html }) => html.includes('class="case__trailer"'));
+  const galleries = cases.filter(({ html }) => html.includes('class="case__gallery '));
+  const interactive = cases.filter(({ html }) => /<figure\b[^>]*\bdata-interactive-host\b/.test(html));
+
+  assert.equal(cases.length, 25);
+  assert.ok(trailers.length > 0, 'expected at least one case with a trailer');
+  assert.ok(trailers.length < cases.length, 'expected cases without trailers');
+  assert.ok(galleries.length > 0, 'expected at least one case with a gallery');
+  assert.ok(galleries.length < cases.length, 'expected cases without a gallery');
+  assert.equal(interactive.length, 1);
+
+  for (const { html, label } of trailers) {
+    assert.match(html, /<figure\b[^>]*class="case__trailer"[^>]*>\s*<video\b[^>]*\bcontrols\b/s, `${label} trailer has controls`);
+  }
+  for (const { html, label } of galleries) {
+    const galleryImages = [...html.matchAll(/<section class="case__gallery[^>]*>[\s\S]*?<\/section>/g)]
+      .flatMap((section) => [...section[0].matchAll(/<img\b[^>]*>/g)].map((match) => match[0]));
+    assert.ok(galleryImages.length > 0, `${label} has gallery images`);
+    assert.ok(galleryImages.every((image) => (attr(image, 'alt') ?? '').trim().length > 0), `${label} gallery images have fallback labels`);
+  }
+
+  const [interactiveCase] = interactive;
+  assert.match(interactiveCase.html, /<button\b[^>]*data-interactive-launch[^>]*>/);
+  assert.match(interactiveCase.html, /role="status" aria-live="polite" data-interactive-status/);
+  assert.doesNotMatch(interactiveCase.html, /class="case__interactive-frame"/);
 });

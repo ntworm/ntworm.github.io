@@ -587,6 +587,41 @@ test('interactive artwork receives global iframe sizing and a capped balanced la
   assert.match(template, /:global\(\.case__interactive-frame\.is-ready\)/);
 });
 
+test('case-study media keeps motion, gallery labels, and interactive focus safe', () => {
+  const template = readFileSync(join(process.cwd(), 'src', 'pages', 'work', '[slug].astro'), 'utf8');
+
+  assert.match(template, /<video src=\{media\.trailer\} controls autoplay muted loop playsinline preload="metadata"/);
+  assert.match(template, /<video src=\{media\.cover\} controls autoplay muted loop playsinline preload="metadata"/);
+  assert.match(template, /data-case-motion-video/);
+  assert.match(template, /document\.addEventListener\('DOMContentLoaded', attachCaseMedia/);
+  assert.match(template, /document\.addEventListener\('astro:page-load', attachCaseMedia/);
+  assert.match(template, /motionQuery\.addEventListener\('change', syncReducedMotion\)/);
+  assert.match(template, /video\.autoplay = false;/);
+  assert.match(template, /video\.loop = false;/);
+  assert.match(template, /video\.pause\(\);/);
+  assert.match(template, /document\.addEventListener\('astro:before-swap', disposeCaseMedia\)/);
+  assert.match(template, /alt=\{`\$\{data\.title\} \\u2014 project visual \$\{m\.visualIndex\}`\}/);
+  assert.doesNotMatch(template, /case__gallery-item[\s\S]*?alt=""/);
+  assert.match(template, /role="status" aria-live="polite" data-interactive-status/);
+  assert.match(template, /if \(!event\.isTrusted \|\| button\.disabled\) return;/);
+  assert.match(template, /nextFrame\.tabIndex = 0;/);
+  assert.match(template, /nextFrame\.focus\(\);/);
+  assert.match(template, /nextFrame\.sandbox\.add\('allow-scripts', 'allow-same-origin'\);/);
+  assert.match(template, /nextFrame\.referrerPolicy = 'no-referrer';/);
+  assert.match(template, /window\.setTimeout\(\(\) => restoreRetry\(token\), 12000\)/);
+  assert.match(template, /nextFrame\.addEventListener\('error', \(\) => restoreRetry\(token\), \{ once: true \}\);/);
+  assert.doesNotMatch(template, /button\.remove\(\);/);
+});
+
+test('Code tool cards expose each project destination only once to keyboard users', () => {
+  const source = readFileSync(codeChapterSourcePath, 'utf8');
+
+  assert.match(source, /<div class="tool-card__media" aria-hidden="true">/);
+  assert.match(source, /\{!t\.href && \(\s*<a class="tool-card__media"/s);
+  assert.match(source, /<img src=\{t\.img\} alt="" loading="lazy"/);
+  assert.match(source, /<h3 class="tool-card__name">[\s\S]*?<a href=\{t\.href\}/);
+});
+
 test('each homepage chapter keeps its own hero copy and reveal language', () => {
   const work = readFileSync(join(process.cwd(), 'src', 'components', 'portfolio', 'WorkChapter.astro'), 'utf8');
   const about = readFileSync(join(process.cwd(), 'src', 'components', 'portfolio', 'AboutChapter.astro'), 'utf8');
