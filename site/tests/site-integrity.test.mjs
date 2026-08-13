@@ -153,9 +153,18 @@ function assertDeploymentWorkflowContract(workflow) {
   assert.equal(exactValue(install.body, 8, 'run'), 'npm ci');
   assert.equal(exactValue(testStep.body, 8, 'working-directory'), 'site');
   assert.equal(exactValue(testStep.body, 8, 'run'), 'npm test');
-  assert.equal([...testStep.body.matchAll(/^        if:\s*.*$/gm)].length, 0, 'test step must not be conditional');
   const continueOnError = [...testStep.body.matchAll(/^        continue-on-error:\s*([^\r\n]+)\s*$/gm)];
-  assert.ok(continueOnError.length <= 1, 'test step must not repeat continue-on-error');
+  const testStepKeys = [
+    'name',
+    ...[...testStep.body.matchAll(/^        ([^:\r\n]+):(?:\s|$)/gm)].map((match) => match[1].trim()),
+  ].sort();
+  assert.deepEqual(
+    testStepKeys,
+    continueOnError.length === 0
+      ? ['name', 'run', 'working-directory']
+      : ['continue-on-error', 'name', 'run', 'working-directory'],
+    'test step must use only its required keys and an optional continue-on-error: false',
+  );
   if (continueOnError.length === 1) {
     assert.equal(continueOnError[0][1].trim(), 'false', 'test step must not continue after an error');
   }
@@ -198,6 +207,18 @@ test('deployment workflow contract rejects bypass and artifact mutations', () =>
     ['conditionally skips the test', workflow.replace(
       '        run: npm test',
       '        if: ${{ always() }}\n        run: npm test',
+    )],
+    ['uses a shell that hides a test failure', workflow.replace(
+      '        run: npm test',
+      '        shell: bash {0} || true\n        run: npm test',
+    )],
+    ['sets NODE_OPTIONS that filters the test suite', workflow.replace(
+      '        run: npm test',
+      '        env:\n          NODE_OPTIONS: --test-name-pattern=deployment\n        run: npm test',
+    )],
+    ['includes an unexpected test-step key', workflow.replace(
+      '        run: npm test',
+      '        timeout-minutes: 1\n        run: npm test',
     )],
     ['runs the test from another directory', workflow.replace(
       '      - name: Test and build Astro site\n        working-directory: site',
