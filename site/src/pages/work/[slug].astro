@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { getProjectMedia } from '../../utils/project-images';
 import dimensionsData from '../../data/asset-dimensions.json';
+import { buildCanonical, excerptMarkdown } from '../../utils/seo.mjs';
 
 interface Props {
   entry: CollectionEntry<'projects'>;
@@ -75,12 +76,24 @@ const showCover = !seasons && !data.youtubeId && media.cover;
 // surfaces a thumb + title + description + external link. Designed for
 // projects whose primary artefact is a list of pieces (e.g. fxhash).
 const fxhashPieces = data.fxhashPieces ?? [];
+const canonicalUrl = buildCanonical(Astro.site?.origin ?? Astro.url.origin, Astro.url.pathname);
+const description = excerptMarkdown(entry.body, 160);
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  name: data.title,
+  role,
+  dateCreated: String(year),
+  image: media.cover ? buildCanonical(Astro.site?.origin ?? Astro.url.origin, media.cover) : undefined,
+  url: canonicalUrl,
+  description,
+};
 
 function mediaStyle(dim?: { ar: string }) {
   return dim ? `aspect-ratio:${dim.ar};` : '';
 }
 ---
-<Layout title={data.title} description={`${data.title} — ${role} (${year})`} image={media.cover} type="article">
+<Layout title={data.title} description={description || `${data.title} — ${role} (${year})`} image={media.cover} type="article" canonicalUrl={canonicalUrl} structuredData={structuredData}>
   <article class="case wrap">
     <header class="case__header">
       <span class="eyebrow case__act">{act}</span>

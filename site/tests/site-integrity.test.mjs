@@ -44,6 +44,29 @@ function attr(tag, name) {
   return match ? (match[1] ?? match[2] ?? match[3]) : null;
 }
 
+test('built homepage and case studies expose parseable queryless discovery metadata', () => {
+  const documents = htmlFiles();
+  const findDocument = (label) => documents.find((document) => document.label === label)?.html ?? '';
+  const structuredData = (html) => [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    .map((match) => JSON.parse(match[1]));
+
+  const home = findDocument('index.html');
+  const person = structuredData(home).find((data) => data['@type'] === 'Person');
+  assert.equal(person?.url, 'https://ntworm.github.io/');
+  assert.equal(home.includes('<link rel="canonical" href="https://ntworm.github.io/">'), true);
+
+  const cases = documents.filter((document) => {
+    const label = document.label.replaceAll('\\', '/');
+    return label.startsWith('work/') && label !== 'work/index.html';
+  });
+  assert.equal(cases.length, 25);
+  for (const document of cases) {
+    const work = structuredData(document.html).find((data) => data['@type'] === 'CreativeWork');
+    assert.ok(work, document.label + ': CreativeWork metadata missing');
+    assert.equal(/[?#]/.test(work.url), false, document.label + ': canonical metadata contains query or hash');
+  }
+});
+
 function localPathExists(url) {
   const pathname = decodeURIComponent(url.split(/[?#]/, 1)[0]);
   const direct = join(distDir, pathname.replace(/^\/+/, ''));

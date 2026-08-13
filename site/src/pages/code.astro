@@ -1,3 +1,6 @@
 ---
-return Astro.redirect('/#code');
+import LegacyRedirect from '../components/LegacyRedirect.astro';
+// Replaces Astro.redirect('/#code') with an index-safe document fallback.
 ---
+
+<LegacyRedirect destination="/#code" />
