@@ -228,6 +228,23 @@ test('every project card has the complete editorial metadata pattern', () => {
   }
 });
 
+test('project case copy keeps the verified Ableton, MOTELX, and Spotify facts', () => {
+  const ableton = readFileSync(new URL('../src/content/projects/ableton-mcp-server.md', import.meta.url), 'utf8');
+  const compositor = readFileSync(new URL('../src/content/projects/o-compositor.md', import.meta.url), 'utf8');
+  const arvoreSeca = readFileSync(new URL('../src/content/projects/arvore-seca.md', import.meta.url), 'utf8');
+  const motelxWinnersUrl = 'https://www.motelx.org/noticias/motelx-2025-os-vencedores-da-19-a-edicao';
+
+  assert.match(ableton, /75 tools in v0\.5\.3/);
+  assert.doesNotMatch(ableton, /65 tools/);
+  assert.equal(compositor.split(motelxWinnersUrl).length - 1, 2);
+  assert.doesNotMatch(compositor, /conhece-os-candidatos-ao-premio-motelx/);
+  assert.doesNotMatch(arvoreSeca, /Spotify URL has not yet been discovered/i);
+  assert.doesNotMatch(
+    arvoreSeca,
+    /Spotify[\s\S]{0,160}(?:isn't currently discoverable|direct link here)/i,
+  );
+});
+
 test('decorates exactly thirteen featured projects with approved summaries and media layouts', () => {
   const presentation = buildWorkPresentation(readProjects());
   const featuredMetadata = Object.fromEntries(

@@ -161,6 +161,49 @@ test('featured-work copy contains only the confirmed credits', () => {
   assert.match(aiAm, /directed by Danny J/i);
 });
 
+test('public identity, chapter links, and media documentation match verified site copy', () => {
+  const rootReadme = readFileSync(join(process.cwd(), '..', 'README.md'), 'utf8');
+  const mediaReadme = readFileSync(join(process.cwd(), 'public', 'work', 'README.md'), 'utf8');
+  const code = readFileSync(codeChapterSourcePath, 'utf8');
+  const work = readFileSync(join(process.cwd(), 'src', 'components', 'portfolio', 'WorkChapter.astro'), 'utf8');
+  const ableton = readFileSync(join(process.cwd(), 'src', 'content', 'projects', 'ableton-mcp-server.md'), 'utf8');
+  const arvoreSeca = readFileSync(join(process.cwd(), 'src', 'content', 'projects', 'arvore-seca.md'), 'utf8');
+  const publishedCopy = [rootReadme, mediaReadme, code, work, ableton, arvoreSeca].join('\n');
+
+  assert.match(
+    code,
+    /Sound director working between cinema, music, and code\. Building tools for Ableton Live, real-time systems, and audiovisual work\./,
+  );
+  assert.equal((code.match(/75 tools in v0\.5\.3/g) ?? []).length, 2);
+  assert.match(
+    work,
+    /Selected work across cinema, television, music, generative art, performance, and tools\./,
+  );
+  assert.doesNotMatch(publishedCopy, /65 tools|Generalist programmer|Spotify URL has not yet been discovered/i);
+  assert.doesNotMatch(
+    publishedCopy,
+    /Spotify[\s\S]{0,160}(?:isn't currently discoverable|direct link here)/i,
+  );
+
+  assert.match(rootReadme, /^# ntworm\.github\.io$/m);
+  assert.doesNotMatch(rootReadme, /gabrielworm\.github\.io/i);
+  assert.match(
+    rootReadme,
+    /\[About\]\(https:\/\/ntworm\.github\.io\/#about\)[\s\S]*\[Work\]\(https:\/\/ntworm\.github\.io\/#work\)[\s\S]*\[Code\]\(https:\/\/ntworm\.github\.io\/#code\)[\s\S]*\[Archive\]\(https:\/\/ntworm\.github\.io\/#archive\)[\s\S]*\[Contact\]\(https:\/\/ntworm\.github\.io\/#contact\)/,
+  );
+
+  assert.match(mediaReadme, /site\/src\/utils\/project-images\.ts/);
+  assert.match(mediaReadme, /site\/src\/pages\/work\/\[slug\]\.astro/);
+  assert.match(mediaReadme, /first image[\s\S]*cover/i);
+  assert.match(mediaReadme, /first video[\s\S]*trailer/i);
+  assert.match(mediaReadme, /first two gallery items[\s\S]*before the project prose/i);
+  assert.match(mediaReadme, /remaining gallery items[\s\S]*after the project prose/i);
+  assert.match(mediaReadme, /non-media files[\s\S]*links\.txt[\s\S]*ignored/i);
+  assert.match(mediaReadme, /\| o-compositor \| 1\.jpg \| trailer\.mp4 \| 2\.jpg[^\n]*7\.jpg \|/);
+  assert.match(mediaReadme, /\| el-tono-del-mar \| 2\.jpg \| trailer1\.mp4 \| 3\.jpg[^\n]*trailer2\.mp4[^\n]*trailermain\.mp4 \|/);
+  assert.match(mediaReadme, /\| rc-setlist \| 1\.jpg \| — \| 2\.jpg[^\n]*5\.jpg \|/);
+});
+
 test('code page stacks two scroll-bound borderless Gaussians', () => {
   for (const [label, code] of builtCodeDocuments()) {
     const heroStart = code.indexOf('<header class="code__hero"');
