@@ -749,7 +749,8 @@ function mediaStyle(dim?: { ar: string }) {
         nextFrame.className = 'case__interactive-frame';
         nextFrame.src = src;
         nextFrame.title = button.dataset.title ?? 'Interactive artwork';
-        nextFrame.tabIndex = 0;
+        nextFrame.tabIndex = -1;
+        nextFrame.style.pointerEvents = 'none';
         nextFrame.allow = 'autoplay; fullscreen';
         nextFrame.allowFullscreen = true;
         nextFrame.sandbox.add('allow-scripts', 'allow-same-origin');
@@ -762,6 +763,8 @@ function mediaStyle(dim?: { ar: string }) {
             timeoutId = undefined;
           }
           nextFrame.classList.add('is-ready');
+          nextFrame.tabIndex = 0;
+          nextFrame.style.pointerEvents = 'auto';
           host.dataset.interactiveLoaded = 'true';
           button.hidden = true;
           status.textContent = 'Live work loaded.';
@@ -792,40 +795,11 @@ function mediaStyle(dim?: { ar: string }) {
     };
   }
 
-  function attachInteractiveCases(): void {
-    document.querySelectorAll<HTMLButtonElement>('[data-interactive-launch]:not([data-interactive-bound])').forEach((button) => {
-      button.dataset.interactiveBound = 'true';
-      button.addEventListener('click', () => {
-        const host = button.closest<HTMLElement>('[data-interactive-host]');
-        const src = button.dataset.src;
-        if (!host || !src) return;
-
-        button.disabled = true;
-        const label = button.querySelector<HTMLElement>('[data-interactive-label]');
-        if (label) label.textContent = 'Loading live work…';
-
-        const frame = document.createElement('iframe');
-        frame.className = 'case__interactive-frame';
-        frame.src = src;
-        frame.title = button.dataset.title ?? 'Interactive artwork';
-        frame.allow = 'autoplay; fullscreen';
-        frame.allowFullscreen = true;
-        frame.referrerPolicy = 'no-referrer';
-        frame.addEventListener('load', () => {
-          frame.classList.add('is-ready');
-          button.hidden = true;
-          host.dataset.interactiveLoaded = 'true';
-        }, { once: true });
-        host.append(frame);
-      }, { once: true });
-    });
-  }
-
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', attachCaseMedia, { once: true });
   } else {
     attachCaseMedia();
   }
   document.addEventListener('astro:page-load', attachCaseMedia);
-  document.addEventListener('astro:before-swap', disposeCaseMedia);
+  document.addEventListener('astro:before-swap', () => disposeCaseMedia());
 </script>

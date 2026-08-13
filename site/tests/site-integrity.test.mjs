@@ -599,18 +599,32 @@ test('case-study media keeps motion, gallery labels, and interactive focus safe'
   assert.match(template, /video\.autoplay = false;/);
   assert.match(template, /video\.loop = false;/);
   assert.match(template, /video\.pause\(\);/);
-  assert.match(template, /document\.addEventListener\('astro:before-swap', disposeCaseMedia\)/);
+  assert.match(template, /document\.addEventListener\('astro:before-swap', \(\) => disposeCaseMedia\(\)\)/);
+  assert.doesNotMatch(template, /document\.addEventListener\('astro:before-swap', disposeCaseMedia\)/);
   assert.match(template, /alt=\{`\$\{data\.title\} \\u2014 project visual \$\{m\.visualIndex\}`\}/);
   assert.doesNotMatch(template, /case__gallery-item[\s\S]*?alt=""/);
   assert.match(template, /role="status" aria-live="polite" data-interactive-status/);
   assert.match(template, /if \(!event\.isTrusted \|\| button\.disabled\) return;/);
-  assert.match(template, /nextFrame\.tabIndex = 0;/);
+  const beforeLoad = template.slice(
+    template.indexOf('const nextFrame = document.createElement'),
+    template.indexOf("nextFrame.addEventListener('load'"),
+  );
+  const onLoad = template.slice(
+    template.indexOf("nextFrame.addEventListener('load'"),
+    template.indexOf("nextFrame.addEventListener('error'"),
+  );
+  assert.match(beforeLoad, /nextFrame\.tabIndex = -1;/);
+  assert.match(beforeLoad, /nextFrame\.style\.pointerEvents = 'none';/);
+  assert.doesNotMatch(beforeLoad, /nextFrame\.tabIndex = 0;/);
+  assert.match(onLoad, /nextFrame\.tabIndex = 0;/);
+  assert.match(onLoad, /nextFrame\.style\.pointerEvents = 'auto';/);
   assert.match(template, /nextFrame\.focus\(\);/);
   assert.match(template, /nextFrame\.sandbox\.add\('allow-scripts', 'allow-same-origin'\);/);
   assert.match(template, /nextFrame\.referrerPolicy = 'no-referrer';/);
   assert.match(template, /window\.setTimeout\(\(\) => restoreRetry\(token\), 12000\)/);
   assert.match(template, /nextFrame\.addEventListener\('error', \(\) => restoreRetry\(token\), \{ once: true \}\);/);
   assert.doesNotMatch(template, /button\.remove\(\);/);
+  assert.doesNotMatch(template, /function attachInteractiveCases\(\): void/);
 });
 
 test('Code tool cards expose each project destination only once to keyboard users', () => {
