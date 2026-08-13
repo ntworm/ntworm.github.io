@@ -21,6 +21,15 @@ test('selectCurrentSection chooses the visible chapter nearest the sticky naviga
   assert.equal(current, 'work');
 });
 
+test('selectCurrentSection compares each visible chapter start instead of its full interval', () => {
+  const current = selectCurrentSection([
+    entry('about', -500, 500),
+    entry('work', 82, 900),
+  ]);
+
+  assert.equal(current, 'work');
+});
+
 test('selectCurrentSection uses the previous chapter when no valid visible host remains', () => {
   const current = selectCurrentSection([
     entry('archive', 70, 160),

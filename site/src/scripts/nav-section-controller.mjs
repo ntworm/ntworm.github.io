@@ -7,14 +7,6 @@ function isSectionId(value) {
   return SECTION_IDS.includes(value);
 }
 
-function distanceFromStickyLine(rect) {
-  if (rect.top <= STICKY_NAVIGATION_LINE && rect.bottom >= STICKY_NAVIGATION_LINE) return 0;
-  return Math.min(
-    Math.abs(rect.top - STICKY_NAVIGATION_LINE),
-    Math.abs(rect.bottom - STICKY_NAVIGATION_LINE),
-  );
-}
-
 /**
  * Chooses the visible homepage chapter nearest the sticky navigation line.
  * Invalid observer entries are intentionally ignored so a prior valid chapter
@@ -35,7 +27,7 @@ export function selectCurrentSection(entries, previous = 'about') {
       || !Number.isFinite(rect?.bottom)
     ) continue;
 
-    const distance = distanceFromStickyLine(rect);
+    const distance = Math.abs(rect.top - STICKY_NAVIGATION_LINE);
     if (distance < nearestDistance) {
       selected = id;
       nearestDistance = distance;
