@@ -684,47 +684,19 @@ function mediaStyle(dim?: { ar: string }) {
 </style>
 
 <script>
+  import { createCaseMediaMotionController } from '../../scripts/case-media-controller.mjs';
+
   let disposeCaseMedia = () => {};
 
   function attachCaseMedia(): void {
     disposeCaseMedia();
     const cleanups: Array<() => void> = [];
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const motionVideos = [...document.querySelectorAll<HTMLVideoElement>('[data-case-motion-video]')];
-    const originalMotionState = new Map(motionVideos.map((video) => [video, {
-      autoplay: video.autoplay,
-      loop: video.loop,
-      autoplayAttribute: video.hasAttribute('autoplay'),
-      loopAttribute: video.hasAttribute('loop'),
-      shouldPlay: video.autoplay,
-    }]));
-    const syncReducedMotion = () => {
-      if (motionQuery.matches) {
-        motionVideos.forEach((video) => {
-          video.autoplay = false;
-          video.loop = false;
-          video.pause();
-        });
-        return;
-      }
-
-      motionVideos.forEach((video) => {
-        const state = originalMotionState.get(video);
-        if (!state) return;
-
-        video.toggleAttribute('autoplay', state.autoplayAttribute);
-        video.toggleAttribute('loop', state.loopAttribute);
-        video.autoplay = state.autoplay;
-        video.loop = state.loop;
-        if (state.shouldPlay && !document.hidden) {
-          void video.play().catch(() => {});
-        }
-      });
-    };
-
-    syncReducedMotion();
-    motionQuery.addEventListener('change', syncReducedMotion);
-    cleanups.push(() => motionQuery.removeEventListener('change', syncReducedMotion));
+    const motionController = createCaseMediaMotionController({
+      documentRef: document,
+      motionQuery,
+    });
+    cleanups.push(() => motionController.dispose());
 
     document.querySelectorAll<HTMLButtonElement>('[data-interactive-launch]').forEach((button) => {
       const host = button.closest<HTMLElement>('[data-interactive-host]');

@@ -589,25 +589,28 @@ test('interactive artwork receives global iframe sizing and a capped balanced la
 
 test('case-study media keeps motion, gallery labels, and interactive focus safe', () => {
   const template = readFileSync(join(process.cwd(), 'src', 'pages', 'work', '[slug].astro'), 'utf8');
+  const motionController = readFileSync(join(process.cwd(), 'src', 'scripts', 'case-media-controller.mjs'), 'utf8');
 
   assert.match(template, /<video src=\{media\.trailer\} controls autoplay muted loop playsinline preload="metadata"/);
   assert.match(template, /<video src=\{media\.cover\} controls autoplay muted loop playsinline preload="metadata"/);
   assert.match(template, /data-case-motion-video/);
   assert.match(template, /document\.addEventListener\('DOMContentLoaded', attachCaseMedia/);
   assert.match(template, /document\.addEventListener\('astro:page-load', attachCaseMedia/);
-  assert.match(template, /motionQuery\.addEventListener\('change', syncReducedMotion\)/);
-  assert.match(template, /const motionVideos = \[\.\.\.document\.querySelectorAll<HTMLVideoElement>\('\[data-case-motion-video\]'\)\];/);
-  assert.match(template, /const originalMotionState = new Map\(motionVideos\.map\(\(video\) => \[video, \{/);
-  assert.match(template, /autoplay: video\.autoplay,/);
-  assert.match(template, /loop: video\.loop,/);
-  assert.match(template, /shouldPlay: video\.autoplay,/);
-  assert.match(template, /video\.autoplay = false;/);
-  assert.match(template, /video\.loop = false;/);
-  assert.match(template, /video\.pause\(\);/);
-  assert.match(template, /video\.autoplay = state\.autoplay;/);
-  assert.match(template, /video\.loop = state\.loop;/);
-  assert.match(template, /if \(state\.shouldPlay && !document\.hidden\) \{/);
-  assert.match(template, /void video\.play\(\)\.catch\(\(\) => \{\}\);/);
+  assert.match(template, /import \{ createCaseMediaMotionController \} from '\.\.\/\.\.\/scripts\/case-media-controller\.mjs';/);
+  assert.match(template, /createCaseMediaMotionController\(\{\s*documentRef: document,\s*motionQuery,\s*\}\)/s);
+  assert.match(motionController, /const originalMotionStates = new WeakMap\(\);/);
+  assert.match(motionController, /const existingState = originalMotionStates\.get\(video\);\s*if \(existingState\) return existingState;/s);
+  assert.match(motionController, /autoplay: video\.autoplay,/);
+  assert.match(motionController, /loop: video\.loop,/);
+  assert.match(motionController, /shouldPlay: video\.autoplay,/);
+  assert.match(motionController, /motionQuery\.addEventListener\('change', syncReducedMotion\)/);
+  assert.match(motionController, /video\.autoplay = false;/);
+  assert.match(motionController, /video\.loop = false;/);
+  assert.match(motionController, /video\.pause\(\);/);
+  assert.match(motionController, /video\.autoplay = state\.autoplay;/);
+  assert.match(motionController, /video\.loop = state\.loop;/);
+  assert.match(motionController, /if \(state\.shouldPlay && !documentRef\.hidden\) \{/);
+  assert.match(motionController, /void video\.play\(\)\.catch\(\(\) => \{\}\);/);
   assert.match(template, /document\.addEventListener\('astro:before-swap', \(\) => disposeCaseMedia\(\)\)/);
   assert.doesNotMatch(template, /document\.addEventListener\('astro:before-swap', disposeCaseMedia\)/);
   assert.match(template, /alt=\{`\$\{data\.title\} \\u2014 project visual \$\{m\.visualIndex\}`\}/);
