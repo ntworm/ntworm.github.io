@@ -123,6 +123,30 @@ test('build dependencies are direct and Astro is on the audited release line', (
   assert.ok(isAtLeast(packageLock.packages?.['node_modules/sharp']?.version, '0.35.3'));
 });
 
+test('deployment workflow tests the site before uploading its artifact', () => {
+  const workflow = readFileSync(join(process.cwd(), '..', '.github', 'workflows', 'deploy.yml'), 'utf8');
+  const steps = [...workflow.matchAll(/^\s*- name: (.+)\r?\n([\s\S]*?)(?=^\s*- name: |$(?![\s\S]))/gm)].map((match) => ({
+    name: match[1],
+    body: match[2],
+  }));
+  const installIndex = steps.findIndex((step) => /run: npm ci/.test(step.body));
+  const testIndex = steps.findIndex((step) => step.name === 'Test and build Astro site');
+  const uploadIndex = steps.findIndex((step) => step.name === 'Upload Pages artifact');
+
+  assert.ok(installIndex >= 0, 'deployment workflow must install dependencies');
+  assert.ok(testIndex >= 0, 'deployment workflow must test and build the site');
+  assert.ok(uploadIndex >= 0, 'deployment workflow must upload the Pages artifact');
+  assert.match(steps[testIndex].body, /working-directory: site/);
+  assert.match(steps[testIndex].body, /run: npm test/);
+  assert.ok(installIndex < testIndex, 'npm ci must run before npm test');
+  assert.ok(testIndex < uploadIndex, 'artifact upload must run after npm test');
+  assert.equal(
+    steps.slice(testIndex + 1).some((step) => /run: npm run build/.test(step.body)),
+    false,
+    'deployment workflow must not build again after npm test',
+  );
+});
+
 test('Hydra uses a disposable parent lifecycle and a decorative non-focusable iframe', () => {
   const component = readFileSync(join(process.cwd(), 'src', 'components', 'HydraBackground.astro'), 'utf8');
   const controller = readFileSync(join(process.cwd(), 'src', 'scripts', 'hydra-frame-controller.mjs'), 'utf8');

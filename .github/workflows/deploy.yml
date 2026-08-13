@@ -34,9 +34,9 @@ jobs:
         working-directory: site
         run: npm ci
 
-      - name: Build Astro site
+      - name: Test and build Astro site
         working-directory: site
-        run: npm run build
+        run: npm test
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
