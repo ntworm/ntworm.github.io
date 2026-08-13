@@ -1,7 +1,7 @@
 # Predictive Gaussian Loading Design
 
 **Date:** 2026-08-13  
-**Status:** Approved direction; awaiting written-spec review  
+**Status:** Approved
 **Repository:** `C:\Users\Usuario\repos\portfolio\.worktrees\hydra-adaptive-preview`
 
 ## Context
