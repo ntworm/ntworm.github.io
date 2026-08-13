@@ -225,9 +225,9 @@ test('Work intro pairs the editorial statement with the original project spotlig
   assert.match(work, /Music Production/);
   assert.match(work, /Creative Coding/);
   assert.match(work, /Live \/ Experimental/);
-  assert.match(source, /animation:\s*work-spotlight-cycle/);
-  assert.match(source, /animation-delay:\s*calc\(var\(--i\) \* -6s\)/);
-  assert.match(source, /\.portfolio-work__spotlight:hover \.work-spotlight-cell/);
+  assert.match(source, /createSpotlightController/);
+  assert.match(source, /\.work-spotlight-cell\.is-active/);
+  assert.doesNotMatch(source, /@keyframes work-spotlight-cycle/);
   assert.match(source, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(work, /class="portfolio-work__runway"/);
   assert.match(work, /class="portfolio-work__runway-count mono"[^>]*>01—13<\/span>/);
@@ -340,7 +340,7 @@ test('Work media prewarms before native lazy loading can leave visible cards bla
 
   assert.match(source, /data-prewarm-image/);
   assert.match(source, /new IntersectionObserver/);
-  assert.match(source, /rootMargin:\s*['"]200% 0px['"]/);
+  assert.match(source, /rootMargin:\s*['"]100% 0px['"]/);
   assert.match(source, /image\.loading\s*=\s*['"]eager['"]/);
 });
 

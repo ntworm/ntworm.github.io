@@ -1,5 +1,6 @@
 ---
 import WorkEntry from './WorkEntry.astro';
+import dimensionsData from '../../data/asset-dimensions.json';
 
 interface Props {
   presentation: {
@@ -25,7 +26,13 @@ const workById = new Map(
 const spotlightProjects = spotlightIds
   .map((id) => workById.get(id))
   .filter((project) => project?.media.cover);
-const spotlightCycleSeconds = spotlightProjects.length * 6;
+const firstFeaturedCoverIndex = presentation.featured.findIndex((project) => project.media.cover);
+const dimensionsByProject = dimensionsData as Record<string, Array<{ file: string; w: number; h: number }>>;
+
+function coverDimensions(project: (typeof spotlightProjects)[number]) {
+  const filename = project.media.cover?.split('/').pop();
+  return dimensionsByProject[project.id]?.find((dimension) => dimension.file === filename);
+}
 ---
 
 <section id="work" class="portfolio-work wrap" data-portfolio-chapter="work">
@@ -55,16 +62,27 @@ const spotlightCycleSeconds = spotlightProjects.length * 6;
         class="portfolio-work__spotlight"
         role="group"
         aria-label="Project spotlight"
-        style={`--work-spotlight-cycle: ${spotlightCycleSeconds}s`}
+        data-spotlight
       >
         {spotlightProjects.map((project, index) => project && (
           <a
             href={`/work/${project.id}`}
             class="work-spotlight-cell"
-            style={`--i: ${index}`}
+            aria-hidden={index === 0 ? 'false' : 'true'}
+            inert={index === 0 ? undefined : true}
+            tabindex={index === 0 ? 0 : -1}
+            data-spotlight-slide
             aria-label={`${project.data.title} — ${project.data.role ?? 'Work'} (${project.data.year})`}
           >
-            <img src={project.media.cover} alt="" loading="eager" decoding="async" />
+            <img
+              src={index === 0 ? project.media.cover : undefined}
+              data-src={project.media.cover}
+              alt=""
+              loading={index === 0 ? 'eager' : 'lazy'}
+              decoding="async"
+              width={coverDimensions(project)?.w}
+              height={coverDimensions(project)?.h}
+            />
             <span class="work-spotlight-caption">
               <strong>{project.data.title}</strong>
               <span class="mono">{project.data.role} · {project.data.year}</span>
@@ -84,7 +102,12 @@ const spotlightCycleSeconds = spotlightProjects.length * 6;
     <h2 id="selected-work-title">Defining Projects.</h2>
     <div class="portfolio-work__featured">
       {presentation.featured.map((project, index) => (
-        <WorkEntry project={project} tier="featured" index={index} />
+        <WorkEntry
+          project={project}
+          tier="featured"
+          index={index}
+          eager={index === firstFeaturedCoverIndex}
+        />
       ))}
     </div>
   </section>
@@ -102,6 +125,87 @@ const spotlightCycleSeconds = spotlightProjects.length * 6;
 </section>
 
 <script>
+  import { createSpotlightController } from '../../scripts/spotlight-controller.mjs';
+
+  const spotlightCleanups = new Set<() => void>();
+
+  function initProjectSpotlights() {
+    document.querySelectorAll<HTMLElement>('[data-spotlight]').forEach((root) => {
+      if (root.dataset.spotlightReady === '1') return;
+
+      const slides = Array.from(root.querySelectorAll<HTMLAnchorElement>('[data-spotlight-slide]'));
+      if (slides.length === 0) return;
+
+      root.dataset.spotlightReady = '1';
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const loadCurrentImage = (index: number) => {
+        const image = slides[index]?.querySelector<HTMLImageElement>('img[data-src]');
+        const src = image?.dataset.src;
+        if (image && src && !image.getAttribute('src')) image.src = src;
+      };
+      const prewarmNextImage = (index: number) => {
+        const src = slides[(index + 1) % slides.length]
+          ?.querySelector<HTMLImageElement>('img[data-src]')?.dataset.src;
+        if (!src) return;
+        const prewarm = new Image();
+        prewarm.src = src;
+      };
+      const controller = createSpotlightController({
+        count: slides.length,
+        reducedMotion,
+        schedule: (advance) => window.setTimeout(advance, 6000),
+        cancel: (timer) => window.clearTimeout(timer),
+        setActive: (activeIndex) => {
+          slides.forEach((slide, index) => {
+            const active = index === activeIndex;
+            slide.classList.toggle('is-active', active);
+            slide.setAttribute('aria-hidden', String(!active));
+            slide.tabIndex = active ? 0 : -1;
+            if (active) slide.removeAttribute('inert');
+            else slide.setAttribute('inert', '');
+          });
+          loadCurrentImage(activeIndex);
+          prewarmNextImage(activeIndex);
+        },
+      });
+      const pauseForPointer = () => controller.pause('pointer');
+      const resumeForPointer = () => controller.resume('pointer');
+      const pauseForFocus = () => controller.pause('focus');
+      const resumeAfterFocus = () => queueMicrotask(() => {
+        if (!root.matches(':focus-within')) controller.resume('focus');
+      });
+      const syncVisibility = () => {
+        if (document.hidden) controller.pause('hidden');
+        else controller.resume('hidden');
+      };
+
+      root.addEventListener('pointerenter', pauseForPointer);
+      root.addEventListener('pointerleave', resumeForPointer);
+      root.addEventListener('focusin', pauseForFocus);
+      root.addEventListener('focusout', resumeAfterFocus);
+      document.addEventListener('visibilitychange', syncVisibility);
+      syncVisibility();
+
+      const cleanup = () => {
+        controller.dispose();
+        root.removeEventListener('pointerenter', pauseForPointer);
+        root.removeEventListener('pointerleave', resumeForPointer);
+        root.removeEventListener('focusin', pauseForFocus);
+        root.removeEventListener('focusout', resumeAfterFocus);
+        document.removeEventListener('visibilitychange', syncVisibility);
+        spotlightCleanups.delete(cleanup);
+      };
+      spotlightCleanups.add(cleanup);
+    });
+  }
+
+  document.addEventListener('astro:before-swap', () => {
+    [...spotlightCleanups].forEach((cleanup) => cleanup());
+  });
+
+  initProjectSpotlights();
+  document.addEventListener('astro:page-load', initProjectSpotlights);
+
   function attachWorkTitleReveal() {
     document.querySelectorAll<HTMLElement>('[data-work-title-reveal]').forEach((title) => {
       if (title.dataset.workRevealReady === '1') return;
@@ -231,10 +335,19 @@ const spotlightCycleSeconds = spotlightProjects.length * 6;
     inset: 0;
     display: block;
     color: inherit;
+    visibility: hidden;
     opacity: 0;
-    animation: work-spotlight-cycle var(--work-spotlight-cycle, 42s) linear infinite;
-    animation-delay: calc(var(--i) * -6s);
+    pointer-events: none;
+    transition: opacity 420ms cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 420ms;
     will-change: opacity;
+  }
+
+  .work-spotlight-cell.is-active,
+  .work-spotlight-cell[aria-hidden="false"] {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transition-delay: 0s;
   }
 
   .work-spotlight-cell img {
@@ -265,21 +378,9 @@ const spotlightCycleSeconds = spotlightProjects.length * 6;
     text-transform: uppercase;
   }
 
-  .portfolio-work__spotlight:hover .work-spotlight-cell {
-    animation-play-state: paused;
-  }
-
   .work-spotlight-cell:hover .work-spotlight-caption .mono,
   .work-spotlight-cell:focus-visible .work-spotlight-caption .mono {
     color: var(--accent-amber);
-  }
-
-  @keyframes work-spotlight-cycle {
-    0% { opacity: 0; }
-    3.33% { opacity: 1; animation-timing-function: linear; }
-    14.29% { opacity: 1; animation-timing-function: linear; }
-    17.62% { opacity: 0; }
-    100% { opacity: 0; }
   }
 
   .portfolio-work__selected,
@@ -340,7 +441,6 @@ const spotlightCycleSeconds = spotlightProjects.length * 6;
 
   @media (prefers-reduced-motion: reduce) {
     .portfolio-work__title-line > span { opacity: 1; transform: none; animation: none; }
-    .work-spotlight-cell { animation: none; opacity: 0; }
-    .work-spotlight-cell:first-child { opacity: 1; }
+    .work-spotlight-cell { transition: none; }
   }
 </style>
