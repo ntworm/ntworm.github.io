@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import test from 'node:test';
 
@@ -331,7 +331,7 @@ test('continuous Gaussians load predictively without document-head splat preload
 
   assert.doesNotMatch(homepageSource, /const SPLATS|preload=\{/);
   assert.doesNotMatch(layoutSource, /preload\?: string\[\]|as="fetch" type="application\/octet-stream"/);
-  assert.match(gaussianSource, /rootMargin: '200% 0px'/);
+  assert.match(gaussianSource, /rootMargin: loadRootMargin/);
   assert.match(gaussianSource, /rootMargin: '75% 0px'/);
   assert.match(gaussianSource, /closest\('\.code__hero, \.code__lower-showcase'\)/);
   assert.match(gaussianSource, /location\.hash === '#code'/);
@@ -340,6 +340,31 @@ test('continuous Gaussians load predictively without document-head splat preload
     /url\.origin === location\.origin &&\s*url\.pathname === location\.pathname &&\s*url\.search === location\.search &&\s*url\.hash === '#code'/s,
   );
   assert.match(gaussianSource, /document\.addEventListener\('astro:before-swap', cleanupGaussianBackgrounds\)/);
+});
+
+test('constrained devices defer Gaussian loading and obsolete PLY viewer assets are absent', () => {
+  const gaussianSource = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
+  const sourceFiles = walk(join(process.cwd(), 'src'), '').filter((path) => /\.(astro|js|mjs|ts|tsx)$/.test(path));
+  const legacyViewerPath = join(process.cwd(), 'src', 'components', 'GaussianViewer.astro');
+  const legacyPlyPath = join(process.cwd(), 'public', 'work', 'code', 'splats', 'carro', 'carro.compressed.ply');
+
+  assert.match(gaussianSource, /import \{ shouldDelayHeavyMedia \} from '\.\.\/scripts\/heavy-media-policy\.mjs';/);
+  assert.match(
+    gaussianSource,
+    /shouldDelayHeavyMedia\(\{\s*saveData: navigator\.connection\?\.saveData,\s*deviceMemory: navigator\.deviceMemory,\s*\}\)/s,
+  );
+  assert.match(
+    gaussianSource,
+    /const loadRootMargin = shouldDelayHeavyMedia\([^]*?\) \? '0px' : '200% 0px';/,
+  );
+  assert.match(gaussianSource, /\}, \{ rootMargin: loadRootMargin \}\);/);
+  assert.ok(sourceFiles.every((path) => {
+    const source = readFileSync(path, 'utf8');
+    return !source.includes('GaussianViewer') && !source.includes('.ply');
+  }));
+  assert.equal(existsSync(legacyViewerPath), false);
+  assert.equal(existsSync(legacyPlyPath), false);
+  assert.deepEqual(walk(join(process.cwd(), 'public'), '.ply'), []);
 });
 
 test('predictive Gaussian controllers load once and preserve poster continuity', () => {

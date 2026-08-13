@@ -64,6 +64,7 @@ if (!splats || splats.length === 0) {
 import { createGaussianAutopilot, damp, gaussianFocusPoint, gaussianFocusProximity, gaussianPointerLook, gaussianToggleHotspot, sampleGaussianCamera } from '../scripts/gaussian-camera-motion.mjs';
 import { createPausableFrameLoop } from '../scripts/gaussian-frame-loop.mjs';
 import { calculateParticleBounds, createGaussianLightAutopilot, createGaussianParticleAutopilot, createGaussianParticleUniformController, createGaussianWorldTransition, gaussianParticleProfile, installGaussianParticleShaderPatch } from '../scripts/gaussian-particle-effects.mjs';
+import { shouldDelayHeavyMedia } from '../scripts/heavy-media-policy.mjs';
 
 type SplatEntry = { src: string; poster: string; label: string };
 
@@ -79,6 +80,11 @@ interface GaussianRuntimeController {
 }
 
 declare global {
+  interface Navigator {
+    connection?: { saveData?: boolean };
+    deviceMemory?: number;
+  }
+
   interface Window {
     __gsBgStart?: (src: string, stage: HTMLElement) => Promise<GaussianRuntimeController | null>;
     __gsBgLoaded?: boolean;
@@ -446,6 +452,11 @@ function createGaussianMountController(bg: HTMLElement): GaussianMountController
   const pick = pickRandomSplat(bg);
   if (!pick) return null;
 
+  const loadRootMargin = shouldDelayHeavyMedia({
+    saveData: navigator.connection?.saveData,
+    deviceMemory: navigator.deviceMemory,
+  }) ? '0px' : '200% 0px';
+
   // Install the selected poster synchronously so observer timing cannot reveal
   // the bare background while the full-quality scene is still outside range.
   if (pick.poster) {
@@ -527,7 +538,7 @@ function createGaussianMountController(bg: HTMLElement): GaussianMountController
 
   loadObserver = new IntersectionObserver((entries) => {
     if (entries.some((entry) => entry.isIntersecting)) void load();
-  }, { rootMargin: '200% 0px' });
+  }, { rootMargin: loadRootMargin });
 
   activityObserver = new IntersectionObserver((entries) => {
     const hostEntry = entries.find((entry) => entry.target === host);
