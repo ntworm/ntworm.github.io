@@ -1,6 +1,4 @@
 ---
-import { createHydraFrameController } from '../scripts/hydra-frame-controller.mjs';
-
 const linesAndCellsUrl = '/hydra/lines-and-cells.html?fxhash=opTgZfTemeT4UtGTA95AUh97CWnCstz2XW359tw1Hv7588x551j';
 ---
 
@@ -88,6 +86,8 @@ const linesAndCellsUrl = '/hydra/lines-and-cells.html?fxhash=opTgZfTemeT4UtGTA95
 </style>
 
 <script>
+  import { createHydraFrameController } from '../scripts/hydra-frame-controller.mjs';
+
   type HydraSurfaceWindow = Window & {
     __portfolioHydraSurfaceCleanup?: () => void;
   };

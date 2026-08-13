@@ -90,7 +90,8 @@ test('Hydra uses a disposable parent lifecycle and a decorative non-focusable if
   const component = readFileSync(join(process.cwd(), 'src', 'components', 'HydraBackground.astro'), 'utf8');
   const controller = readFileSync(join(process.cwd(), 'src', 'scripts', 'hydra-frame-controller.mjs'), 'utf8');
 
-  assert.match(component, /import \{ createHydraFrameController \} from '\.\.\/scripts\/hydra-frame-controller\.mjs';/);
+  assert.doesNotMatch(component.match(/^---([\s\S]*?)---/)?.[1] ?? '', /createHydraFrameController/);
+  assert.match(component, /<script>\s*import \{ createHydraFrameController \} from '\.\.\/scripts\/hydra-frame-controller\.mjs';/s);
   assert.match(component, /tabindex="-1"/);
   assert.match(component, /createHydraFrameController\(\{\s*host: background,\s*iframe,\s*source: iframe\.dataset\.hydraSrc,\s*\}\)/s);
   assert.match(component, /document\.addEventListener\('astro:before-swap'/);
@@ -99,6 +100,18 @@ test('Hydra uses a disposable parent lifecycle and a decorative non-focusable if
   assert.match(controller, /iframe\.addEventListener\('load', onIframeLoad\)/);
   assert.match(controller, /observer\?\.disconnect\(\)/);
   assert.match(controller, /send\(false\);/);
+});
+
+test('Hydra parent controller is bundled into a browser module instead of called as a free symbol', () => {
+  const index = readFileSync(join(distDir, 'index.html'), 'utf8');
+  const externalModuleSources = [...index.matchAll(/<script type="module" src="([^\"]+\.js)"><\/script>/g)]
+    .map(([, src]) => readFileSync(join(distDir, src.replace(/^\//, '')), 'utf8'));
+  const inlineModuleSources = [...index.matchAll(/<script type="module">([\s\S]*?)<\/script>/g)]
+    .map(([, source]) => source);
+  const moduleSources = [...externalModuleSources, ...inlineModuleSources];
+
+  assert.equal(/<script type="module">[^<]*createHydraFrameController/s.test(index), false);
+  assert.ok(moduleSources.some((source) => source.includes('Hydra host and iframe are required')));
 });
 
 test('every anchor has a non-empty href', () => {
