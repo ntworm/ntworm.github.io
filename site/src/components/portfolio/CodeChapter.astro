@@ -170,17 +170,6 @@ const SPLATS = [
       <div class="tools__grid">
         {tools.map((t) => (
           <article class="tool-card">
-            {!t.href && (
-            <a class="tool-card__media" href={t.href || '#'} rel={t.href ? 'noopener' : undefined} aria-label={t.href ? `${t.title} — open project` : t.title}>
-              {t.img ? (
-                <img src={t.img} alt={`${t.title} — preview`} loading="lazy" width="800" height="450" />
-              ) : (
-                <div class="tool-card__placeholder" aria-label="Cover image pending">
-                  <span class="mono">image pending</span>
-                </div>
-              )}
-            </a>
-            )}
             <div class="tool-card__media" aria-hidden="true">
               {t.img ? (
                 <img src={t.img} alt="" loading="lazy" width="800" height="450" />

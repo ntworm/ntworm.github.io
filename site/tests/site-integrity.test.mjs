@@ -596,9 +596,18 @@ test('case-study media keeps motion, gallery labels, and interactive focus safe'
   assert.match(template, /document\.addEventListener\('DOMContentLoaded', attachCaseMedia/);
   assert.match(template, /document\.addEventListener\('astro:page-load', attachCaseMedia/);
   assert.match(template, /motionQuery\.addEventListener\('change', syncReducedMotion\)/);
+  assert.match(template, /const motionVideos = \[\.\.\.document\.querySelectorAll<HTMLVideoElement>\('\[data-case-motion-video\]'\)\];/);
+  assert.match(template, /const originalMotionState = new Map\(motionVideos\.map\(\(video\) => \[video, \{/);
+  assert.match(template, /autoplay: video\.autoplay,/);
+  assert.match(template, /loop: video\.loop,/);
+  assert.match(template, /shouldPlay: video\.autoplay,/);
   assert.match(template, /video\.autoplay = false;/);
   assert.match(template, /video\.loop = false;/);
   assert.match(template, /video\.pause\(\);/);
+  assert.match(template, /video\.autoplay = state\.autoplay;/);
+  assert.match(template, /video\.loop = state\.loop;/);
+  assert.match(template, /if \(state\.shouldPlay && !document\.hidden\) \{/);
+  assert.match(template, /void video\.play\(\)\.catch\(\(\) => \{\}\);/);
   assert.match(template, /document\.addEventListener\('astro:before-swap', \(\) => disposeCaseMedia\(\)\)/);
   assert.doesNotMatch(template, /document\.addEventListener\('astro:before-swap', disposeCaseMedia\)/);
   assert.match(template, /alt=\{`\$\{data\.title\} \\u2014 project visual \$\{m\.visualIndex\}`\}/);
@@ -631,7 +640,9 @@ test('Code tool cards expose each project destination only once to keyboard user
   const source = readFileSync(codeChapterSourcePath, 'utf8');
 
   assert.match(source, /<div class="tool-card__media" aria-hidden="true">/);
-  assert.match(source, /\{!t\.href && \(\s*<a class="tool-card__media"/s);
+  assert.doesNotMatch(source, /<a class="tool-card__media"/);
+  assert.doesNotMatch(source, /href=\{t\.href \|\| '#'/);
+  assert.doesNotMatch(source, /href=['"]#['"]/);
   assert.match(source, /<img src=\{t\.img\} alt="" loading="lazy"/);
   assert.match(source, /<h3 class="tool-card__name">[\s\S]*?<a href=\{t\.href\}/);
 });

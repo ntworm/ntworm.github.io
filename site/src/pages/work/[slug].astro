@@ -690,13 +690,35 @@ function mediaStyle(dim?: { ar: string }) {
     disposeCaseMedia();
     const cleanups: Array<() => void> = [];
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const motionVideos = [...document.querySelectorAll<HTMLVideoElement>('[data-case-motion-video]')];
+    const originalMotionState = new Map(motionVideos.map((video) => [video, {
+      autoplay: video.autoplay,
+      loop: video.loop,
+      autoplayAttribute: video.hasAttribute('autoplay'),
+      loopAttribute: video.hasAttribute('loop'),
+      shouldPlay: video.autoplay,
+    }]));
     const syncReducedMotion = () => {
-      if (!motionQuery.matches) return;
+      if (motionQuery.matches) {
+        motionVideos.forEach((video) => {
+          video.autoplay = false;
+          video.loop = false;
+          video.pause();
+        });
+        return;
+      }
 
-      document.querySelectorAll<HTMLVideoElement>('[data-case-motion-video]').forEach((video) => {
-        video.autoplay = false;
-        video.loop = false;
-        video.pause();
+      motionVideos.forEach((video) => {
+        const state = originalMotionState.get(video);
+        if (!state) return;
+
+        video.toggleAttribute('autoplay', state.autoplayAttribute);
+        video.toggleAttribute('loop', state.loopAttribute);
+        video.autoplay = state.autoplay;
+        video.loop = state.loop;
+        if (state.shouldPlay && !document.hidden) {
+          void video.play().catch(() => {});
+        }
       });
     };
 
