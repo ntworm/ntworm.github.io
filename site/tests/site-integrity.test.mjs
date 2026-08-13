@@ -59,16 +59,31 @@ function localPathExists(url) {
 
 test('build dependencies are direct and Astro is on the audited release line', () => {
   const packageJson = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'));
-  const failures = [];
+  const packageLock = JSON.parse(readFileSync(join(process.cwd(), 'package-lock.json'), 'utf8'));
+  const rootPackage = packageLock.packages?.[''];
+  const isAtLeast = (actual, minimum) => {
+    const parse = (version) => {
+      const match = version?.match(/^(\d+)\.(\d+)\.(\d+)$/);
+      return match?.slice(1).map(Number);
+    };
+    const actualParts = parse(actual);
+    const minimumParts = parse(minimum);
+    if (!actualParts || !minimumParts) return false;
 
-  if (!/^\^7\.2\./.test(packageJson.dependencies?.astro ?? '')) {
-    failures.push(`dependencies.astro is ${packageJson.dependencies?.astro ?? 'missing'}`);
-  }
-  if (!packageJson.devDependencies?.sharp) {
-    failures.push('devDependencies.sharp is missing');
-  }
+    for (let index = 0; index < minimumParts.length; index += 1) {
+      if (actualParts[index] !== minimumParts[index]) {
+        return actualParts[index] > minimumParts[index];
+      }
+    }
+    return true;
+  };
 
-  assert.deepEqual(failures, []);
+  assert.equal(packageJson.dependencies?.astro, '^7.2.1');
+  assert.equal(packageJson.devDependencies?.sharp, '^0.35.3');
+  assert.equal(rootPackage?.dependencies?.astro, packageJson.dependencies.astro);
+  assert.equal(rootPackage?.devDependencies?.sharp, packageJson.devDependencies.sharp);
+  assert.ok(isAtLeast(packageLock.packages?.['node_modules/astro']?.version, '7.2.1'));
+  assert.ok(isAtLeast(packageLock.packages?.['node_modules/sharp']?.version, '0.35.3'));
 });
 
 test('every anchor has a non-empty href', () => {
