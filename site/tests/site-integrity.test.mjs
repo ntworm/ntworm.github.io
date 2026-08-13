@@ -57,6 +57,20 @@ function localPathExists(url) {
   }
 }
 
+test('build dependencies are direct and Astro is on the audited release line', () => {
+  const packageJson = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'));
+  const failures = [];
+
+  if (!/^\^7\.2\./.test(packageJson.dependencies?.astro ?? '')) {
+    failures.push(`dependencies.astro is ${packageJson.dependencies?.astro ?? 'missing'}`);
+  }
+  if (!packageJson.devDependencies?.sharp) {
+    failures.push('devDependencies.sharp is missing');
+  }
+
+  assert.deepEqual(failures, []);
+});
+
 test('every anchor has a non-empty href', () => {
   const failures = [];
   for (const file of htmlFiles()) {
