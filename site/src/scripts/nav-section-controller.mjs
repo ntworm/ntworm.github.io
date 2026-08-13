@@ -55,6 +55,9 @@ function setCurrentLocation(links, section) {
 export function disconnectSectionNavigation(documentRef) {
   const controller = controllers.get(documentRef);
   if (!controller) return;
+  controller.view.removeEventListener('scroll', controller.scheduleUpdate);
+  const frameId = controller.getFrameId();
+  if (frameId !== null) controller.view.cancelAnimationFrame(frameId);
   controller.observer.disconnect();
   controllers.delete(documentRef);
 }
@@ -72,32 +75,43 @@ export function bindSectionNavigation(documentRef = document) {
     .map((id) => documentRef.getElementById(id))
     .filter((host) => host != null);
   const Observer = documentRef.defaultView?.IntersectionObserver ?? globalThis.IntersectionObserver;
+  const view = documentRef.defaultView ?? globalThis;
 
   // Case-study routes intentionally keep their server-rendered Work `page`
   // state; there are no continuous-document hosts to observe there.
   if (hosts.length === 0 || typeof Observer !== 'function') return () => {};
 
-  const visibleHosts = new Set();
   let current = 'about';
-  const observer = new Observer((entries) => {
-    entries.forEach((entry) => {
-      if (!hosts.includes(entry.target)) return;
-      if (entry.isIntersecting) visibleHosts.add(entry.target);
-      else visibleHosts.delete(entry.target);
+  let frameId = null;
+  const updateCurrentSection = () => {
+    frameId = null;
+    const viewportHeight = Number.isFinite(view.innerHeight)
+      ? view.innerHeight
+      : Number.POSITIVE_INFINITY;
+    const snapshots = hosts.map((host) => {
+      const boundingClientRect = host.getBoundingClientRect();
+      return {
+        target: host,
+        isIntersecting: boundingClientRect.bottom > 0 && boundingClientRect.top < viewportHeight,
+        boundingClientRect,
+      };
     });
-
-    const snapshots = [...visibleHosts].map((host) => ({
-      target: host,
-      isIntersecting: true,
-      boundingClientRect: host.getBoundingClientRect(),
-    }));
     current = selectCurrentSection(snapshots, current);
     setCurrentLocation(links, current);
+  };
+  const scheduleUpdate = () => {
+    if (frameId !== null) return;
+    frameId = view.requestAnimationFrame(updateCurrentSection);
+  };
+  const observer = new Observer(() => {
+    scheduleUpdate();
   }, { threshold: 0 });
 
   hosts.forEach((host) => observer.observe(host));
+  view.addEventListener('scroll', scheduleUpdate, { passive: true });
+  scheduleUpdate();
   const cleanup = () => disconnectSectionNavigation(documentRef);
-  controllers.set(documentRef, { observer, cleanup });
+  controllers.set(documentRef, { observer, cleanup, view, scheduleUpdate, getFrameId: () => frameId });
   return cleanup;
 }
 

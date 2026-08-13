@@ -58,11 +58,16 @@ function createLink(id, current) {
 
 function createDocument() {
   const observers = [];
+  const events = new Map();
+  const removedEvents = [];
+  const animationFrames = new Map();
+  const cancelledFrames = [];
+  let nextFrame = 1;
   const rectangles = new Map([
-    ['about', { top: -500, bottom: 20 }],
-    ['work', { top: 76, bottom: 860 }],
-    ['code', { top: 960, bottom: 1640 }],
-    ['contact', { top: 1800, bottom: 2600 }],
+    ['about', { top: 0, bottom: 800 }],
+    ['work', { top: 900, bottom: 1700 }],
+    ['code', { top: 1800, bottom: 2600 }],
+    ['contact', { top: 2700, bottom: 3500 }],
   ]);
   const hosts = new Map(['about', 'work', 'code', 'contact'].map((id) => [id, {
     id,
@@ -88,8 +93,35 @@ function createDocument() {
     observers,
     links,
     hosts,
+    rectangles,
+    events,
+    removedEvents,
+    animationFrames,
+    cancelledFrames,
+    runNextFrame() {
+      const [id, callback] = animationFrames.entries().next().value;
+      animationFrames.delete(id);
+      callback();
+    },
     document: {
-      defaultView: { IntersectionObserver: Observer },
+      defaultView: {
+        IntersectionObserver: Observer,
+        innerHeight: 900,
+        addEventListener: (type, listener) => events.set(type, listener),
+        removeEventListener: (type, listener) => {
+          if (events.get(type) === listener) events.delete(type);
+          removedEvents.push(type);
+        },
+        requestAnimationFrame: (callback) => {
+          const id = nextFrame++;
+          animationFrames.set(id, callback);
+          return id;
+        },
+        cancelAnimationFrame: (id) => {
+          cancelledFrames.push(id);
+          animationFrames.delete(id);
+        },
+      },
       getElementById: (id) => hosts.get(id) ?? null,
       querySelectorAll: (selector) => selector === '[data-nav-section]' ? links : [],
     },
@@ -103,14 +135,39 @@ test('bindSectionNavigation shares one observer, marks location, and disconnects
   bindSectionNavigation(fixture.document);
   assert.equal(fixture.observers.length, 1);
 
-  fixture.observers[0].callback([
-    { target: fixture.hosts.get('about'), isIntersecting: true },
-    { target: fixture.hosts.get('work'), isIntersecting: true },
-  ]);
+  fixture.rectangles.set('about', { top: -500, bottom: -20 });
+  fixture.rectangles.set('work', { top: 76, bottom: 860 });
+  fixture.observers[0].callback([{ target: fixture.hosts.get('work'), isIntersecting: true }]);
+  fixture.runNextFrame();
   assert.equal(fixture.links[1].classList.contains('is-active'), true);
   assert.equal(fixture.links[1].getAttribute('aria-current'), 'location');
   assert.equal(fixture.links[0].getAttribute('aria-current'), null);
 
   cleanup();
+  assert.equal(fixture.observers[0].disconnected, true);
+});
+
+test('scroll updates a visible chapter start with one coalesced animation frame and cleans up', () => {
+  const fixture = createDocument();
+  const cleanup = bindSectionNavigation(fixture.document);
+
+  fixture.runNextFrame();
+  fixture.rectangles.set('about', { top: -500, bottom: -20 });
+  fixture.rectangles.set('work', { top: 76, bottom: 860 });
+  const onScroll = fixture.events.get('scroll');
+  onScroll();
+  onScroll();
+  onScroll();
+
+  assert.equal(fixture.animationFrames.size, 1);
+  fixture.runNextFrame();
+  assert.equal(fixture.links[1].getAttribute('aria-current'), 'location');
+
+  onScroll();
+  cleanup();
+  assert.equal(fixture.animationFrames.size, 0);
+  assert.equal(fixture.cancelledFrames.length, 1);
+  assert.equal(fixture.events.has('scroll'), false);
+  assert.deepEqual(fixture.removedEvents, ['scroll']);
   assert.equal(fixture.observers[0].disconnected, true);
 });

@@ -480,6 +480,7 @@ test('primary navigation labels have no individual surface behind them', () => {
   assert.doesNotMatch(source, /\.nav\[data-scrolled="true"\]/);
   assert.doesNotMatch(source, /syncNavScrollState/);
   assert.match(source, /\.nav::before\s*\{[^}]*z-index:\s*0;[^}]*linear-gradient/s);
+  assert.match(source, /background:\s*linear-gradient\(to bottom,/);
   assert.match(source, /\.nav__inner\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1;/s);
   assert.match(source, /@media \(max-width: 640px\)[\s\S]*?\.nav__link\s*\{[^}]*min-height:\s*32px;[^}]*font-size:\s*11px;/s);
 });
