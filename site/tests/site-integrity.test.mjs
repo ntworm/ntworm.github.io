@@ -213,24 +213,40 @@ test('Gaussian runtime exposes an idempotent pausable and disposable controller'
   assert.match(source, /setActive\(active\) \{ frameLoop\.setActive\(active\); \}/);
   assert.match(source, /if \(disposed\) return;[^]*disposed = true;[^]*frameLoop\.dispose\(\);[^]*renderer\.dispose\(\);[^]*renderer\.canvas\.remove\(\);/);
   assert.match(source, /stage\.dataset\.gsDisposed === '1'/);
-  assert.match(source, /const runtime = await window\.__gsBgStart\(pick\.src, bg\);/);
-  assert.match(source, /runtime\?\.setActive\(true\);/);
+  assert.match(source, /return window\.__gsBgStart\(pick\.src, bg\);/);
+  assert.doesNotMatch(source, /runtime\?\.setActive\(true\);/);
   assert.doesNotMatch(source, /requestAnimationFrame\(frame\)/);
 });
 
-test('continuous Gaussians begin loading before their chapters enter the viewport', () => {
+test('continuous Gaussians load predictively without document-head splat preload', () => {
   const gaussianSource = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
   const homepageSource = readFileSync(homepageSourcePath, 'utf8');
   const layoutSource = readFileSync(join(process.cwd(), 'src', 'layouts', 'Layout.astro'), 'utf8');
-  const attachAll = gaussianSource.slice(
-    gaussianSource.indexOf('function attachAll'),
-    gaussianSource.indexOf("if (document.readyState === 'loading')"),
-  );
 
-  assert.match(attachAll, /void mountGaussianBackground\(bg\)/);
-  assert.doesNotMatch(attachAll, /IntersectionObserver/);
-  assert.match(homepageSource, /preload=\{\[\s*SPLATS\[0\]\.src,\s*SPLATS\[1\]\.src\s*\]\}/s);
-  assert.match(layoutSource, /preload\.map\(\(href\) => <link rel="preload" href=\{href\} as="fetch"/);
+  assert.doesNotMatch(homepageSource, /const SPLATS|preload=\{/);
+  assert.doesNotMatch(layoutSource, /preload\?: string\[\]|as="fetch" type="application\/octet-stream"/);
+  assert.match(gaussianSource, /rootMargin: '200% 0px'/);
+  assert.match(gaussianSource, /rootMargin: '75% 0px'/);
+  assert.match(gaussianSource, /closest\('\.code__hero, \.code__lower-showcase'\)/);
+  assert.match(gaussianSource, /location\.hash === '#code'/);
+  assert.match(gaussianSource, /url\.origin === location\.origin && url\.hash === '#code'/);
+  assert.match(gaussianSource, /document\.addEventListener\('astro:before-swap', cleanupGaussianBackgrounds\)/);
+});
+
+test('predictive Gaussian controllers load once and preserve poster continuity', () => {
+  const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
+  const posterStyle = source.indexOf("bg.style.setProperty('--gs-poster'");
+  const posterClass = source.indexOf("bg.classList.add('gs-bg--poster')");
+  const observerSetup = source.indexOf('loadObserver = new IntersectionObserver');
+
+  assert.match(source, /let loadPromise: Promise<void> \| null = null/);
+  assert.match(source, /if \(loadPromise \|\| disposed\) return loadPromise/);
+  assert.ok(posterStyle >= 0 && posterStyle < observerSetup, 'poster style must be assigned before observers');
+  assert.ok(posterClass >= 0 && posterClass < observerSetup, 'poster class must be assigned before observers');
+  assert.match(source, /runtime\?\.setActive\(insideActiveZone && !document\.hidden\)/);
+  assert.match(source, /runtime\?\.dispose\(\)/);
+  assert.match(source, /bg\.dataset\.gsDisposed = '1'/);
+  assert.match(source, /window\.__gsBgDebug = \(\) => \[\.\.\.gaussianControllers\]\.map\(\(controller\) => controller\.getState\(\)\)/);
 });
 
 test('code cards stay above softened Gaussian spill', () => {

@@ -14,17 +14,12 @@ const projects = (await getCollection('projects')).map((entry) => ({
   media: getProjectMedia(entry.id),
 }));
 const work = buildWorkPresentation(projects);
-const SPLATS = [
-  { src: '/work/code/splats/luzoebreno/luzoebreno.splat' },
-  { src: '/work/code/splats/carro/carro.splat' },
-];
 ---
 
 <Layout
   title="Sound, Music & Creative Systems"
   image="/portrait/1.jpg"
   mode="continuous"
-  preload={[SPLATS[0].src, SPLATS[1].src]}
 >
   <AboutChapter />
   <WorkChapter presentation={work} />

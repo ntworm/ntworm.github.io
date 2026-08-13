@@ -13,7 +13,6 @@ interface Props {
   canonicalUrl?: string;
   mode?: 'standard' | 'continuous';
   immersive?: boolean;
-  preload?: string[];
 }
 
 const {
@@ -24,7 +23,6 @@ const {
   canonicalUrl = Astro.url.href,
   mode = 'standard',
   immersive = false,
-  preload = [],
 } = Astro.props;
 const isContinuous = mode === 'continuous';
 const isImmersive = immersive || isContinuous;
@@ -58,8 +56,6 @@ const ogImage = image ? (image.startsWith('http') ? image : `${siteOrigin}${imag
     {ogImage && <meta name="twitter:image" content={ogImage}>}
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    {preload.length > 0 && <link rel="preconnect" href="https://esm.sh">}
-    {preload.map((href) => <link rel="preload" href={href} as="fetch" type="application/octet-stream">)}
     <ClientRouter />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
