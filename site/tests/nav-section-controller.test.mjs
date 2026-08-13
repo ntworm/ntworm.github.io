@@ -171,3 +171,27 @@ test('scroll updates a visible chapter start with one coalesced animation frame 
   assert.deepEqual(fixture.removedEvents, ['scroll']);
   assert.equal(fixture.observers[0].disconnected, true);
 });
+
+test('cleanup seals stale observer callbacks without scheduling frames or changing navigation', () => {
+  const fixture = createDocument();
+  const cleanup = bindSectionNavigation(fixture.document);
+
+  fixture.runNextFrame();
+  const staleCallback = fixture.observers[0].callback;
+  const before = fixture.links.map((link) => ({
+    active: link.classList.contains('is-active'),
+    current: link.getAttribute('aria-current'),
+  }));
+
+  cleanup();
+  cleanup();
+  staleCallback([]);
+
+  assert.equal(fixture.animationFrames.size, 0);
+  assert.deepEqual(fixture.links.map((link) => ({
+    active: link.classList.contains('is-active'),
+    current: link.getAttribute('aria-current'),
+  })), before);
+  assert.deepEqual(fixture.removedEvents, ['scroll']);
+  assert.equal(fixture.observers[0].disconnected, true);
+});

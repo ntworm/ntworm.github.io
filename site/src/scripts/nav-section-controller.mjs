@@ -55,10 +55,7 @@ function setCurrentLocation(links, section) {
 export function disconnectSectionNavigation(documentRef) {
   const controller = controllers.get(documentRef);
   if (!controller) return;
-  controller.view.removeEventListener('scroll', controller.scheduleUpdate);
-  const frameId = controller.getFrameId();
-  if (frameId !== null) controller.view.cancelAnimationFrame(frameId);
-  controller.observer.disconnect();
+  controller.dispose();
   controllers.delete(documentRef);
 }
 
@@ -83,7 +80,9 @@ export function bindSectionNavigation(documentRef = document) {
 
   let current = 'about';
   let frameId = null;
+  let disposed = false;
   const updateCurrentSection = () => {
+    if (disposed) return;
     frameId = null;
     const viewportHeight = Number.isFinite(view.innerHeight)
       ? view.innerHeight
@@ -100,10 +99,11 @@ export function bindSectionNavigation(documentRef = document) {
     setCurrentLocation(links, current);
   };
   const scheduleUpdate = () => {
-    if (frameId !== null) return;
+    if (disposed || frameId !== null) return;
     frameId = view.requestAnimationFrame(updateCurrentSection);
   };
   const observer = new Observer(() => {
+    if (disposed) return;
     scheduleUpdate();
   }, { threshold: 0 });
 
@@ -111,7 +111,15 @@ export function bindSectionNavigation(documentRef = document) {
   view.addEventListener('scroll', scheduleUpdate, { passive: true });
   scheduleUpdate();
   const cleanup = () => disconnectSectionNavigation(documentRef);
-  controllers.set(documentRef, { observer, cleanup, view, scheduleUpdate, getFrameId: () => frameId });
+  const dispose = () => {
+    if (disposed) return;
+    disposed = true;
+    view.removeEventListener('scroll', scheduleUpdate);
+    if (frameId !== null) view.cancelAnimationFrame(frameId);
+    frameId = null;
+    observer.disconnect();
+  };
+  controllers.set(documentRef, { cleanup, dispose });
   return cleanup;
 }
 
