@@ -1,7 +1,25 @@
+const entities = {
+  amp: '&',
+  apos: "'",
+  gt: '>',
+  lt: '<',
+  quot: '"',
+  '#39': "'",
+  '#x27': "'",
+};
+
+function decodeHtmlEntities(value) {
+  return value.replace(/&(amp|apos|gt|lt|quot|#39|#x27);/gi, (entity) => entities[entity.slice(1, -1).toLowerCase()] ?? entity);
+}
+
+function isMarkdownParagraph(value) {
+  return !/^(?:#{1,6}\s|(?:[-+*]|\d+[.)])\s|\x60{3}|~~~|>| {4}|\t)/.test(value);
+}
+
 function stripMarkdown(value) {
   return value
-    .replace(/<!--[\s\S]*?-->/g, ' ')
-    .replace(/<[^>]*>/g, ' ')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<[^>]*>/g, '')
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
     .replace(/`([^`]+)`/g, '$1')
@@ -11,6 +29,7 @@ function stripMarkdown(value) {
     .replace(/_(.*?)_/g, '$1')
     .replace(/~~(.*?)~~/g, '$1')
     .replace(/^\s*(?:[-*+]|\d+\.)\s+/gm, '')
+    .replace(/&(?:amp|apos|gt|lt|quot|#39|#x27);/gi, (entity) => decodeHtmlEntities(entity))
     .replace(/\s+/g, ' ')
     .replace(/\s+([.,;:!?])/g, '$1')
     .trim();
@@ -28,7 +47,7 @@ export function excerptMarkdown(markdown, limit = 160) {
     .replace(/\r\n?/g, '\n')
     .split(/\n\s*\n/)
     .map((paragraph) => paragraph.trim())
-    .filter((paragraph) => paragraph && !/^#{1,6}\s/.test(paragraph));
+    .filter((paragraph) => paragraph && isMarkdownParagraph(paragraph));
   const excerpt = paragraphs.map(stripMarkdown).find(Boolean) ?? '';
   if (!excerpt || excerpt.length <= limit) return excerpt;
   const boundary = excerpt.lastIndexOf(' ', limit);

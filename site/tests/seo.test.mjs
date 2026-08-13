@@ -22,6 +22,23 @@ test('excerptMarkdown uses the first non-heading paragraph and removes presentat
   assert.equal(excerptMarkdown(markdown, 160), 'First useful paragraph with HTML.');
 });
 
+test('excerptMarkdown keeps inline text together, decodes common entities, and skips non-paragraph blocks', () => {
+  const markdown = [
+    '# Heading',
+    '',
+    '- First list item',
+    '- Second list item',
+    '',
+    '~~~text',
+    'const not = "a paragraph";',
+    '~~~',
+    '',
+    "Luzo Cairo<em>'s</em> EP &amp; <code>live</code> work.",
+  ].join('\n');
+
+  assert.equal(excerptMarkdown(markdown, 160), "Luzo Cairo's EP & live work.");
+});
+
 test('excerptMarkdown collapses whitespace and truncates only at a word boundary', () => {
   assert.equal(excerptMarkdown('## Heading\n\nOne   two\nthree four five', 13), 'One two three');
   assert.equal(excerptMarkdown('## Heading\n\nSupercalifragilistic', 8), 'Supercalifragilistic');
@@ -43,6 +60,10 @@ test('discovery sources use content collection metadata and safe structured data
   assert.match(index, /'@type': 'Person'/);
   assert.match(casePage, /'@type': 'CreativeWork'/);
   assert.match(casePage, /excerptMarkdown\(entry\.body/);
+  assert.match(casePage, /creditText/);
+  assert.match(casePage, /temporalCoverage/);
+  assert.doesNotMatch(casePage, /^\s*role:/m);
+  assert.doesNotMatch(casePage, /^\s*dateCreated:/m);
 });
 
 test('public discovery files advertise the configured production sitemap and manifest', () => {
@@ -67,14 +88,15 @@ test('legacy redirects provide an immediate, index-safe fallback', () => {
   assert.match(component, /buildCanonical/);
 });
 
-test('sitemap build output contains the homepage, archive, and exactly 25 case URLs', () => {
+test('sitemap build output contains exactly the indexable canonical homepage and 25 case URLs', () => {
   const sitemapPath = join(root, 'dist', 'sitemap.xml');
   assert.ok(existsSync(sitemapPath), 'sitemap.xml was emitted by the build');
   const sitemap = readFileSync(sitemapPath, 'utf8');
   const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
 
-  assert.ok(urls.includes('https://ntworm.github.io/'));
-  assert.ok(urls.includes('https://ntworm.github.io/work/'));
-  assert.equal(urls.filter((url) => url.includes('/work/')).length, 26);
-  assert.equal(urls.length, 27);
+  const caseUrls = urls.filter((url) => url.includes('/work/'));
+  assert.equal(urls.includes('https://ntworm.github.io/work/'), false);
+  assert.equal(urls.length, 26);
+  assert.equal(caseUrls.length, 25);
+  assert.ok(caseUrls.every((url) => /\/work\/[^/]+\/$/.test(url)));
 });

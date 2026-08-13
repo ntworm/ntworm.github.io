@@ -44,7 +44,7 @@ function attr(tag, name) {
   return match ? (match[1] ?? match[2] ?? match[3]) : null;
 }
 
-test('built homepage and case studies expose parseable queryless discovery metadata', () => {
+test('built homepage and case studies expose parseable canonical discovery metadata', () => {
   const documents = htmlFiles();
   const findDocument = (label) => documents.find((document) => document.label === label)?.html ?? '';
   const structuredData = (html) => [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
@@ -52,19 +52,33 @@ test('built homepage and case studies expose parseable queryless discovery metad
 
   const home = findDocument('index.html');
   const person = structuredData(home).find((data) => data['@type'] === 'Person');
-  assert.equal(person?.url, 'https://ntworm.github.io/');
-  assert.equal(home.includes('<link rel="canonical" href="https://ntworm.github.io/">'), true);
+  const canonicalFrom = (html) => html.match(/<link rel="canonical" href="([^"]+)">/)?.[1];
+  const homeCanonical = canonicalFrom(home);
+  assert.equal(person?.url, homeCanonical);
+  assert.equal(homeCanonical, 'https://ntworm.github.io/');
 
   const cases = documents.filter((document) => {
     const label = document.label.replaceAll('\\', '/');
     return label.startsWith('work/') && label !== 'work/index.html';
   });
   assert.equal(cases.length, 25);
+  const caseCanonicals = new Set();
   for (const document of cases) {
     const work = structuredData(document.html).find((data) => data['@type'] === 'CreativeWork');
     assert.ok(work, document.label + ': CreativeWork metadata missing');
     assert.equal(/[?#]/.test(work.url), false, document.label + ': canonical metadata contains query or hash');
+    assert.equal(work.url, canonicalFrom(document.html), document.label + ': JSON-LD URL differs from canonical');
+    assert.match(work.url, /\/work\/[^/]+\/$/, document.label + ': case canonical lacks trailing slash');
+    assert.equal(typeof work.creditText, 'string', document.label + ': CreativeWork needs creditText');
+    assert.equal(typeof work.temporalCoverage, 'string', document.label + ': CreativeWork needs temporalCoverage');
+    assert.equal('role' in work, false, document.label + ': JSON-LD must not use role');
+    assert.equal('dateCreated' in work, false, document.label + ': JSON-LD must not use dateCreated');
+    caseCanonicals.add(work.url);
   }
+
+  const sitemap = readFileSync(join(distDir, 'sitemap.xml'), 'utf8');
+  const sitemapUrls = new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]));
+  assert.deepEqual(sitemapUrls, new Set([homeCanonical, ...caseCanonicals]));
 });
 
 function localPathExists(url) {
