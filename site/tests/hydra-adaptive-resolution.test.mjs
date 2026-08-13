@@ -34,7 +34,7 @@ test('local Hydra shell keeps the original seed and loads a same-origin sketch',
   assert.match(html, /hydra-js\.js/);
   assert.match(html, /src="\.\/lines-and-cells\.mjs"/);
   assert.match(html, /Content-Security-Policy/);
-  assert.match(html, /script-src 'self' 'unsafe-inline' https:\/\/bafybeif5cwpqes6z4djhvx7hg6oerygkztlglcvvu3ocahtuzsgpu6ud3u\.ipfs\.dweb\.link\/p5\.js https:\/\/bafybeif5cwpqes6z4djhvx7hg6oerygkztlglcvvu3ocahtuzsgpu6ud3u\.ipfs\.dweb\.link\/hydra-js\.js/);
+  assert.match(html, /script-src 'self' 'unsafe-inline' 'unsafe-eval' https:\/\/bafybeif5cwpqes6z4djhvx7hg6oerygkztlglcvvu3ocahtuzsgpu6ud3u\.ipfs\.dweb\.link\/p5\.js https:\/\/bafybeif5cwpqes6z4djhvx7hg6oerygkztlglcvvu3ocahtuzsgpu6ud3u\.ipfs\.dweb\.link\/hydra-js\.js/);
   assert.match(html, /style-src 'self' 'unsafe-inline'/);
   assert.match(html, /img-src 'self' data: blob:/);
   assert.match(html, /connect-src 'none'/);
