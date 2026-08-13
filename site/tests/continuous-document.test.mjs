@@ -90,6 +90,19 @@ test('homepage renders five finite chapters once and in order', () => {
   for (const id of chapters) assert.match(html, new RegExp(`id="${id}"`));
 });
 
+test('continuous homepage reserves its single H1 for About and preserves chapter headline styles', () => {
+  const html = readFileSync(join(distDir, 'index.html'), 'utf8');
+  const work = readFileSync(workChapterPath, 'utf8');
+  const code = readFileSync(join(process.cwd(), 'src', 'components', 'portfolio', 'CodeChapter.astro'), 'utf8');
+
+  assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
+  assert.match(work, /<h2[^>]*data-work-title-reveal/);
+  assert.doesNotMatch(work, /<h1[^>]*data-work-title-reveal/);
+  assert.match(work, /\.portfolio-work__header h2/);
+  assert.match(code, /<h2[^>]*class="code__title"[^>]*data-reveal="typewriter"[^>]*aria-label="Tools and instruments for music and audiovisual performance\."/);
+  assert.doesNotMatch(code, /<h1[^>]*data-reveal="typewriter"/);
+});
+
 test('public homepage serves the continuous portfolio as the primary experience', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
   const chapters = [...html.matchAll(/data-portfolio-chapter="(about|work|code|archive|contact)"/g)]

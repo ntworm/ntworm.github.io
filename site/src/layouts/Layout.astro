@@ -96,11 +96,6 @@ const ogImage = image ? (image.startsWith('http') ? image : `${siteOrigin}${imag
     transform: translateY(100%);
   }
   :global(body[data-immersive="true"] main) { padding-top: 0; }
-  :global(body[data-immersive="true"] .nav) {
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
   :global(body[data-layout="continuous"] main) { padding-bottom: 0; }
   @media (prefers-reduced-motion: reduce) {
     .page-curtain { transition: none; }

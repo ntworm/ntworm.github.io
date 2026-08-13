@@ -340,7 +340,7 @@ test('code cards stay above softened Gaussian spill', () => {
   assert.match(source, /\.tool-card__media\s*\{[^}]*background:\s*rgba\(11, 11, 12, 0\.64\)/s);
 });
 
-test('code hero removes the top bar and reaches farther into GitHub', () => {
+test('code hero keeps the layout flow while navigation owns its backing', () => {
   const codeSource = readFileSync(codeChapterSourcePath, 'utf8');
   const homepageSource = readFileSync(homepageSourcePath, 'utf8');
   const layoutSource = readFileSync(join(process.cwd(), 'src', 'layouts', 'Layout.astro'), 'utf8');
@@ -348,7 +348,7 @@ test('code hero removes the top bar and reaches farther into GitHub', () => {
 
   assert.match(homepageSource, /<Layout[^>]*mode="continuous"/);
   assert.match(layoutSource, /:global\(body\[data-immersive="true"\] main\)\s*\{\s*padding-top:\s*0;/);
-  assert.match(layoutSource, /:global\(body\[data-immersive="true"\] \.nav\)[^{]*\{[^}]*background:\s*transparent !important;/s);
+  assert.doesNotMatch(layoutSource, /body\[data-immersive="true"\] \.nav/);
   assert.match(codeSource, /\.code__hero\s*\{[^}]*background:\s*transparent;/s);
   assert.match(gaussianSource, /data-placement="hero-right"\]\[data-contained="1"\][^{]*\{[^}]*bottom:\s*-88vh;/s);
 });
@@ -479,6 +479,9 @@ test('primary navigation labels have no individual surface behind them', () => {
   assert.doesNotMatch(source, /\.nav__link\s*\{[^}]*padding:/s);
   assert.doesNotMatch(source, /\.nav\[data-scrolled="true"\]/);
   assert.doesNotMatch(source, /syncNavScrollState/);
+  assert.match(source, /\.nav::before\s*\{[^}]*z-index:\s*0;[^}]*linear-gradient/s);
+  assert.match(source, /\.nav__inner\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1;/s);
+  assert.match(source, /@media \(max-width: 640px\)[\s\S]*?\.nav__link\s*\{[^}]*min-height:\s*32px;[^}]*font-size:\s*11px;/s);
 });
 
 test('scroll progress resets safely after Astro page navigation', () => {
@@ -532,7 +535,7 @@ test('each homepage chapter keeps its own hero copy and reveal language', () => 
   const about = readFileSync(join(process.cwd(), 'src', 'components', 'portfolio', 'AboutChapter.astro'), 'utf8');
   const code = readFileSync(codeChapterSourcePath, 'utf8');
 
-  assert.match(work, /<h1[^>]*[\s\S]*?data-work-title-reveal/);
+  assert.match(work, /<h2[^>]*[\s\S]*?data-work-title-reveal/);
   assert.match(work, /Sound direction,/);
   assert.match(work, /music production,/);
   assert.match(work, /creative systems\./);
@@ -542,7 +545,7 @@ test('each homepage chapter keeps its own hero copy and reveal language', () => 
   assert.match(about, /listening/);
   assert.match(about, /systems, and collaboration\./);
 
-  assert.match(code, /<h1[^>]*data-reveal="typewriter"/);
+  assert.match(code, /<h2[^>]*data-reveal="typewriter"/);
   assert.match(code, /Tools/);
   assert.match(code, /audiovisual/);
   assert.match(code, /performance\./);
