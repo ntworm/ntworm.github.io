@@ -123,28 +123,81 @@ test('build dependencies are direct and Astro is on the audited release line', (
   assert.ok(isAtLeast(packageLock.packages?.['node_modules/sharp']?.version, '0.35.3'));
 });
 
-test('deployment workflow tests the site before uploading its artifact', () => {
-  const workflow = readFileSync(join(process.cwd(), '..', '.github', 'workflows', 'deploy.yml'), 'utf8');
-  const steps = [...workflow.matchAll(/^\s*- name: (.+)\r?\n([\s\S]*?)(?=^\s*- name: |$(?![\s\S]))/gm)].map((match) => ({
-    name: match[1],
-    body: match[2],
-  }));
-  const installIndex = steps.findIndex((step) => /run: npm ci/.test(step.body));
-  const testIndex = steps.findIndex((step) => step.name === 'Test and build Astro site');
-  const uploadIndex = steps.findIndex((step) => step.name === 'Upload Pages artifact');
+function assertDeploymentWorkflowContract(workflow) {
+  const jobBody = (name) => {
+    const match = workflow.match(new RegExp(`^  ${name}:\\r?\\n([\\s\\S]*?)(?=^  [^\\s].*:\\r?$|$(?![\\s\\S]))`, 'm'));
+    assert.ok(match, `deployment workflow must define the ${name} job`);
+    return match[1];
+  };
+  const stepsIn = (job) => [...job.matchAll(/^      - name: ([^\r\n]+)\r?\n([\s\S]*?)(?=^      - name:|$(?![\s\S]))/gm)]
+    .map((match) => ({ name: match[1], body: match[2] }));
+  const exactValue = (body, indentation, key) => {
+    const matches = [...body.matchAll(new RegExp(`^${' '.repeat(indentation)}${key}:\\s*([^\\r\\n]+)\\s*$`, 'gm'))];
+    assert.equal(matches.length, 1, `${key} must appear exactly once`);
+    return matches[0][1].trim();
+  };
+  const onlyNamedStep = (steps, name) => {
+    const matches = steps.filter((step) => step.name === name);
+    assert.equal(matches.length, 1, `build job must contain exactly one ${name} step`);
+    return matches[0];
+  };
+  const buildSteps = stepsIn(jobBody('build'));
+  const install = onlyNamedStep(buildSteps, 'Install dependencies');
+  const testStep = onlyNamedStep(buildSteps, 'Test and build Astro site');
+  const upload = onlyNamedStep(buildSteps, 'Upload Pages artifact');
+  const installIndex = buildSteps.indexOf(install);
+  const testIndex = buildSteps.indexOf(testStep);
+  const uploadIndex = buildSteps.indexOf(upload);
 
-  assert.ok(installIndex >= 0, 'deployment workflow must install dependencies');
-  assert.ok(testIndex >= 0, 'deployment workflow must test and build the site');
-  assert.ok(uploadIndex >= 0, 'deployment workflow must upload the Pages artifact');
-  assert.match(steps[testIndex].body, /working-directory: site/);
-  assert.match(steps[testIndex].body, /run: npm test/);
+  assert.equal(exactValue(install.body, 8, 'working-directory'), 'site');
+  assert.equal(exactValue(install.body, 8, 'run'), 'npm ci');
+  assert.equal(exactValue(testStep.body, 8, 'working-directory'), 'site');
+  assert.equal(exactValue(testStep.body, 8, 'run'), 'npm test');
+  assert.equal(exactValue(upload.body, 8, 'uses'), 'actions/upload-pages-artifact@v3');
+  assert.equal(exactValue(upload.body, 10, 'path').replace(/^\.\//, ''), 'site/dist');
   assert.ok(installIndex < testIndex, 'npm ci must run before npm test');
   assert.ok(testIndex < uploadIndex, 'artifact upload must run after npm test');
   assert.equal(
-    steps.slice(testIndex + 1).some((step) => /run: npm run build/.test(step.body)),
+    buildSteps.slice(testIndex + 1).some((step) => /\bnpm run build\b/.test(step.body)),
     false,
     'deployment workflow must not build again after npm test',
   );
+
+  const deployJob = jobBody('deploy');
+  assert.equal(exactValue(deployJob, 4, 'needs'), 'build');
+  const deployStep = onlyNamedStep(stepsIn(deployJob), 'Deploy to GitHub Pages');
+  assert.equal(exactValue(deployStep.body, 8, 'uses'), 'actions/deploy-pages@v4');
+}
+
+test('deployment workflow tests the site before uploading its artifact', () => {
+  const workflow = readFileSync(join(process.cwd(), '..', '.github', 'workflows', 'deploy.yml'), 'utf8');
+
+  assertDeploymentWorkflowContract(workflow);
+});
+
+test('deployment workflow contract rejects bypass and artifact mutations', () => {
+  const workflow = readFileSync(join(process.cwd(), '..', '.github', 'workflows', 'deploy.yml'), 'utf8');
+  const uploadStep = `      - name: Upload Pages artifact\n        uses: actions/upload-pages-artifact@v3\n        with:\n          path: ./site/dist\n`;
+  const sabotages = [
+    ['allows test failures', workflow.replace('run: npm test', 'run: npm test || true')],
+    ['runs a filtered test suite', workflow.replace('run: npm test', 'run: npm test -- --test-name-pattern=deployment')],
+    ['runs the test from another directory', workflow.replace(
+      '      - name: Test and build Astro site\n        working-directory: site',
+      '      - name: Test and build Astro site\n        working-directory: site/tests',
+    )],
+    ['omits the upload action', workflow.replace('        uses: actions/upload-pages-artifact@v3\n', '')],
+    ['uses a different upload action', workflow.replace('actions/upload-pages-artifact@v3', 'actions/upload-pages-artifact@v2')],
+    ['uploads a different artifact path', workflow.replace('path: ./site/dist', 'path: ./site/preview')],
+    ['moves upload outside the build job', workflow
+      .replace(uploadStep, '')
+      .replace('        uses: actions/deploy-pages@v4\n', `        uses: actions/deploy-pages@v4\n${uploadStep}`)],
+    ['does not make deployment depend on build', workflow.replace('needs: build', 'needs: test')],
+    ['uses a different deploy action', workflow.replace('actions/deploy-pages@v4', 'actions/deploy-pages@v3')],
+  ];
+
+  for (const [label, mutatedWorkflow] of sabotages) {
+    assert.throws(() => assertDeploymentWorkflowContract(mutatedWorkflow), label);
+  }
 });
 
 test('Hydra uses a disposable parent lifecycle and a decorative non-focusable iframe', () => {
