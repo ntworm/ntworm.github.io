@@ -153,6 +153,12 @@ function assertDeploymentWorkflowContract(workflow) {
   assert.equal(exactValue(install.body, 8, 'run'), 'npm ci');
   assert.equal(exactValue(testStep.body, 8, 'working-directory'), 'site');
   assert.equal(exactValue(testStep.body, 8, 'run'), 'npm test');
+  assert.equal([...testStep.body.matchAll(/^        if:\s*.*$/gm)].length, 0, 'test step must not be conditional');
+  const continueOnError = [...testStep.body.matchAll(/^        continue-on-error:\s*([^\r\n]+)\s*$/gm)];
+  assert.ok(continueOnError.length <= 1, 'test step must not repeat continue-on-error');
+  if (continueOnError.length === 1) {
+    assert.equal(continueOnError[0][1].trim(), 'false', 'test step must not continue after an error');
+  }
   assert.equal(exactValue(upload.body, 8, 'uses'), 'actions/upload-pages-artifact@v3');
   assert.equal(exactValue(upload.body, 10, 'path').replace(/^\.\//, ''), 'site/dist');
   assert.ok(installIndex < testIndex, 'npm ci must run before npm test');
@@ -181,6 +187,18 @@ test('deployment workflow contract rejects bypass and artifact mutations', () =>
   const sabotages = [
     ['allows test failures', workflow.replace('run: npm test', 'run: npm test || true')],
     ['runs a filtered test suite', workflow.replace('run: npm test', 'run: npm test -- --test-name-pattern=deployment')],
+    ['continues when the test fails', workflow.replace(
+      '        run: npm test',
+      '        continue-on-error: true\n        run: npm test',
+    )],
+    ['uses a string continue-on-error value', workflow.replace(
+      '        run: npm test',
+      '        continue-on-error: "true"\n        run: npm test',
+    )],
+    ['conditionally skips the test', workflow.replace(
+      '        run: npm test',
+      '        if: ${{ always() }}\n        run: npm test',
+    )],
     ['runs the test from another directory', workflow.replace(
       '      - name: Test and build Astro site\n        working-directory: site',
       '      - name: Test and build Astro site\n        working-directory: site/tests',
