@@ -172,9 +172,15 @@ test('public identity, chapter links, and media documentation match verified sit
 
   assert.match(
     code,
-    /Sound director working between cinema, music, and code\. Building tools for Ableton Live, real-time systems, and audiovisual work\./,
+    /Sound director working between cinema, music, and code\. Building creative tools for performance and Ableton Live\./,
+  );
+  assert.doesNotMatch(
+    code,
+    /Building tools for Ableton Live, real-time systems, and audiovisual work\./,
   );
   assert.equal((code.match(/75 tools in v0\.5\.3/g) ?? []).length, 2);
+  assert.equal((code.match(/grouped batch commands/g) ?? []).length, 2);
+  assert.doesNotMatch(code, /atomic batch|with rollback/i);
   assert.match(
     work,
     /Selected work across cinema, television, music, generative art, performance, and tools\./,

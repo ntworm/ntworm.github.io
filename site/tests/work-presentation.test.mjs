@@ -235,7 +235,12 @@ test('project case copy keeps the verified Ableton, MOTELX, and Spotify facts', 
   const motelxWinnersUrl = 'https://www.motelx.org/noticias/motelx-2025-os-vencedores-da-19-a-edicao';
 
   assert.match(ableton, /75 tools in v0\.5\.3/);
+  assert.match(
+    ableton,
+    /one grouped undo step; successful earlier commands persist if a later command fails/,
+  );
   assert.doesNotMatch(ableton, /65 tools/);
+  assert.doesNotMatch(ableton, /atomic batch|with rollback/i);
   assert.equal(compositor.split(motelxWinnersUrl).length - 1, 2);
   assert.doesNotMatch(compositor, /conhece-os-candidatos-ao-premio-motelx/);
   assert.doesNotMatch(arvoreSeca, /Spotify URL has not yet been discovered/i);
