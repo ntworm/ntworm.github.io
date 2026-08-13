@@ -409,7 +409,8 @@ test('homepage owns Code while the legacy Code route redirects to its chapter', 
 
   assert.match(homepage, /import CodeChapter/);
   assert.match(homepage, /<CodeChapter\s*\/>/);
-  assert.match(legacy, /Astro\.redirect\(['"]\/#code['"]\)/);
+  assert.match(legacy, /import LegacyRedirect from '\.\.\/components\/LegacyRedirect\.astro';/);
+  assert.match(legacy, /<LegacyRedirect destination="\/#code"\s*\/>/);
 });
 
 test('built case studies preserve accessible media fallbacks across optional case features', () => {
