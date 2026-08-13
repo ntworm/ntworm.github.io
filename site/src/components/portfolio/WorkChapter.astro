@@ -137,7 +137,7 @@ function coverDimensions(project: (typeof spotlightProjects)[number]) {
       if (slides.length === 0) return;
 
       root.dataset.spotlightReady = '1';
-      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
       const loadCurrentImage = (index: number) => {
         const image = slides[index]?.querySelector<HTMLImageElement>('img[data-src]');
         const src = image?.dataset.src;
@@ -152,7 +152,7 @@ function coverDimensions(project: (typeof spotlightProjects)[number]) {
       };
       const controller = createSpotlightController({
         count: slides.length,
-        reducedMotion,
+        reducedMotion: motionQuery.matches,
         schedule: (advance) => window.setTimeout(advance, 6000),
         cancel: (timer) => window.clearTimeout(timer),
         setActive: (activeIndex) => {
@@ -178,12 +178,16 @@ function coverDimensions(project: (typeof spotlightProjects)[number]) {
         if (document.hidden) controller.pause('hidden');
         else controller.resume('hidden');
       };
+      const syncReducedMotion = (event: MediaQueryListEvent) => {
+        controller.setPaused('reduced-motion', event.matches);
+      };
 
       root.addEventListener('pointerenter', pauseForPointer);
       root.addEventListener('pointerleave', resumeForPointer);
       root.addEventListener('focusin', pauseForFocus);
       root.addEventListener('focusout', resumeAfterFocus);
       document.addEventListener('visibilitychange', syncVisibility);
+      motionQuery.addEventListener('change', syncReducedMotion);
       syncVisibility();
 
       const cleanup = () => {
@@ -193,6 +197,7 @@ function coverDimensions(project: (typeof spotlightProjects)[number]) {
         root.removeEventListener('focusin', pauseForFocus);
         root.removeEventListener('focusout', resumeAfterFocus);
         document.removeEventListener('visibilitychange', syncVisibility);
+        motionQuery.removeEventListener('change', syncReducedMotion);
         spotlightCleanups.delete(cleanup);
       };
       spotlightCleanups.add(cleanup);

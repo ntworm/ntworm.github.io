@@ -74,6 +74,26 @@ test('stays static under reduced motion', () => {
   assert.equal(harness.cancelled.length, 0);
 });
 
+test('reacts to live reduced-motion preference changes without duplicating timers', () => {
+  const harness = createHarness();
+  const firstTimer = harness.scheduled[0];
+
+  harness.controller.setPaused('reduced-motion', true);
+
+  assert.deepEqual(harness.cancelled, [firstTimer]);
+  assert.equal(harness.scheduled.length, 1);
+
+  harness.controller.setPaused('reduced-motion', false);
+
+  assert.equal(harness.scheduled.length, 2);
+  harness.controller.setPaused('reduced-motion', false);
+  assert.equal(harness.scheduled.length, 2);
+
+  harness.scheduled[1].callback();
+  assert.deepEqual(harness.active, [0, 1]);
+  assert.equal(harness.scheduled.length, 3);
+});
+
 test('disposes terminally and ignores a stale timer callback', () => {
   const harness = createHarness();
   const timer = harness.scheduled[0];

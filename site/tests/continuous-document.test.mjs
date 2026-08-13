@@ -226,6 +226,9 @@ test('Work intro pairs the editorial statement with the original project spotlig
   assert.match(work, /Creative Coding/);
   assert.match(work, /Live \/ Experimental/);
   assert.match(source, /createSpotlightController/);
+  assert.match(source, /motionQuery\.addEventListener\('change', syncReducedMotion\)/);
+  assert.match(source, /controller\.setPaused\('reduced-motion', event\.matches\)/);
+  assert.match(source, /motionQuery\.removeEventListener\('change', syncReducedMotion\)/);
   assert.match(source, /\.work-spotlight-cell\.is-active/);
   assert.doesNotMatch(source, /@keyframes work-spotlight-cycle/);
   assert.match(source, /@media \(prefers-reduced-motion: reduce\)/);

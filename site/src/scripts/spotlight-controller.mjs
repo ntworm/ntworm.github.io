@@ -16,7 +16,9 @@ export function createSpotlightController({
   let generation = 0;
   const pauseReasons = new Set();
 
-  const canCycle = count > 1 && !reducedMotion;
+  const canCycle = count > 1;
+
+  if (reducedMotion) pauseReasons.add('reduced-motion');
 
   function clearTimer() {
     if (timer === null) return;
@@ -42,17 +44,26 @@ export function createSpotlightController({
   scheduleNext();
 
   return {
+    setPaused(reason, paused) {
+      if (disposed) return;
+      const isPaused = pauseReasons.has(reason);
+      if (paused) {
+        if (isPaused) return;
+        pauseReasons.add(reason);
+        clearTimer();
+        return;
+      }
+      if (!isPaused) return;
+      pauseReasons.delete(reason);
+      if (pauseReasons.size === 0) scheduleNext();
+    },
+
     pause(reason) {
-      if (disposed || reducedMotion) return;
-      const sizeBefore = pauseReasons.size;
-      pauseReasons.add(reason);
-      if (pauseReasons.size !== sizeBefore) clearTimer();
+      this.setPaused(reason, true);
     },
 
     resume(reason) {
-      if (disposed || reducedMotion) return;
-      if (!pauseReasons.delete(reason) || pauseReasons.size > 0) return;
-      scheduleNext();
+      this.setPaused(reason, false);
     },
 
     dispose() {
