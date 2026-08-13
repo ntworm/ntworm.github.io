@@ -64,7 +64,7 @@ if (!splats || splats.length === 0) {
 import { createGaussianAutopilot, damp, gaussianFocusPoint, gaussianFocusProximity, gaussianPointerLook, gaussianToggleHotspot, sampleGaussianCamera } from '../scripts/gaussian-camera-motion.mjs';
 import { createPausableFrameLoop } from '../scripts/gaussian-frame-loop.mjs';
 import { calculateParticleBounds, createGaussianLightAutopilot, createGaussianParticleAutopilot, createGaussianParticleUniformController, createGaussianWorldTransition, gaussianParticleProfile, installGaussianParticleShaderPatch } from '../scripts/gaussian-particle-effects.mjs';
-import { shouldDelayHeavyMedia } from '../scripts/heavy-media-policy.mjs';
+import { shouldDelayHeavyMedia, shouldLoadHeavyMediaForIntent } from '../scripts/heavy-media-policy.mjs';
 
 type SplatEntry = { src: string; poster: string; label: string };
 
@@ -437,6 +437,7 @@ async function mountGaussianBackground(
 type GaussianMountController = {
   bg: HTMLElement;
   load: () => Promise<void>;
+  loadForIntent: () => void;
   refreshActivity: () => void;
   dispose: () => void;
   getState: () => {
@@ -452,10 +453,11 @@ function createGaussianMountController(bg: HTMLElement): GaussianMountController
   const pick = pickRandomSplat(bg);
   if (!pick) return null;
 
-  const loadRootMargin = shouldDelayHeavyMedia({
+  const delayHeavyMedia = shouldDelayHeavyMedia({
     saveData: navigator.connection?.saveData,
     deviceMemory: navigator.deviceMemory,
-  }) ? '0px' : '200% 0px';
+  });
+  const loadRootMargin = delayHeavyMedia ? '0px' : '200% 0px';
 
   // Install the selected poster synchronously so observer timing cannot reveal
   // the bare background while the full-quality scene is still outside range.
@@ -506,6 +508,17 @@ function createGaussianMountController(bg: HTMLElement): GaussianMountController
     return loadPromise;
   };
 
+  const loadForIntent = (): void => {
+    const hostRect = host.getBoundingClientRect();
+    if (!shouldLoadHeavyMediaForIntent({
+      delayHeavyMedia,
+      hostTop: hostRect.top,
+      hostBottom: hostRect.bottom,
+      viewportHeight: window.innerHeight,
+    })) return;
+    void load();
+  };
+
   const dispose = () => {
     if (disposed) return;
     disposed = true;
@@ -522,7 +535,7 @@ function createGaussianMountController(bg: HTMLElement): GaussianMountController
     runtime: runtime?.getState() ?? null,
   });
 
-  const controller = { bg, load, refreshActivity, dispose, getState };
+  const controller = { bg, load, loadForIntent, refreshActivity, dispose, getState };
   bg.dataset.gsState = 'waiting';
 
   if (window.innerWidth < breakpoint) {
@@ -565,7 +578,7 @@ function attachAll(): void {
     if (controller) gaussianControllers.add(controller);
   });
 
-  if (location.hash === '#code') void firstCodeGaussian()?.load();
+  if (location.hash === '#code') firstCodeGaussian()?.loadForIntent();
 }
 
 function handleCodeNavigation(event: MouseEvent): void {
@@ -580,7 +593,7 @@ function handleCodeNavigation(event: MouseEvent): void {
     url.search === location.search &&
     url.hash === '#code'
   ) {
-    void firstCodeGaussian()?.load();
+    firstCodeGaussian()?.loadForIntent();
   }
 }
 

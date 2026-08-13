@@ -348,16 +348,19 @@ test('constrained devices defer Gaussian loading and obsolete PLY viewer assets 
   const legacyViewerPath = join(process.cwd(), 'src', 'components', 'GaussianViewer.astro');
   const legacyPlyPath = join(process.cwd(), 'public', 'work', 'code', 'splats', 'carro', 'carro.compressed.ply');
 
-  assert.match(gaussianSource, /import \{ shouldDelayHeavyMedia \} from '\.\.\/scripts\/heavy-media-policy\.mjs';/);
+  assert.match(gaussianSource, /import \{ shouldDelayHeavyMedia, shouldLoadHeavyMediaForIntent \} from '\.\.\/scripts\/heavy-media-policy\.mjs';/);
   assert.match(
     gaussianSource,
     /shouldDelayHeavyMedia\(\{\s*saveData: navigator\.connection\?\.saveData,\s*deviceMemory: navigator\.deviceMemory,\s*\}\)/s,
   );
   assert.match(
     gaussianSource,
-    /const loadRootMargin = shouldDelayHeavyMedia\([^]*?\) \? '0px' : '200% 0px';/,
+    /const delayHeavyMedia = shouldDelayHeavyMedia\([^]*?\);\s*const loadRootMargin = delayHeavyMedia \? '0px' : '200% 0px';/,
   );
   assert.match(gaussianSource, /\}, \{ rootMargin: loadRootMargin \}\);/);
+  assert.match(gaussianSource, /shouldLoadHeavyMediaForIntent\(\{[^]*?delayHeavyMedia,[^]*?hostTop: hostRect\.top,[^]*?hostBottom: hostRect\.bottom,[^]*?viewportHeight: window\.innerHeight,/);
+  assert.match(gaussianSource, /loadForIntent: \(\) => void/);
+  assert.match(gaussianSource, /firstCodeGaussian\(\)\?\.loadForIntent\(\)/);
   assert.ok(sourceFiles.every((path) => {
     const source = readFileSync(path, 'utf8');
     return !source.includes('GaussianViewer') && !source.includes('.ply');
