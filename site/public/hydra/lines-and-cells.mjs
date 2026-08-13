@@ -5,9 +5,36 @@ let HEIGHT = 360;
 let mainCanvas;
 let p5graphics;
 let resizeTimer;
+let parentActive = false;
+let drawingActive;
+let lastHydraTick = performance.now();
 
 const hydraCanvas = document.createElement('canvas');
-const hydra = new Hydra({ detectAudio: false, canvas: hydraCanvas });
+const hydra = new Hydra({ detectAudio: false, canvas: hydraCanvas, autoLoop: false });
+
+function syncDrawingState() {
+  const nextActive = parentActive && !document.hidden;
+  if (drawingActive === nextActive) return;
+  drawingActive = nextActive;
+
+  if (!drawingActive) {
+    noLoop();
+    return;
+  }
+
+  lastHydraTick = performance.now();
+  loop();
+}
+
+function onParentMessage(event) {
+  if (event.origin !== window.location.origin || event.source !== window.parent) return;
+  if (event.data?.type !== 'portfolio:hydra-active' || typeof event.data.active !== 'boolean') return;
+  parentActive = event.data.active;
+  syncDrawingState();
+}
+
+window.addEventListener('message', onParentMessage);
+document.addEventListener('visibilitychange', syncDrawingState);
 
 function measureRenderSize() {
   return calculateHydraRenderSize({
@@ -43,6 +70,7 @@ function setup() {
   applyRenderSize({ initial: true });
   frameRate(60);
   rectMode(CENTER);
+  syncDrawingState();
 }
 
 function windowResized() {
@@ -51,6 +79,9 @@ function windowResized() {
 }
 
 function draw() {
+  const now = performance.now();
+  hydra.tick(now - lastHydraTick);
+  lastHydraTick = now;
   noStroke();
   plane(WIDTH, HEIGHT);
   p5graphics.drawingContext.drawImage(hydraCanvas, 0, 0);

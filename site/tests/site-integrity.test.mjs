@@ -86,6 +86,21 @@ test('build dependencies are direct and Astro is on the audited release line', (
   assert.ok(isAtLeast(packageLock.packages?.['node_modules/sharp']?.version, '0.35.3'));
 });
 
+test('Hydra uses a disposable parent lifecycle and a decorative non-focusable iframe', () => {
+  const component = readFileSync(join(process.cwd(), 'src', 'components', 'HydraBackground.astro'), 'utf8');
+  const controller = readFileSync(join(process.cwd(), 'src', 'scripts', 'hydra-frame-controller.mjs'), 'utf8');
+
+  assert.match(component, /import \{ createHydraFrameController \} from '\.\.\/scripts\/hydra-frame-controller\.mjs';/);
+  assert.match(component, /tabindex="-1"/);
+  assert.match(component, /createHydraFrameController\(\{\s*host: background,\s*iframe,\s*source: iframe\.dataset\.hydraSrc,\s*\}\)/s);
+  assert.match(component, /document\.addEventListener\('astro:before-swap'/);
+  assert.doesNotMatch(component, /requestAnimationFrame/);
+  assert.match(controller, /insideRange\s*&&\s*!documentRef\.hidden\s*&&\s*!motionQuery\?\.matches\s*&&\s*connection\?\.saveData !== true/s);
+  assert.match(controller, /iframe\.addEventListener\('load', onIframeLoad\)/);
+  assert.match(controller, /observer\?\.disconnect\(\)/);
+  assert.match(controller, /send\(false\);/);
+});
+
 test('every anchor has a non-empty href', () => {
   const failures = [];
   for (const file of htmlFiles()) {

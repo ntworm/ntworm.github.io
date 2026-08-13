@@ -191,6 +191,7 @@ test('Lines and Cells stays anchored to About and scrolls out before Work', () =
   const about = chapterSlice(html, 'about', 'work');
   const work = chapterSlice(html, 'work', 'code');
   const source = existsSync(hydraBackgroundPath) ? readFileSync(hydraBackgroundPath, 'utf8') : '';
+  const sketch = readFileSync(join(process.cwd(), 'public', 'hydra', 'lines-and-cells.mjs'), 'utf8');
   const aboutSource = readFileSync(aboutChapterPath, 'utf8');
   const homepage = readFileSync(homepagePath, 'utf8');
   const layout = readFileSync(layoutPath, 'utf8');
@@ -220,8 +221,9 @@ test('Lines and Cells stays anchored to About and scrolls out before Work', () =
   assert.match(source, /\.portfolio-about__live-bg iframe\s*\{[^}]*inset:\s*0;[^}]*width:\s*100%;[^}]*height:\s*100%;/s);
   assert.doesNotMatch(source, /--hydra-scale-[xy]|ResizeObserver|scale\(var\(--hydra-scale/);
   assert.match(source, /prefers-reduced-motion:\s*reduce/);
-  assert.match(source, /connection\?\.saveData/);
-  assert.match(source, /frame\s*=\s*requestAnimationFrame\(\(\)\s*=>\s*\{\s*frame\s*=\s*requestAnimationFrame\(loadHydra\);\s*\}\)/s);
+  assert.match(sketch, /new Hydra\(\{ detectAudio: false, canvas: hydraCanvas, autoLoop: false \}\)/);
+  assert.match(sketch, /hydra\.tick\(now - lastHydraTick\)/);
+  assert.doesNotMatch(source, /frame\s*=\s*requestAnimationFrame\(\(\)\s*=>\s*\{\s*frame\s*=\s*requestAnimationFrame\(loadHydra\);\s*\}\)/s);
   assert.match(aboutSource, /\.portfolio-about__hero\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1;/s);
   assert.match(aboutSource, /\.portfolio-about__thread\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1;/s);
 });
