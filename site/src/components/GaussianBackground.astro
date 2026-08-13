@@ -62,16 +62,31 @@ if (!splats || splats.length === 0) {
 
 <script>
 import { createGaussianAutopilot, damp, gaussianFocusPoint, gaussianFocusProximity, gaussianPointerLook, gaussianToggleHotspot, sampleGaussianCamera } from '../scripts/gaussian-camera-motion.mjs';
+import { createPausableFrameLoop } from '../scripts/gaussian-frame-loop.mjs';
 import { calculateParticleBounds, createGaussianLightAutopilot, createGaussianParticleAutopilot, createGaussianParticleUniformController, createGaussianWorldTransition, gaussianParticleProfile, installGaussianParticleShaderPatch } from '../scripts/gaussian-particle-effects.mjs';
 
 type SplatEntry = { src: string; poster: string; label: string };
 
+interface GaussianRuntimeController {
+  setActive(active: boolean): void;
+  dispose(): void;
+  getState(): {
+    active: boolean;
+    disposed: boolean;
+    activeSeconds: number;
+    frameCount: number;
+  };
+}
+
 declare global {
   interface Window {
-    __gsBgStart?: (src: string, stage: HTMLElement) => Promise<void>;
+    __gsBgStart?: (src: string, stage: HTMLElement) => Promise<GaussianRuntimeController | null>;
     __gsBgLoaded?: boolean;
     __gsBgReady?: Promise<void>;
     __gsBgReadyResolve?: () => void;
+    __gsBgLifecycle?: {
+      createPausableFrameLoop: typeof createPausableFrameLoop;
+    };
     __gsBgMotion?: {
       createGaussianAutopilot: typeof createGaussianAutopilot;
       damp: typeof damp;
@@ -94,6 +109,7 @@ declare global {
 }
 
 const SPLAT_LIB = 'https://esm.sh/gsplat@1.2.9';
+window.__gsBgLifecycle = { createPausableFrameLoop };
 window.__gsBgMotion = { createGaussianAutopilot, damp, gaussianFocusPoint, gaussianFocusProximity, gaussianPointerLook, gaussianToggleHotspot, sampleGaussianCamera };
 window.__gsBgParticles = { calculateParticleBounds, createGaussianLightAutopilot, createGaussianParticleAutopilot, createGaussianParticleUniformController, createGaussianWorldTransition, gaussianParticleProfile, installGaussianParticleShaderPatch };
 
@@ -109,6 +125,8 @@ async function loadSplatEngine(): Promise<void> {
     "  const scene = new SPLAT.Scene();",
     "  const camera = new SPLAT.Camera();",
     "  const particles = window.__gsBgParticles;",
+    "  const lifecycle = window.__gsBgLifecycle;",
+    "  if (!lifecycle) throw new Error('[gs-bg] lifecycle unavailable');",
     "  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;",
     "  const hasParticleEffects = stage.dataset.particleEffects === '1' && !reducedMotion && particles;",
     "  let renderer = null;",
@@ -209,7 +227,24 @@ async function loadSplatEngine(): Promise<void> {
     "    camera.rotation = SPLAT.Quaternion.FromEuler(new SPLAT.Vector3(pch, yaw, cameraRoll));",
     "  }",
     "  setCameraOnOrbit(0, 0, 0, 0);",
-    "  await SPLAT.Loader.LoadAsync(src, scene, () => {});",
+    "  try {",
+    "    await SPLAT.Loader.LoadAsync(src, scene, () => {});",
+    "  } catch (error) {",
+    "    window.removeEventListener('resize', forceSize);",
+    "    window.removeEventListener('pointermove', onPointerMove);",
+    "    window.removeEventListener('mouseout', onPointerOut);",
+    "    renderer.dispose();",
+    "    renderer.canvas.remove();",
+    "    throw error;",
+    "  }",
+    "  if (!stage.isConnected || stage.dataset.gsDisposed === '1') {",
+    "    window.removeEventListener('resize', forceSize);",
+    "    window.removeEventListener('pointermove', onPointerMove);",
+    "    window.removeEventListener('mouseout', onPointerOut);",
+    "    renderer.dispose();",
+    "    renderer.canvas.remove();",
+    "    return null;",
+    "  }",
     "  const splatObject = scene.objects.find((object) => object && object.data && object.data.positions);",
     "  const particleBounds = particleShaderActive ? particles.calculateParticleBounds(splatObject && splatObject.data.positions) : null;",
     "  const particleSeed = ((stage.dataset.placement === 'section-left' ? 4253 : 9719) ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;",
@@ -243,17 +278,8 @@ async function loadSplatEngine(): Promise<void> {
     "    window.addEventListener('click', onWorldToggle);",
     "  }",
     "  window.__gsBgLoaded = true;",
-    "  let lastTime = performance.now();",
-    "  const frame = function(now) {",
-    "    if (!stage.isConnected) {",
-    "      window.removeEventListener('resize', forceSize);",
-    "      window.removeEventListener('pointermove', onPointerMove);",
-    "      window.removeEventListener('mouseout', onPointerOut);",
-    "      window.removeEventListener('click', onWorldToggle);",
-    "      return;",
-    "    }",
-    "    const deltaSeconds = Math.max(0, Math.min(0.05, (now - lastTime) / 1000));",
-    "    lastTime = now;",
+    "  const renderFrame = ({ deltaSeconds, activeSeconds }) => {",
+    "    if (!stage.isConnected || stage.dataset.gsDisposed === '1') return;",
     "    if (hasCameraMotion && !reducedMotion) {",
     "      const host = stage.parentElement || stage;",
     "      const rect = host.getBoundingClientRect();",
@@ -278,7 +304,7 @@ async function loadSplatEngine(): Promise<void> {
     "      });",
     "      focusProximity = motion.damp(focusProximity, focusTarget, 5.5, deltaSeconds);",
     "      const sampled = motion.sampleGaussianCamera({",
-    "        scrollProgress, focusProximity, zoomScale, timeSeconds: now / 1000",
+    "        scrollProgress, focusProximity, zoomScale, timeSeconds: activeSeconds",
     "      });",
     "      const autonomous = autopilot.sample(deltaSeconds);",
     "      aimOffsetX = motion.damp(aimOffsetX, pointerLookTarget.targetX, 1.15, deltaSeconds);",
@@ -327,9 +353,28 @@ async function loadSplatEngine(): Promise<void> {
     "      });",
     "    }",
     "    renderer.render(scene, camera);",
-    "    requestAnimationFrame(frame);",
     "  };",
-    "  requestAnimationFrame(frame);",
+    "  const frameLoop = lifecycle.createPausableFrameLoop({",
+    "    onFrame: ({ deltaSeconds, activeSeconds }) => renderFrame({ deltaSeconds, activeSeconds })",
+    "  });",
+    "  let disposed = false;",
+    "  const controller = {",
+    "    setActive(active) { frameLoop.setActive(active); },",
+    "    dispose() {",
+    "      if (disposed) return;",
+    "      disposed = true;",
+    "      stage.dataset.gsDisposed = '1';",
+    "      frameLoop.dispose();",
+    "      window.removeEventListener('resize', forceSize);",
+    "      window.removeEventListener('pointermove', onPointerMove);",
+    "      window.removeEventListener('mouseout', onPointerOut);",
+    "      window.removeEventListener('click', onWorldToggle);",
+    "      renderer.dispose();",
+    "      renderer.canvas.remove();",
+    "    },",
+    "    getState() { return frameLoop.getState(); }",
+    "  };",
+    "  return controller;",
     "};",
     "  window.__gsBgReadyResolve && window.__gsBgReadyResolve();",
   ].join('\n');

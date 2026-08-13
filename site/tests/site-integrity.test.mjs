@@ -189,6 +189,24 @@ test('live Gaussian canvas overrides the renderer black surface', () => {
   );
 });
 
+test('Gaussian runtime exposes an idempotent pausable and disposable controller', () => {
+  const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
+
+  assert.match(source, /import \{ createPausableFrameLoop \} from '\.\.\/scripts\/gaussian-frame-loop\.mjs';/);
+  assert.match(source, /interface GaussianRuntimeController\s*\{[^}]*setActive\(active: boolean\): void;[^}]*dispose\(\): void;[^}]*getState\(\): \{[^}]*active: boolean;[^}]*disposed: boolean;[^}]*activeSeconds: number;[^}]*frameCount: number;[^}]*\};[^}]*\}/s);
+  assert.match(source, /__gsBgStart\?: \(src: string, stage: HTMLElement\) => Promise<GaussianRuntimeController \| null>/);
+  assert.match(source, /window\.__gsBgLifecycle = \{ createPausableFrameLoop \};/);
+  assert.match(source, /const lifecycle = window\.__gsBgLifecycle;/);
+  assert.match(source, /lifecycle\.createPausableFrameLoop\(\{/);
+  assert.match(source, /const renderFrame = \(\{ deltaSeconds, activeSeconds \}\) => \{/);
+  assert.match(source, /onFrame: \(\{ deltaSeconds, activeSeconds \}\) => renderFrame\(\{ deltaSeconds, activeSeconds \}\)/);
+  assert.match(source, /timeSeconds: activeSeconds/);
+  assert.match(source, /setActive\(active\) \{ frameLoop\.setActive\(active\); \}/);
+  assert.match(source, /if \(disposed\) return;[^]*disposed = true;[^]*frameLoop\.dispose\(\);[^]*renderer\.dispose\(\);[^]*renderer\.canvas\.remove\(\);/);
+  assert.match(source, /stage\.dataset\.gsDisposed === '1'/);
+  assert.doesNotMatch(source, /requestAnimationFrame\(frame\)/);
+});
+
 test('continuous Gaussians begin loading before their chapters enter the viewport', () => {
   const gaussianSource = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
   const homepageSource = readFileSync(homepageSourcePath, 'utf8');
