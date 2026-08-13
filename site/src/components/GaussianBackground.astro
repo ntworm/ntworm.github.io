@@ -279,7 +279,10 @@ async function loadSplatEngine(): Promise<void> {
     "  }",
     "  window.__gsBgLoaded = true;",
     "  const renderFrame = ({ deltaSeconds, activeSeconds }) => {",
-    "    if (!stage.isConnected || stage.dataset.gsDisposed === '1') return;",
+    "    if (!stage.isConnected || stage.dataset.gsDisposed === '1') {",
+    "      controller.dispose();",
+    "      return;",
+    "    }",
     "    if (hasCameraMotion && !reducedMotion) {",
     "      const host = stage.parentElement || stage;",
     "      const rect = host.getBoundingClientRect();",
@@ -425,7 +428,8 @@ async function mountGaussianBackground(bg: HTMLElement): Promise<void> {
   try {
     await loadSplatEngine();
     if (!pick.src || !window.__gsBgStart) return;
-    await window.__gsBgStart(pick.src, bg);
+    const runtime = await window.__gsBgStart(pick.src, bg);
+    runtime?.setActive(true);
     bg.classList.add('gs-bg--live');
   } catch (err) {
     console.error('[gs-bg] failed', err);

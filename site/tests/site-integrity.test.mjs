@@ -191,6 +191,11 @@ test('live Gaussian canvas overrides the renderer black surface', () => {
 
 test('Gaussian runtime exposes an idempotent pausable and disposable controller', () => {
   const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
+  const renderFrameStart = source.indexOf('"  const renderFrame =');
+  const renderFrameGuard = source.slice(
+    renderFrameStart,
+    source.indexOf('"    if (hasCameraMotion', renderFrameStart),
+  );
 
   assert.match(source, /import \{ createPausableFrameLoop \} from '\.\.\/scripts\/gaussian-frame-loop\.mjs';/);
   assert.match(source, /interface GaussianRuntimeController\s*\{[^}]*setActive\(active: boolean\): void;[^}]*dispose\(\): void;[^}]*getState\(\): \{[^}]*active: boolean;[^}]*disposed: boolean;[^}]*activeSeconds: number;[^}]*frameCount: number;[^}]*\};[^}]*\}/s);
@@ -199,11 +204,17 @@ test('Gaussian runtime exposes an idempotent pausable and disposable controller'
   assert.match(source, /const lifecycle = window\.__gsBgLifecycle;/);
   assert.match(source, /lifecycle\.createPausableFrameLoop\(\{/);
   assert.match(source, /const renderFrame = \(\{ deltaSeconds, activeSeconds \}\) => \{/);
+  assert.match(
+    renderFrameGuard,
+    /if \(!stage\.isConnected \|\| stage\.dataset\.gsDisposed === '1'\) \{",\s*"      controller\.dispose\(\);",\s*"      return;",\s*"    }",/,
+  );
   assert.match(source, /onFrame: \(\{ deltaSeconds, activeSeconds \}\) => renderFrame\(\{ deltaSeconds, activeSeconds \}\)/);
   assert.match(source, /timeSeconds: activeSeconds/);
   assert.match(source, /setActive\(active\) \{ frameLoop\.setActive\(active\); \}/);
   assert.match(source, /if \(disposed\) return;[^]*disposed = true;[^]*frameLoop\.dispose\(\);[^]*renderer\.dispose\(\);[^]*renderer\.canvas\.remove\(\);/);
   assert.match(source, /stage\.dataset\.gsDisposed === '1'/);
+  assert.match(source, /const runtime = await window\.__gsBgStart\(pick\.src, bg\);/);
+  assert.match(source, /runtime\?\.setActive\(true\);/);
   assert.doesNotMatch(source, /requestAnimationFrame\(frame\)/);
 });
 
