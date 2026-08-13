@@ -563,7 +563,12 @@ function handleCodeNavigation(event: MouseEvent): void {
   const anchor = target.closest<HTMLAnchorElement>('a[href]');
   if (!anchor) return;
   const url = new URL(anchor.href, location.href);
-  if (url.origin === location.origin && url.hash === '#code') {
+  if (
+    url.origin === location.origin &&
+    url.pathname === location.pathname &&
+    url.search === location.search &&
+    url.hash === '#code'
+  ) {
     void firstCodeGaussian()?.load();
   }
 }

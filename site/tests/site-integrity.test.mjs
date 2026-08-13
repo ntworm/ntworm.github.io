@@ -229,7 +229,10 @@ test('continuous Gaussians load predictively without document-head splat preload
   assert.match(gaussianSource, /rootMargin: '75% 0px'/);
   assert.match(gaussianSource, /closest\('\.code__hero, \.code__lower-showcase'\)/);
   assert.match(gaussianSource, /location\.hash === '#code'/);
-  assert.match(gaussianSource, /url\.origin === location\.origin && url\.hash === '#code'/);
+  assert.match(
+    gaussianSource,
+    /url\.origin === location\.origin &&\s*url\.pathname === location\.pathname &&\s*url\.search === location\.search &&\s*url\.hash === '#code'/s,
+  );
   assert.match(gaussianSource, /document\.addEventListener\('astro:before-swap', cleanupGaussianBackgrounds\)/);
 });
 
