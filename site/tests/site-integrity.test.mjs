@@ -132,9 +132,19 @@ function assertDeploymentWorkflowContract(workflow) {
   const stepsIn = (job) => [...job.matchAll(/^      - name: ([^\r\n]+)\r?\n([\s\S]*?)(?=^      - name:|$(?![\s\S]))/gm)]
     .map((match) => ({ name: match[1], body: match[2] }));
   const exactValue = (body, indentation, key) => {
-    const matches = [...body.matchAll(new RegExp(`^${' '.repeat(indentation)}${key}:\\s*([^\\r\\n]+)\\s*$`, 'gm'))];
+    const siblingKey = `^${' '.repeat(indentation)}[^\\s\\r\\n][^:\\r\\n]*:(?:[\\t ]|$)`;
+    const matches = [...body.matchAll(new RegExp(
+      `^${' '.repeat(indentation)}${key}:[\\t ]*([\\s\\S]*?)(?=${siblingKey}|$(?![\\s\\S]))`,
+      'gm',
+    ))];
     assert.equal(matches.length, 1, `${key} must appear exactly once`);
-    return matches[0][1].trim();
+    const scalar = matches[0][1];
+    assert.doesNotMatch(
+      scalar.replace(/[\r\n]+$/, ''),
+      /[\r\n]/,
+      `${key} must use a single-line scalar`,
+    );
+    return scalar.trim();
   };
   const onlyNamedStep = (steps, name) => {
     const matches = steps.filter((step) => step.name === name);
@@ -195,6 +205,10 @@ test('deployment workflow contract rejects bypass and artifact mutations', () =>
   const uploadStep = `      - name: Upload Pages artifact\n        uses: actions/upload-pages-artifact@v3\n        with:\n          path: ./site/dist\n`;
   const sabotages = [
     ['allows test failures', workflow.replace('run: npm test', 'run: npm test || true')],
+    ['uses a multiline run that hides a test failure', workflow.replace(
+      '        run: npm test',
+      '        run: npm test\n          || true',
+    )],
     ['runs a filtered test suite', workflow.replace('run: npm test', 'run: npm test -- --test-name-pattern=deployment')],
     ['continues when the test fails', workflow.replace(
       '        run: npm test',
