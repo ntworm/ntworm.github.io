@@ -41,7 +41,7 @@ const SCENES = [
 ];
 
 const BUDGET = 10000;
-const PERCENTILE = 0.6;
+const PERCENTILE = 0.4;
 
 function sha256(buffer) {
   return createHash('sha256').update(buffer).digest('hex');

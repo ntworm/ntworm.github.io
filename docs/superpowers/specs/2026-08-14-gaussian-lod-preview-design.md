@@ -69,9 +69,12 @@ recorded in the source file. The preview reads as a fine, granular dust cloud
 rather than a soft blurred volume. Inflating the scale to hide the gaps was
 considered and rejected; the granular look suits the site's noir treatment.
 
-**Selection: central crop, then uniform sampling.** Points beyond the 60th
+**Selection: central crop, then uniform sampling.** Points beyond the 40th
 percentile of distance from the centroid are discarded, and 10,000 points are
-sampled uniformly from what remains. The crop concentrates a small budget where
+sampled uniformly from what remains. (Revised from the 60th percentile after
+seeing the first build: at 0.6 the same 10,000 points spread too thin to read
+against the background. Tightening the crop concentrates them without costing
+a byte.) The crop concentrates a small budget where
 the subject is, and discards the floaters and reconstruction noise that splat
 captures accumulate at their edges. The full scene fills the periphery back in
 during the cross-fade.
@@ -124,8 +127,8 @@ byte-identical across runs, so regeneration is verifiable and the committed
 artifact is stable.
 
 If the crop leaves fewer survivors than the budget, every survivor is written and
-the real count is recorded in the manifest. At the 60th percentile both scenes
-leave over 1.6 million survivors, so this is a guard, not an expected path.
+the real count is recorded in the manifest. At the 40th percentile both scenes
+leave over 900,000 survivors, so this is a guard, not an expected path.
 
 Outputs, committed to the repository:
 

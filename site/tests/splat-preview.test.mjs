@@ -101,7 +101,7 @@ test('the preview manifest describes both scenes at the approved budget', () => 
   manifest.scenes.forEach((scene) => {
     assert.equal(scene.budget, BUDGET, `${scene.name} budget drifted`);
     assert.equal(scene.previewPoints, BUDGET, `${scene.name} preview shrank below its budget`);
-    assert.equal(scene.percentile, 0.6);
+    assert.equal(scene.percentile, 0.4);
     assert.ok(Number.isFinite(scene.radius) && scene.radius > 0);
   });
 });
