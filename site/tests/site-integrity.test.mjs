@@ -917,3 +917,23 @@ test('every splat entry declares a committed preview source', () => {
   assert.match(chapter, /\/work\/code\/splats\/carro\/carro\.preview\.splat/);
   assert.match(chapter, /\/work\/code\/splats\/luzoebreno\/luzoebreno\.preview\.splat/);
 });
+
+test('a renderer disposal never flags the stage shared with its sibling renderer', () => {
+  const component = readFileSync(
+    join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'),
+    'utf8',
+  );
+  const disposeStart = component.indexOf('"    dispose() {"');
+  const disposeEnd = component.indexOf('"    getState() { return frameLoop.getState(); }"', disposeStart);
+  const disposeBlock = component.slice(disposeStart, disposeEnd);
+
+  assert.ok(disposeStart >= 0 && disposeEnd > disposeStart, 'the runtime dispose block must be locatable');
+  assert.doesNotMatch(
+    disposeBlock,
+    /stage\.dataset\.gsDisposed = '1'/,
+    'per-renderer disposal must not flag the shared stage; it would take the sibling renderer down with it',
+  );
+  // The mount controller still owns the kill switch, and renderFrame still obeys it.
+  assert.match(component, /bg\.dataset\.gsDisposed = '1'/);
+  assert.match(component, /if \(!stage\.isConnected \|\| stage\.dataset\.gsDisposed === '1'\) \{",\s*"      controller\.dispose\(\);/);
+});

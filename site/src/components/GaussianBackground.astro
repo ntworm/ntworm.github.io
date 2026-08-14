@@ -389,7 +389,11 @@ async function loadSplatEngine(): Promise<void> {
     "    dispose() {",
     "      if (disposed) return;",
     "      disposed = true;",
-    "      stage.dataset.gsDisposed = '1';",
+    // `stage.dataset.gsDisposed` is the mount controller's kill switch for the
+    // whole element, and the preview and the full scene share one stage. A
+    // renderer that flagged it on its own disposal would take its sibling down
+    // with it, which is exactly what killed the full scene one second after the
+    // cross-fade. Per-renderer teardown is the local `disposed` flag below.
     "      frameLoop.dispose();",
     "      window.removeEventListener('resize', forceSize);",
     "      window.removeEventListener('pointermove', onPointerMove);",
