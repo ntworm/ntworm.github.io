@@ -85,3 +85,25 @@ test('dispose is terminal and cancels the scheduled frame', () => {
     frameCount: 0,
   });
 });
+
+test('inherits an initial active clock so a successor scene does not restart the orbit', () => {
+  const seen = [];
+  let scheduled = null;
+  const loop = createPausableFrameLoop({
+    onFrame: (frame) => seen.push(frame.activeSeconds),
+    now: () => 1000,
+    requestFrame: (callback) => {
+      scheduled = callback;
+      return 1;
+    },
+    cancelFrame: () => {},
+    initialActiveSeconds: 42,
+  });
+
+  assert.equal(loop.getState().activeSeconds, 42);
+  loop.setActive(true);
+  // 40 ms stays under the loop's 50 ms resume clamp, so this measures
+  // inheritance alone rather than the clamp.
+  scheduled(1040);
+  assert.equal(seen[0], 42.04);
+});

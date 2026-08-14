@@ -19,6 +19,9 @@
 
 interface SplatEntry {
   src: string;
+  /** Decimated 10k-point companion, mounted immediately. See
+      `scripts/generate-splat-preview.mjs`. */
+  preview: string;
   poster: string;
   label: string;
 }
@@ -63,10 +66,13 @@ if (!splats || splats.length === 0) {
 <script>
 import { createGaussianAutopilot, damp, gaussianFocusPoint, gaussianFocusProximity, gaussianPointerLook, gaussianToggleHotspot, sampleGaussianCamera } from '../scripts/gaussian-camera-motion.mjs';
 import { createPausableFrameLoop } from '../scripts/gaussian-frame-loop.mjs';
+import { createGaussianLodController } from '../scripts/gaussian-lod-controller.mjs';
 import { calculateParticleBounds, createGaussianLightAutopilot, createGaussianParticleAutopilot, createGaussianParticleUniformController, createGaussianWorldTransition, gaussianParticleProfile, installGaussianParticleShaderPatch } from '../scripts/gaussian-particle-effects.mjs';
 import { shouldDelayHeavyMedia, shouldLoadHeavyMediaForIntent } from '../scripts/heavy-media-policy.mjs';
 
-type SplatEntry = { src: string; poster: string; label: string };
+type SplatEntry = { src: string; preview: string; poster: string; label: string };
+
+type GaussianCameraState = Record<string, number>;
 
 interface GaussianRuntimeController {
   setActive(active: boolean): void;
@@ -77,6 +83,7 @@ interface GaussianRuntimeController {
     activeSeconds: number;
     frameCount: number;
   };
+  getCameraState(): GaussianCameraState;
 }
 
 declare global {
@@ -86,7 +93,16 @@ declare global {
   }
 
   interface Window {
-    __gsBgStart?: (src: string, stage: HTMLElement) => Promise<GaussianRuntimeController | null>;
+    __gsBgStart?: (
+      src: string,
+      stage: HTMLElement,
+      options?: {
+        canvasClass?: string;
+        particleEffects?: boolean;
+        initialActiveSeconds?: number;
+        cameraState?: GaussianCameraState | null;
+      },
+    ) => Promise<GaussianRuntimeController | null>;
     __gsBgLoaded?: boolean;
     __gsBgReady?: Promise<void>;
     __gsBgReadyResolve?: () => void;
@@ -132,14 +148,16 @@ async function loadSplatEngine(): Promise<void> {
   }
   const code = [
     "import * as SPLAT from '" + SPLAT_LIB + "';",
-    "window.__gsBgStart = async function(src, stage) {",
+    "window.__gsBgStart = async function(src, stage, options) {",
+    "  options = options || {};",
     "  const scene = new SPLAT.Scene();",
     "  const camera = new SPLAT.Camera();",
     "  const particles = window.__gsBgParticles;",
     "  const lifecycle = window.__gsBgLifecycle;",
     "  if (!lifecycle) throw new Error('[gs-bg] lifecycle unavailable');",
     "  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;",
-    "  const hasParticleEffects = stage.dataset.particleEffects === '1' && !reducedMotion && particles;",
+    "  const particlesRequested = options.particleEffects === false ? false : stage.dataset.particleEffects === '1';",
+    "  const hasParticleEffects = particlesRequested && !reducedMotion && particles;",
     "  let renderer = null;",
     "  let particleShaderActive = false;",
     "  if (hasParticleEffects) {",
@@ -158,6 +176,7 @@ async function loadSplatEngine(): Promise<void> {
     "    renderer = new SPLAT.WebGLRenderer();",
     "  }",
     "  renderer.canvas.classList.add('gs-bg__live-canvas');",
+    "  renderer.canvas.classList.add(options.canvasClass || 'gs-bg__full-canvas');",
     "  renderer.canvas.style.cssText = 'width:100%;height:100%;display:block;position:absolute;inset:0';",
     "  stage.appendChild(renderer.canvas);",
     "  const motion = window.__gsBgMotion;",
@@ -194,6 +213,26 @@ async function loadSplatEngine(): Promise<void> {
     "  let verticalOffset = 0;",
     "  let focusProximity = 0;",
     "  let focusTarget = 0;",
+    // Every camera variable above is damped toward its target. A renderer that
+    // cold-starts therefore glides in from `6 / zoomScale` — read on screen as a
+    // zoom. A successor scene seeds itself from its predecessor's exact state so
+    // the cross-fade moves nothing; a first mount settles on frame one instead.
+    "  const seededCamera = options.cameraState || null;",
+    "  if (seededCamera) {",
+    "    angle = seededCamera.angle;",
+    "    radius = seededCamera.radius;",
+    "    pitch = seededCamera.pitch;",
+    "    phaseOffset = seededCamera.phaseOffset;",
+    "    angularSpeed = seededCamera.angularSpeed;",
+    "    roll = seededCamera.roll;",
+    "    lookYaw = seededCamera.lookYaw;",
+    "    lookPitch = seededCamera.lookPitch;",
+    "    aimOffsetX = seededCamera.aimOffsetX;",
+    "    aimOffsetY = seededCamera.aimOffsetY;",
+    "    verticalOffset = seededCamera.verticalOffset;",
+    "    focusProximity = seededCamera.focusProximity;",
+    "  }",
+    "  let cameraSettled = seededCamera !== null;",
     "  let pointerClientX = null;",
     "  let pointerClientY = null;",
     "  const onPointerMove = (event) => {",
@@ -294,6 +333,7 @@ async function loadSplatEngine(): Promise<void> {
     "      controller.dispose();",
     "      return;",
     "    }",
+    "    const settle = (current, target, response) => (motion && cameraSettled ? motion.damp(current, target, response, deltaSeconds) : target);",
     "    if (hasCameraMotion && !reducedMotion) {",
     "      const host = stage.parentElement || stage;",
     "      const rect = host.getBoundingClientRect();",
@@ -316,34 +356,35 @@ async function loadSplatEngine(): Promise<void> {
     "        clientY: pointerClientY ?? window.innerHeight * 0.5,",
     "        viewportWidth: window.innerWidth, viewportHeight: window.innerHeight",
     "      });",
-    "      focusProximity = motion.damp(focusProximity, focusTarget, 5.5, deltaSeconds);",
+    "      focusProximity = settle(focusProximity, focusTarget, 5.5);",
     "      const sampled = motion.sampleGaussianCamera({",
     "        scrollProgress, focusProximity, zoomScale, timeSeconds: activeSeconds",
     "      });",
     "      const autonomous = autopilot.sample(deltaSeconds);",
-    "      aimOffsetX = motion.damp(aimOffsetX, pointerLookTarget.targetX, 1.15, deltaSeconds);",
-    "      aimOffsetY = motion.damp(aimOffsetY, pointerLookTarget.targetY, 1.15, deltaSeconds);",
-    "      lookYaw = motion.damp(lookYaw, autonomous.lookYaw, 1.35, deltaSeconds);",
-    "      lookPitch = motion.damp(lookPitch, autonomous.lookPitch, 1.35, deltaSeconds);",
+    "      aimOffsetX = settle(aimOffsetX, pointerLookTarget.targetX, 1.15);",
+    "      aimOffsetY = settle(aimOffsetY, pointerLookTarget.targetY, 1.15);",
+    "      lookYaw = settle(lookYaw, autonomous.lookYaw, 1.35);",
+    "      lookPitch = settle(lookPitch, autonomous.lookPitch, 1.35);",
     "      const radiusResponse = sampled.radius < radius ? 2.4 : 1.25;",
-    "      radius = motion.damp(radius, sampled.radius, radiusResponse, deltaSeconds);",
-    "      pitch = motion.damp(pitch, sampled.pitch, 2.2, deltaSeconds);",
-    "      phaseOffset = motion.damp(phaseOffset, sampled.phaseOffset + autonomous.phaseOffset, 1.7, deltaSeconds);",
-    "      angularSpeed = motion.damp(angularSpeed, sampled.angularSpeed * autonomous.speedScale, 1.5, deltaSeconds);",
-    "      roll = motion.damp(roll, autonomous.roll, 1.9, deltaSeconds);",
-    "      verticalOffset = motion.damp(verticalOffset, sampled.verticalOffset, 1.8, deltaSeconds);",
+    "      radius = settle(radius, sampled.radius, radiusResponse);",
+    "      pitch = settle(pitch, sampled.pitch, 2.2);",
+    "      phaseOffset = settle(phaseOffset, sampled.phaseOffset + autonomous.phaseOffset, 1.7);",
+    "      angularSpeed = settle(angularSpeed, sampled.angularSpeed * autonomous.speedScale, 1.5);",
+    "      roll = settle(roll, autonomous.roll, 1.9);",
+    "      verticalOffset = settle(verticalOffset, sampled.verticalOffset, 1.8);",
     "    } else {",
-    "      radius = motion ? motion.damp(radius, 6 / zoomScale, 2.6, deltaSeconds) : 6 / zoomScale;",
-    "      pitch = motion ? motion.damp(pitch, -0.15, 2.4, deltaSeconds) : -0.15;",
-    "      phaseOffset = motion ? motion.damp(phaseOffset, 0, 1.8, deltaSeconds) : 0;",
-    "      angularSpeed = motion ? motion.damp(angularSpeed, 0.108, 1.6, deltaSeconds) : 0.108;",
-    "      roll = motion ? motion.damp(roll, 0, 1.9, deltaSeconds) : 0;",
-    "      lookYaw = motion ? motion.damp(lookYaw, 0, 1.35, deltaSeconds) : 0;",
-    "      lookPitch = motion ? motion.damp(lookPitch, 0, 1.35, deltaSeconds) : 0;",
-    "      aimOffsetX = motion ? motion.damp(aimOffsetX, 0, 1.15, deltaSeconds) : 0;",
-    "      aimOffsetY = motion ? motion.damp(aimOffsetY, 0, 1.15, deltaSeconds) : 0;",
-    "      verticalOffset = motion ? motion.damp(verticalOffset, 0, 1.8, deltaSeconds) : 0;",
+    "      radius = settle(radius, 6 / zoomScale, 2.6);",
+    "      pitch = settle(pitch, -0.15, 2.4);",
+    "      phaseOffset = settle(phaseOffset, 0, 1.8);",
+    "      angularSpeed = settle(angularSpeed, 0.108, 1.6);",
+    "      roll = settle(roll, 0, 1.9);",
+    "      lookYaw = settle(lookYaw, 0, 1.35);",
+    "      lookPitch = settle(lookPitch, 0, 1.35);",
+    "      aimOffsetX = settle(aimOffsetX, 0, 1.15);",
+    "      aimOffsetY = settle(aimOffsetY, 0, 1.15);",
+    "      verticalOffset = settle(verticalOffset, 0, 1.8);",
     "    }",
+    "    cameraSettled = true;",
     "    renderer.canvas.style.setProperty('--gs-scroll-y', verticalOffset + '%');",
     "    angle += angularSpeed * deltaSeconds;",
     "    setCameraOnOrbit(angle + phaseOffset, roll, lookYaw, lookPitch, aimOffsetX, aimOffsetY);",
@@ -369,7 +410,8 @@ async function loadSplatEngine(): Promise<void> {
     "    renderer.render(scene, camera);",
     "  };",
     "  const frameLoop = lifecycle.createPausableFrameLoop({",
-    "    onFrame: ({ deltaSeconds, activeSeconds }) => renderFrame({ deltaSeconds, activeSeconds })",
+    "    onFrame: ({ deltaSeconds, activeSeconds }) => renderFrame({ deltaSeconds, activeSeconds }),",
+    "    initialActiveSeconds: options.initialActiveSeconds || 0",
     "  });",
     "  let disposed = false;",
     "  const controller = {",
@@ -377,7 +419,11 @@ async function loadSplatEngine(): Promise<void> {
     "    dispose() {",
     "      if (disposed) return;",
     "      disposed = true;",
-    "      stage.dataset.gsDisposed = '1';",
+    // `stage.dataset.gsDisposed` is the mount controller's kill switch for the
+    // whole element, and the preview and the full scene share one stage. A
+    // renderer that flagged it on its own disposal would take its sibling down
+    // with it, which is exactly what killed the full scene one second after the
+    // cross-fade. Per-renderer teardown is the local `disposed` flag below.
     "      frameLoop.dispose();",
     "      window.removeEventListener('resize', forceSize);",
     "      window.removeEventListener('pointermove', onPointerMove);",
@@ -386,7 +432,15 @@ async function loadSplatEngine(): Promise<void> {
     "      renderer.dispose();",
     "      renderer.canvas.remove();",
     "    },",
-    "    getState() { return frameLoop.getState(); }",
+    "    getState() { return frameLoop.getState(); },",
+    "    getCameraState() {",
+    "      return {",
+    "        angle: angle, radius: radius, pitch: pitch, phaseOffset: phaseOffset,",
+    "        angularSpeed: angularSpeed, roll: roll, lookYaw: lookYaw, lookPitch: lookPitch,",
+    "        aimOffsetX: aimOffsetX, aimOffsetY: aimOffsetY, verticalOffset: verticalOffset,",
+    "        focusProximity: focusProximity",
+    "      };",
+    "    }",
     "  };",
     "  return controller;",
     "};",
@@ -422,7 +476,13 @@ function pickRandomSplat(bg: HTMLElement): SplatEntry | null {
 
 async function mountGaussianBackground(
   bg: HTMLElement,
-  pick: SplatEntry,
+  src: string,
+  options: {
+    canvasClass: string;
+    particleEffects?: boolean;
+    initialActiveSeconds?: number;
+    cameraState?: GaussianCameraState | null;
+  },
 ): Promise<GaussianRuntimeController | null> {
   const breakpoint = parseInt(bg.dataset.mobileBreakpoint || '768', 10);
   if (window.innerWidth < breakpoint) return null;
@@ -430,8 +490,8 @@ async function mountGaussianBackground(
 
   await loadSplatEngine();
   if (!bg.isConnected || bg.dataset.gsDisposed === '1') return null;
-  if (!pick.src || !window.__gsBgStart) return null;
-  return window.__gsBgStart(pick.src, bg);
+  if (!src || !window.__gsBgStart) return null;
+  return window.__gsBgStart(src, bg, options);
 }
 
 type GaussianMountController = {
@@ -439,6 +499,7 @@ type GaussianMountController = {
   load: () => Promise<void>;
   loadForIntent: () => void;
   refreshActivity: () => void;
+  setViewportSupported: (supported: boolean) => void;
   dispose: () => void;
   getState: () => {
     placement: string;
@@ -468,44 +529,61 @@ function createGaussianMountController(bg: HTMLElement): GaussianMountController
 
   const host = bg.closest('.code__hero, .code__lower-showcase') ?? bg.parentElement ?? bg;
   const breakpoint = parseInt(bg.dataset.mobileBreakpoint || '768', 10);
-  let disposed = false;
   let insideActiveZone = false;
-  let runtime: GaussianRuntimeController | null = null;
-  let loadPromise: Promise<void> | null = null;
   let loadObserver: IntersectionObserver | null = null;
   let activityObserver: IntersectionObserver | null = null;
 
+  const lod = createGaussianLodController({
+    supported: () => window.innerWidth >= breakpoint,
+    mountPreview: () => mountGaussianBackground(bg, pick.preview, {
+      canvasClass: 'gs-bg__preview-canvas',
+      particleEffects: false,
+    }),
+    mountFull: ({ initialActiveSeconds }) => mountGaussianBackground(bg, pick.src, {
+      canvasClass: 'gs-bg__full-canvas',
+      initialActiveSeconds,
+    }),
+    crossFade: (done: () => void) => {
+      const canvas = bg.querySelector<HTMLCanvasElement>('.gs-bg__preview-canvas');
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!canvas || reducedMotion) {
+        done();
+        return () => {};
+      }
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        canvas.removeEventListener('transitionend', finish);
+        window.clearTimeout(timeoutId);
+        done();
+      };
+      // transitionend never fires for an interrupted or hidden transition, and
+      // without this guard the preview's WebGL context would leak.
+      const timeoutId = window.setTimeout(finish, 1200);
+      canvas.addEventListener('transitionend', finish);
+      return () => {
+        settled = true;
+        canvas.removeEventListener('transitionend', finish);
+        window.clearTimeout(timeoutId);
+      };
+    },
+    onState: (state: string) => {
+      bg.dataset.gsState = state;
+      const mounted = state === 'preview' || state === 'loading' || state === 'live';
+      bg.classList.toggle('gs-bg--mounted', mounted);
+      bg.classList.toggle('gs-bg--preview', mounted);
+      bg.classList.toggle('gs-bg--live', state === 'live');
+    },
+  });
+
   const refreshActivity = () => {
-    runtime?.setActive(insideActiveZone && !document.hidden);
-    if (runtime) {
-      bg.dataset.gsState = insideActiveZone && !document.hidden ? 'ready-active' : 'ready-paused';
-    }
+    lod.setActive(insideActiveZone && !document.hidden);
   };
 
   const load = (): Promise<void> => {
-    if (loadPromise || disposed) return loadPromise ?? Promise.resolve();
     loadObserver?.unobserve(host);
-    bg.dataset.gsState = 'loading';
-    loadPromise = mountGaussianBackground(bg, pick)
-      .then((mountedRuntime) => {
-        if (disposed) {
-          mountedRuntime?.dispose();
-          return;
-        }
-        runtime = mountedRuntime;
-        if (!runtime) {
-          bg.dataset.gsState = 'poster-only';
-          return;
-        }
-        bg.classList.add('gs-bg--live');
-        refreshActivity();
-      })
-      .catch((error) => {
-        if (disposed) return;
-        bg.dataset.gsState = 'failed';
-        console.error('[gs-bg] failed', error);
-      });
-    return loadPromise;
+    return lod.requestFull();
   };
 
   const loadForIntent = (): void => {
@@ -520,32 +598,28 @@ function createGaussianMountController(bg: HTMLElement): GaussianMountController
   };
 
   const dispose = () => {
-    if (disposed) return;
-    disposed = true;
     bg.dataset.gsDisposed = '1';
-    bg.dataset.gsState = 'disposed';
     loadObserver?.disconnect();
     activityObserver?.disconnect();
-    runtime?.dispose();
+    lod.dispose();
   };
 
   const getState = () => ({
     placement: bg.dataset.placement ?? '',
-    state: bg.dataset.gsState ?? '',
-    runtime: runtime?.getState() ?? null,
+    state: lod.getState(),
+    runtime: lod.getRuntimes().full?.getState() ?? lod.getRuntimes().preview?.getState() ?? null,
   });
 
-  const controller = { bg, load, loadForIntent, refreshActivity, dispose, getState };
-  bg.dataset.gsState = 'waiting';
+  const setViewportSupported = (supported: boolean): void => {
+    void lod.setViewportSupported(supported);
+  };
 
-  if (window.innerWidth < breakpoint) {
-    bg.dataset.gsState = 'poster-only';
-    return controller;
-  }
+  const controller = { bg, load, loadForIntent, refreshActivity, setViewportSupported, dispose, getState };
+  bg.dataset.gsState = 'waiting';
 
   if (!('IntersectionObserver' in window)) {
     insideActiveZone = true;
-    void load();
+    void lod.start().then(() => load());
     return controller;
   }
 
@@ -562,6 +636,9 @@ function createGaussianMountController(bg: HTMLElement): GaussianMountController
 
   loadObserver.observe(host);
   activityObserver.observe(host);
+  // The preview is the whole point of the level-of-detail pair: it mounts now,
+  // with no observer gate, so the Code chapter is never empty on arrival.
+  void lod.start();
   return controller;
 }
 
@@ -601,6 +678,19 @@ function refreshGaussianVisibility(): void {
   gaussianControllers.forEach((controller) => controller.refreshActivity());
 }
 
+// The breakpoint used to be read once at attach, so a page loaded in a narrow
+// window stayed poster-only until reload even after being maximized.
+let viewportResizeTimer = 0;
+function handleViewportResize(): void {
+  window.clearTimeout(viewportResizeTimer);
+  viewportResizeTimer = window.setTimeout(() => {
+    gaussianControllers.forEach((controller) => {
+      const breakpoint = parseInt(controller.bg.dataset.mobileBreakpoint || '768', 10);
+      controller.setViewportSupported(window.innerWidth >= breakpoint);
+    });
+  }, 200);
+}
+
 function cleanupGaussianBackgrounds(): void {
   gaussianControllers.forEach((controller) => controller.dispose());
   gaussianControllers.clear();
@@ -615,6 +705,7 @@ if (document.readyState === 'loading') {
 }
 document.addEventListener('click', handleCodeNavigation);
 document.addEventListener('visibilitychange', refreshGaussianVisibility);
+window.addEventListener('resize', handleViewportResize, { passive: true });
 document.addEventListener('astro:page-load', attachAll);
 document.addEventListener('astro:before-swap', cleanupGaussianBackgrounds);
 </script>
@@ -703,10 +794,20 @@ document.addEventListener('astro:before-swap', cleanupGaussianBackgrounds);
     opacity: 0;
     pointer-events: none;
     background: transparent !important;
-    transition: opacity 800ms var(--ease-out, ease-out);
+    transition: opacity 900ms var(--ease-out, ease-out);
   }
 
-  .gs-bg--live > :global(.gs-bg__live-canvas) { opacity: 0.92; }
+  /* Geometry is gated on --mounted so the preview and the full scene share the
+     exact same placement transform and mask. Opacity is what --preview and
+     --live control, and these three rules share specificity, so source order is
+     what makes the --live rule win and fade the preview out. */
+  .gs-bg--preview > :global(.gs-bg__preview-canvas) { opacity: 0.92; }
+  .gs-bg--live > :global(.gs-bg__full-canvas) { opacity: 0.92; }
+  .gs-bg--live > :global(.gs-bg__preview-canvas) { opacity: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gs-bg > :global(.gs-bg__live-canvas) { transition: none; }
+  }
 
   .gs-bg[data-placement="hero-right"]::before,
   .gs-bg[data-placement="section-right"]::before {
@@ -763,8 +864,8 @@ document.addEventListener('astro:before-swap', cleanupGaussianBackgrounds);
     );
   }
 
-  .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas),
-  .gs-bg[data-placement="section-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
+  .gs-bg[data-placement="hero-right"].gs-bg--mounted > :global(.gs-bg__live-canvas),
+  .gs-bg[data-placement="section-right"].gs-bg--mounted > :global(.gs-bg__live-canvas) {
     transform: translateX(8%) translateY(-8%) scale(1.24);
     transform-origin: center;
     -webkit-mask-image: radial-gradient(
@@ -785,11 +886,11 @@ document.addEventListener('astro:before-swap', cleanupGaussianBackgrounds);
     );
   }
 
-  .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
+  .gs-bg[data-placement="hero-right"].gs-bg--mounted > :global(.gs-bg__live-canvas) {
     transform: translateX(8%) translateY(calc(-18% + var(--gs-scroll-y, 0%))) scale(1.30);
   }
 
-  .gs-bg[data-placement="section-left"].gs-bg--live > :global(.gs-bg__live-canvas) {
+  .gs-bg[data-placement="section-left"].gs-bg--mounted > :global(.gs-bg__live-canvas) {
     transform: translateX(-8%) translateY(calc(-8% + var(--gs-scroll-y, 0%))) scale(1.24);
     transform-origin: center;
     -webkit-mask-image: radial-gradient(
@@ -855,14 +956,14 @@ document.addEventListener('astro:before-swap', cleanupGaussianBackgrounds);
   }
 
   @media (max-width: 880px) {
-    .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas),
-    .gs-bg[data-placement="section-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
+    .gs-bg[data-placement="hero-right"].gs-bg--mounted > :global(.gs-bg__live-canvas),
+    .gs-bg[data-placement="section-right"].gs-bg--mounted > :global(.gs-bg__live-canvas) {
       transform: translateX(10%) translateY(-8%) scale(1.28);
     }
-    .gs-bg[data-placement="hero-right"].gs-bg--live > :global(.gs-bg__live-canvas) {
+    .gs-bg[data-placement="hero-right"].gs-bg--mounted > :global(.gs-bg__live-canvas) {
       transform: translateX(10%) translateY(calc(-18% + var(--gs-scroll-y, 0%))) scale(1.36);
     }
-    .gs-bg[data-placement="section-left"].gs-bg--live > :global(.gs-bg__live-canvas) {
+    .gs-bg[data-placement="section-left"].gs-bg--mounted > :global(.gs-bg__live-canvas) {
       transform: translateX(-10%) translateY(calc(-8% + var(--gs-scroll-y, 0%))) scale(1.28);
     }
     .gs-bg__veil {

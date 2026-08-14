@@ -1,0 +1,41 @@
+{
+  "generatedBy": "scripts/generate-splat-preview.mjs",
+  "scenes": [
+    {
+      "name": "carro",
+      "source": "work/code/splats/carro/carro.splat",
+      "output": "work/code/splats/carro/carro.preview.splat",
+      "seed": 20260814,
+      "budget": 10000,
+      "percentile": 0.4,
+      "sourcePoints": 2774466,
+      "sourceSha256": "d5dc964753acbb4631a0e09004df51c75d14e416b2579d5dbc5f4957b77dd9f5",
+      "previewPoints": 10000,
+      "previewSha256": "cb91fcbdc8f9a77b6632b75501c6ab178c025720932b000c92b04ea315a24161",
+      "centroid": [
+        -0.16475613172017023,
+        -1.6871983548820721,
+        0.09102390921042942
+      ],
+      "radius": 1.9771612388842978
+    },
+    {
+      "name": "luzoebreno",
+      "source": "work/code/splats/luzoebreno/luzoebreno.splat",
+      "output": "work/code/splats/luzoebreno/luzoebreno.preview.splat",
+      "seed": 20260815,
+      "budget": 10000,
+      "percentile": 0.4,
+      "sourcePoints": 2324805,
+      "sourceSha256": "2f1030b80938a0f0b2f75a8b97f91f28cd7a782504a305907a8bb4b37918bf50",
+      "previewPoints": 10000,
+      "previewSha256": "53bc92c1f14564b2fce4caaa2dbcfc4200e5739a8fac1907229be92145b57bbe",
+      "centroid": [
+        0.7203175262590561,
+        -2.399696563651279,
+        0.36968428982880236
+      ],
+      "radius": 4.287135936553812
+    }
+  ]
+}
