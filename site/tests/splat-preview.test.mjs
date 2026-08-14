@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import test from 'node:test';
 
 import {
@@ -81,4 +84,40 @@ test('copies whole records verbatim into the preview buffer', () => {
   assert.equal(preview.readUInt8(24), 3);
   assert.equal(preview.readFloatLE(RECORD_BYTES), 0);
   assert.equal(preview.readUInt8(RECORD_BYTES + 24), 1);
+});
+
+const SPLAT_ROOT = join(process.cwd(), 'public', 'work', 'code', 'splats');
+const BUDGET = 10000;
+const MAX_PREVIEW_BYTES = 400 * 1024;
+
+function sha256(buffer) {
+  return createHash('sha256').update(buffer).digest('hex');
+}
+
+test('the preview manifest describes both scenes at the approved budget', () => {
+  const manifest = JSON.parse(readFileSync(join(SPLAT_ROOT, 'previews.manifest.json'), 'utf8'));
+  const names = manifest.scenes.map((scene) => scene.name).sort();
+  assert.deepEqual(names, ['carro', 'luzoebreno']);
+  manifest.scenes.forEach((scene) => {
+    assert.equal(scene.budget, BUDGET, `${scene.name} budget drifted`);
+    assert.equal(scene.previewPoints, BUDGET, `${scene.name} preview shrank below its budget`);
+    assert.equal(scene.percentile, 0.6);
+    assert.ok(Number.isFinite(scene.radius) && scene.radius > 0);
+  });
+});
+
+test('each committed preview matches its manifest entry and stays under budget', () => {
+  const manifest = JSON.parse(readFileSync(join(SPLAT_ROOT, 'previews.manifest.json'), 'utf8'));
+  manifest.scenes.forEach((scene) => {
+    const preview = readFileSync(join(process.cwd(), 'public', scene.output));
+    assert.equal(preview.length % RECORD_BYTES, 0, `${scene.name} is not whole records`);
+    assert.equal(pointCount(preview.length), scene.previewPoints);
+    assert.ok(preview.length <= MAX_PREVIEW_BYTES, `${scene.name} exceeds the 400 KB ceiling`);
+    assert.equal(sha256(preview), scene.previewSha256, `${scene.name} preview does not match the manifest`);
+
+    const distances = distancesFromCentroid(preview, scene.previewPoints, scene.centroid);
+    distances.forEach((distance) => {
+      assert.ok(distance <= scene.radius + 1e-3, `${scene.name} kept a point outside the crop radius`);
+    });
+  });
 });
