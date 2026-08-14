@@ -3,10 +3,11 @@ export function createPausableFrameLoop({
   now = () => performance.now(),
   requestFrame = (callback) => requestAnimationFrame(callback),
   cancelFrame = (id) => cancelAnimationFrame(id),
+  initialActiveSeconds = 0,
 }) {
   let active = false;
   let disposed = false;
-  let activeSeconds = 0;
+  let activeSeconds = Number.isFinite(initialActiveSeconds) ? Math.max(0, initialActiveSeconds) : 0;
   let frameCount = 0;
   let frameId = 0;
   let previousTimeMs = 0;
