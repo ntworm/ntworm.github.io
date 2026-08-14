@@ -472,7 +472,11 @@ test('Gaussian runtime exposes an idempotent pausable and disposable controller'
 
   assert.match(source, /import \{ createPausableFrameLoop \} from '\.\.\/scripts\/gaussian-frame-loop\.mjs';/);
   assert.match(source, /interface GaussianRuntimeController\s*\{[^}]*setActive\(active: boolean\): void;[^}]*dispose\(\): void;[^}]*getState\(\): \{[^}]*active: boolean;[^}]*disposed: boolean;[^}]*activeSeconds: number;[^}]*frameCount: number;[^}]*\};[^}]*\}/s);
-  assert.match(source, /__gsBgStart\?: \(src: string, stage: HTMLElement\) => Promise<GaussianRuntimeController \| null>/);
+  assert.match(
+    source,
+    /__gsBgStart\?: \(\s*src: string,\s*stage: HTMLElement,\s*options\?: \{ canvasClass\?: string; particleEffects\?: boolean; initialActiveSeconds\?: number \},\s*\) => Promise<GaussianRuntimeController \| null>/s,
+  );
+  assert.match(source, /initialActiveSeconds: options\.initialActiveSeconds \|\| 0/);
   assert.match(source, /window\.__gsBgLifecycle = \{ createPausableFrameLoop \};/);
   assert.match(source, /const lifecycle = window\.__gsBgLifecycle;/);
   assert.match(source, /lifecycle\.createPausableFrameLoop\(\{/);
@@ -486,7 +490,7 @@ test('Gaussian runtime exposes an idempotent pausable and disposable controller'
   assert.match(source, /setActive\(active\) \{ frameLoop\.setActive\(active\); \}/);
   assert.match(source, /if \(disposed\) return;[^]*disposed = true;[^]*frameLoop\.dispose\(\);[^]*renderer\.dispose\(\);[^]*renderer\.canvas\.remove\(\);/);
   assert.match(source, /stage\.dataset\.gsDisposed === '1'/);
-  assert.match(source, /return window\.__gsBgStart\(pick\.src, bg\);/);
+  assert.match(source, /return window\.__gsBgStart\(src, bg, options\);/);
   assert.doesNotMatch(source, /runtime\?\.setActive\(true\);/);
   assert.doesNotMatch(source, /requestAnimationFrame\(frame\)/);
 });
@@ -543,12 +547,16 @@ test('predictive Gaussian controllers load once and preserve poster continuity',
   const posterClass = source.indexOf("bg.classList.add('gs-bg--poster')");
   const observerSetup = source.indexOf('loadObserver = new IntersectionObserver');
 
-  assert.match(source, /let loadPromise: Promise<void> \| null = null/);
-  assert.match(source, /if \(loadPromise \|\| disposed\) return loadPromise/);
+  // Single-load and runtime ownership moved into the level-of-detail
+  // controller, which guards `requestFull` with its own promise.
+  assert.match(source, /import \{ createGaussianLodController \} from '\.\.\/scripts\/gaussian-lod-controller\.mjs'/);
+  const lodSource = readFileSync(join(process.cwd(), 'src', 'scripts', 'gaussian-lod-controller.mjs'), 'utf8');
+  assert.match(lodSource, /let fullPromise = null;/, 'the LOD controller must own single-load');
+  assert.match(lodSource, /if \(disposed \|\| fullPromise \|\| !supported\(\)\) return;/);
   assert.ok(posterStyle >= 0 && posterStyle < observerSetup, 'poster style must be assigned before observers');
   assert.ok(posterClass >= 0 && posterClass < observerSetup, 'poster class must be assigned before observers');
-  assert.match(source, /runtime\?\.setActive\(insideActiveZone && !document\.hidden\)/);
-  assert.match(source, /runtime\?\.dispose\(\)/);
+  assert.match(source, /lod\.setActive\(insideActiveZone && !document\.hidden\)/);
+  assert.match(source, /lod\.dispose\(\)/);
   assert.match(source, /bg\.dataset\.gsDisposed = '1'/);
   assert.match(source, /window\.__gsBgDebug = \(\) => \[\.\.\.gaussianControllers\]\.map\(\(controller\) => controller\.getState\(\)\)/);
 });
@@ -648,7 +656,10 @@ test('both Gaussians opt into independent reduced-motion-safe digital dust', () 
   assert.match(gaussianSource, /createGaussianParticleUniformController/);
   assert.doesNotMatch(gaussianSource, /createGaussianPointerDissolve/);
   assert.match(gaussianSource, /calculateParticleBounds/);
-  assert.match(gaussianSource, /hasParticleEffects = stage\.dataset\.particleEffects === '1' && !reducedMotion/);
+  // The preview mount opts out of the dust explicitly; the stage attribute
+  // still decides for every other caller.
+  assert.match(gaussianSource, /particlesRequested = options\.particleEffects === false \? false : stage\.dataset\.particleEffects === '1'/);
+  assert.match(gaussianSource, /hasParticleEffects = particlesRequested && !reducedMotion/);
   assert.match(gaussianSource, /finally\s*\{\s*particleShaderHook\.restore\(\);\s*\}/s);
   assert.match(gaussianSource, /particleController\.update/);
   assert.match(gaussianSource, /coreRadius: 1\.5/);
@@ -860,4 +871,49 @@ test('scroll fades attach to content after Astro client navigation', () => {
   assert.match(script, /document\.addEventListener\('astro:page-load', initScrollFades\)/);
   assert.match(script, /const observed = new WeakSet<Element>\(\)/);
   assert.match(script, /reducedMotion[^}]*classList\.add\('is-visible'\)/s);
+});
+
+test('preview and full canvases share the placement geometry but not the opacity gate', () => {
+  const component = readFileSync(
+    join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'),
+    'utf8',
+  );
+
+  assert.doesNotMatch(
+    component,
+    /\.gs-bg--live > :global\(\.gs-bg__live-canvas\)/,
+    'a placement rule still gates shared geometry on the opacity class',
+  );
+  assert.match(component, /\.gs-bg--mounted > :global\(\.gs-bg__live-canvas\)/);
+  assert.match(component, /\.gs-bg--preview > :global\(\.gs-bg__preview-canvas\) \{ opacity: 0\.92; \}/);
+  assert.match(component, /\.gs-bg--live > :global\(\.gs-bg__full-canvas\) \{ opacity: 0\.92; \}/);
+  assert.match(component, /\.gs-bg--live > :global\(\.gs-bg__preview-canvas\) \{ opacity: 0; \}/);
+
+  const previewFade = component.indexOf('.gs-bg--preview > :global(.gs-bg__preview-canvas)');
+  const liveFade = component.indexOf('.gs-bg--live > :global(.gs-bg__preview-canvas)');
+  assert.ok(liveFade > previewFade, 'the live rule must come last to win on equal specificity');
+});
+
+test('the Gaussian mount wires previews, the cross-fade guard, and a resize re-check', () => {
+  const component = readFileSync(
+    join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'),
+    'utf8',
+  );
+
+  assert.match(component, /canvasClass: 'gs-bg__preview-canvas',\s*particleEffects: false,/s);
+  assert.match(component, /canvasClass: 'gs-bg__full-canvas',\s*initialActiveSeconds,/s);
+  assert.match(component, /const timeoutId = window\.setTimeout\(finish, 1200\);/);
+  assert.match(component, /canvas\.addEventListener\('transitionend', finish\);/);
+  assert.match(component, /window\.addEventListener\('resize', handleViewportResize, \{ passive: true \}\)/);
+  assert.match(component, /controller\.setViewportSupported\(window\.innerWidth >= breakpoint\)/);
+  assert.match(component, /void lod\.start\(\);/);
+});
+
+test('every splat entry declares a committed preview source', () => {
+  const chapter = readFileSync(codeChapterSourcePath, 'utf8');
+  const previews = chapter.match(/preview: '/g) ?? [];
+
+  assert.equal(previews.length, 2, 'both scenes must declare a preview');
+  assert.match(chapter, /\/work\/code\/splats\/carro\/carro\.preview\.splat/);
+  assert.match(chapter, /\/work\/code\/splats\/luzoebreno\/luzoebreno\.preview\.splat/);
 });
