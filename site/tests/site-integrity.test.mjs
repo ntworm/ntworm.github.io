@@ -474,7 +474,7 @@ test('Gaussian runtime exposes an idempotent pausable and disposable controller'
   assert.match(source, /interface GaussianRuntimeController\s*\{[^}]*setActive\(active: boolean\): void;[^}]*dispose\(\): void;[^}]*getState\(\): \{[^}]*active: boolean;[^}]*disposed: boolean;[^}]*activeSeconds: number;[^}]*frameCount: number;[^}]*\};[^}]*\}/s);
   assert.match(
     source,
-    /__gsBgStart\?: \(\s*src: string,\s*stage: HTMLElement,\s*options\?: \{ canvasClass\?: string; particleEffects\?: boolean; initialActiveSeconds\?: number \},\s*\) => Promise<GaussianRuntimeController \| null>/s,
+    /__gsBgStart\?: \(\s*src: string,\s*stage: HTMLElement,\s*options\?: \{[^}]*canvasClass\?: string;[^}]*particleEffects\?: boolean;[^}]*initialActiveSeconds\?: number;[^}]*cameraState\?: GaussianCameraState \| null;[^}]*\},\s*\) => Promise<GaussianRuntimeController \| null>/s,
   );
   assert.match(source, /initialActiveSeconds: options\.initialActiveSeconds \|\| 0/);
   assert.match(source, /window\.__gsBgLifecycle = \{ createPausableFrameLoop \};/);
@@ -618,7 +618,7 @@ test('both Gaussians opt into smoothed camera motion around the fixed origin', (
   assert.match(gaussianSource, /let pointerClientX = null;/);
   assert.match(gaussianSource, /let pointerClientY = null;/);
   assert.match(gaussianSource, /const focusX = stage\.dataset\.placement === 'section-left' \? 0\.28 : 0\.72;/);
-  assert.match(gaussianSource, /focusProximity = motion\.damp\(focusProximity, focusTarget,/);
+  assert.match(gaussianSource, /focusProximity = settle\(focusProximity, focusTarget, 5\.5\);/);
   assert.match(gaussianSource, /const zoomScale = stage\.dataset\.placement === 'section-left' \? 2\.5 : 1\.5;/);
   assert.match(gaussianSource, /let radius = 6 \/ zoomScale;/);
   assert.match(gaussianSource, /scrollProgress, focusProximity, zoomScale, timeSeconds:/);
@@ -635,7 +635,7 @@ test('both Gaussians run independent autonomous camera gestures with roll', () =
   assert.match(source, /const autopilotSeed = .*Math\.random/);
   assert.match(source, /const autopilot = .*createGaussianAutopilot\(autopilotSeed\)/);
   assert.match(source, /sampled\.angularSpeed \* autonomous\.speedScale/);
-  assert.match(source, /pitch = motion\.damp\(pitch, sampled\.pitch,/);
+  assert.match(source, /pitch = settle\(pitch, sampled\.pitch, 2\.2\);/);
   assert.doesNotMatch(source, /autonomous\.pitchOffset/);
   assert.match(source, /sampled\.phaseOffset \+ autonomous\.phaseOffset/);
   assert.match(source, /setCameraOnOrbit\(angle \+ phaseOffset, roll, lookYaw, lookPitch, aimOffsetX, aimOffsetY\)/);
@@ -685,8 +685,8 @@ test('pointer gently biases camera aim without owning the autonomous orbit', () 
   const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
 
   assert.match(source, /const pointerLookTarget = motion\.gaussianPointerLook/);
-  assert.match(source, /aimOffsetX = motion\.damp\(aimOffsetX, pointerLookTarget\.targetX,/);
-  assert.match(source, /aimOffsetY = motion\.damp\(aimOffsetY, pointerLookTarget\.targetY,/);
+  assert.match(source, /aimOffsetX = settle\(aimOffsetX, pointerLookTarget\.targetX, 1\.15\);/);
+  assert.match(source, /aimOffsetY = settle\(aimOffsetY, pointerLookTarget\.targetY, 1\.15\);/);
   assert.match(source, /const targetDistanceX = cameraAimX \* radius;/);
   assert.match(source, /const targetDistanceY = cameraAimY \* radius;/);
   assert.match(source, /setCameraOnOrbit\(angle \+ phaseOffset, roll, lookYaw, lookPitch, aimOffsetX, aimOffsetY\)/);
@@ -924,7 +924,7 @@ test('a renderer disposal never flags the stage shared with its sibling renderer
     'utf8',
   );
   const disposeStart = component.indexOf('"    dispose() {"');
-  const disposeEnd = component.indexOf('"    getState() { return frameLoop.getState(); }"', disposeStart);
+  const disposeEnd = component.indexOf('"    getState() { return frameLoop.getState(); },"', disposeStart);
   const disposeBlock = component.slice(disposeStart, disposeEnd);
 
   assert.ok(disposeStart >= 0 && disposeEnd > disposeStart, 'the runtime dispose block must be locatable');
@@ -936,4 +936,36 @@ test('a renderer disposal never flags the stage shared with its sibling renderer
   // The mount controller still owns the kill switch, and renderFrame still obeys it.
   assert.match(component, /bg\.dataset\.gsDisposed = '1'/);
   assert.match(component, /if \(!stage\.isConnected \|\| stage\.dataset\.gsDisposed === '1'\) \{",\s*"      controller\.dispose\(\);/);
+});
+
+test('a mounted Gaussian settles its camera instead of gliding in from a cold start', () => {
+  const component = readFileSync(
+    join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'),
+    'utf8',
+  );
+
+  assert.match(component, /const seededCamera = options\.cameraState \|\| null;/);
+  assert.match(component, /let cameraSettled = seededCamera !== null;/);
+  assert.match(
+    component,
+    /const settle = \(current, target, response\) => \(motion && cameraSettled \? motion\.damp\(current, target, response, deltaSeconds\) : target\);/,
+  );
+  assert.match(component, /"    cameraSettled = true;",/);
+  assert.match(component, /getCameraState\(\) \{/);
+
+  // Nothing inside renderFrame may damp directly any more; a direct call would
+  // bring the cold-start zoom back for that variable alone.
+  const renderFrameStart = component.indexOf('"  const renderFrame =');
+  const renderFrameEnd = component.indexOf('"  const frameLoop =', renderFrameStart);
+  assert.ok(renderFrameStart >= 0 && renderFrameEnd > renderFrameStart);
+  const renderFrame = component
+    .slice(renderFrameStart, renderFrameEnd)
+    .split('\n')
+    .filter((line) => !line.includes('const settle ='))
+    .join('\n');
+  assert.doesNotMatch(
+    renderFrame,
+    /motion\.damp\(/,
+    'camera variables must go through settle() so a fresh mount does not zoom in',
+  );
 });

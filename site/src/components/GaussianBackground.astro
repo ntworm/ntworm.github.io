@@ -72,6 +72,8 @@ import { shouldDelayHeavyMedia, shouldLoadHeavyMediaForIntent } from '../scripts
 
 type SplatEntry = { src: string; preview: string; poster: string; label: string };
 
+type GaussianCameraState = Record<string, number>;
+
 interface GaussianRuntimeController {
   setActive(active: boolean): void;
   dispose(): void;
@@ -81,6 +83,7 @@ interface GaussianRuntimeController {
     activeSeconds: number;
     frameCount: number;
   };
+  getCameraState(): GaussianCameraState;
 }
 
 declare global {
@@ -93,7 +96,12 @@ declare global {
     __gsBgStart?: (
       src: string,
       stage: HTMLElement,
-      options?: { canvasClass?: string; particleEffects?: boolean; initialActiveSeconds?: number },
+      options?: {
+        canvasClass?: string;
+        particleEffects?: boolean;
+        initialActiveSeconds?: number;
+        cameraState?: GaussianCameraState | null;
+      },
     ) => Promise<GaussianRuntimeController | null>;
     __gsBgLoaded?: boolean;
     __gsBgReady?: Promise<void>;
@@ -205,6 +213,26 @@ async function loadSplatEngine(): Promise<void> {
     "  let verticalOffset = 0;",
     "  let focusProximity = 0;",
     "  let focusTarget = 0;",
+    // Every camera variable above is damped toward its target. A renderer that
+    // cold-starts therefore glides in from `6 / zoomScale` — read on screen as a
+    // zoom. A successor scene seeds itself from its predecessor's exact state so
+    // the cross-fade moves nothing; a first mount settles on frame one instead.
+    "  const seededCamera = options.cameraState || null;",
+    "  if (seededCamera) {",
+    "    angle = seededCamera.angle;",
+    "    radius = seededCamera.radius;",
+    "    pitch = seededCamera.pitch;",
+    "    phaseOffset = seededCamera.phaseOffset;",
+    "    angularSpeed = seededCamera.angularSpeed;",
+    "    roll = seededCamera.roll;",
+    "    lookYaw = seededCamera.lookYaw;",
+    "    lookPitch = seededCamera.lookPitch;",
+    "    aimOffsetX = seededCamera.aimOffsetX;",
+    "    aimOffsetY = seededCamera.aimOffsetY;",
+    "    verticalOffset = seededCamera.verticalOffset;",
+    "    focusProximity = seededCamera.focusProximity;",
+    "  }",
+    "  let cameraSettled = seededCamera !== null;",
     "  let pointerClientX = null;",
     "  let pointerClientY = null;",
     "  const onPointerMove = (event) => {",
@@ -305,6 +333,7 @@ async function loadSplatEngine(): Promise<void> {
     "      controller.dispose();",
     "      return;",
     "    }",
+    "    const settle = (current, target, response) => (motion && cameraSettled ? motion.damp(current, target, response, deltaSeconds) : target);",
     "    if (hasCameraMotion && !reducedMotion) {",
     "      const host = stage.parentElement || stage;",
     "      const rect = host.getBoundingClientRect();",
@@ -327,34 +356,35 @@ async function loadSplatEngine(): Promise<void> {
     "        clientY: pointerClientY ?? window.innerHeight * 0.5,",
     "        viewportWidth: window.innerWidth, viewportHeight: window.innerHeight",
     "      });",
-    "      focusProximity = motion.damp(focusProximity, focusTarget, 5.5, deltaSeconds);",
+    "      focusProximity = settle(focusProximity, focusTarget, 5.5);",
     "      const sampled = motion.sampleGaussianCamera({",
     "        scrollProgress, focusProximity, zoomScale, timeSeconds: activeSeconds",
     "      });",
     "      const autonomous = autopilot.sample(deltaSeconds);",
-    "      aimOffsetX = motion.damp(aimOffsetX, pointerLookTarget.targetX, 1.15, deltaSeconds);",
-    "      aimOffsetY = motion.damp(aimOffsetY, pointerLookTarget.targetY, 1.15, deltaSeconds);",
-    "      lookYaw = motion.damp(lookYaw, autonomous.lookYaw, 1.35, deltaSeconds);",
-    "      lookPitch = motion.damp(lookPitch, autonomous.lookPitch, 1.35, deltaSeconds);",
+    "      aimOffsetX = settle(aimOffsetX, pointerLookTarget.targetX, 1.15);",
+    "      aimOffsetY = settle(aimOffsetY, pointerLookTarget.targetY, 1.15);",
+    "      lookYaw = settle(lookYaw, autonomous.lookYaw, 1.35);",
+    "      lookPitch = settle(lookPitch, autonomous.lookPitch, 1.35);",
     "      const radiusResponse = sampled.radius < radius ? 2.4 : 1.25;",
-    "      radius = motion.damp(radius, sampled.radius, radiusResponse, deltaSeconds);",
-    "      pitch = motion.damp(pitch, sampled.pitch, 2.2, deltaSeconds);",
-    "      phaseOffset = motion.damp(phaseOffset, sampled.phaseOffset + autonomous.phaseOffset, 1.7, deltaSeconds);",
-    "      angularSpeed = motion.damp(angularSpeed, sampled.angularSpeed * autonomous.speedScale, 1.5, deltaSeconds);",
-    "      roll = motion.damp(roll, autonomous.roll, 1.9, deltaSeconds);",
-    "      verticalOffset = motion.damp(verticalOffset, sampled.verticalOffset, 1.8, deltaSeconds);",
+    "      radius = settle(radius, sampled.radius, radiusResponse);",
+    "      pitch = settle(pitch, sampled.pitch, 2.2);",
+    "      phaseOffset = settle(phaseOffset, sampled.phaseOffset + autonomous.phaseOffset, 1.7);",
+    "      angularSpeed = settle(angularSpeed, sampled.angularSpeed * autonomous.speedScale, 1.5);",
+    "      roll = settle(roll, autonomous.roll, 1.9);",
+    "      verticalOffset = settle(verticalOffset, sampled.verticalOffset, 1.8);",
     "    } else {",
-    "      radius = motion ? motion.damp(radius, 6 / zoomScale, 2.6, deltaSeconds) : 6 / zoomScale;",
-    "      pitch = motion ? motion.damp(pitch, -0.15, 2.4, deltaSeconds) : -0.15;",
-    "      phaseOffset = motion ? motion.damp(phaseOffset, 0, 1.8, deltaSeconds) : 0;",
-    "      angularSpeed = motion ? motion.damp(angularSpeed, 0.108, 1.6, deltaSeconds) : 0.108;",
-    "      roll = motion ? motion.damp(roll, 0, 1.9, deltaSeconds) : 0;",
-    "      lookYaw = motion ? motion.damp(lookYaw, 0, 1.35, deltaSeconds) : 0;",
-    "      lookPitch = motion ? motion.damp(lookPitch, 0, 1.35, deltaSeconds) : 0;",
-    "      aimOffsetX = motion ? motion.damp(aimOffsetX, 0, 1.15, deltaSeconds) : 0;",
-    "      aimOffsetY = motion ? motion.damp(aimOffsetY, 0, 1.15, deltaSeconds) : 0;",
-    "      verticalOffset = motion ? motion.damp(verticalOffset, 0, 1.8, deltaSeconds) : 0;",
+    "      radius = settle(radius, 6 / zoomScale, 2.6);",
+    "      pitch = settle(pitch, -0.15, 2.4);",
+    "      phaseOffset = settle(phaseOffset, 0, 1.8);",
+    "      angularSpeed = settle(angularSpeed, 0.108, 1.6);",
+    "      roll = settle(roll, 0, 1.9);",
+    "      lookYaw = settle(lookYaw, 0, 1.35);",
+    "      lookPitch = settle(lookPitch, 0, 1.35);",
+    "      aimOffsetX = settle(aimOffsetX, 0, 1.15);",
+    "      aimOffsetY = settle(aimOffsetY, 0, 1.15);",
+    "      verticalOffset = settle(verticalOffset, 0, 1.8);",
     "    }",
+    "    cameraSettled = true;",
     "    renderer.canvas.style.setProperty('--gs-scroll-y', verticalOffset + '%');",
     "    angle += angularSpeed * deltaSeconds;",
     "    setCameraOnOrbit(angle + phaseOffset, roll, lookYaw, lookPitch, aimOffsetX, aimOffsetY);",
@@ -402,7 +432,15 @@ async function loadSplatEngine(): Promise<void> {
     "      renderer.dispose();",
     "      renderer.canvas.remove();",
     "    },",
-    "    getState() { return frameLoop.getState(); }",
+    "    getState() { return frameLoop.getState(); },",
+    "    getCameraState() {",
+    "      return {",
+    "        angle: angle, radius: radius, pitch: pitch, phaseOffset: phaseOffset,",
+    "        angularSpeed: angularSpeed, roll: roll, lookYaw: lookYaw, lookPitch: lookPitch,",
+    "        aimOffsetX: aimOffsetX, aimOffsetY: aimOffsetY, verticalOffset: verticalOffset,",
+    "        focusProximity: focusProximity",
+    "      };",
+    "    }",
     "  };",
     "  return controller;",
     "};",
@@ -443,6 +481,7 @@ async function mountGaussianBackground(
     canvasClass: string;
     particleEffects?: boolean;
     initialActiveSeconds?: number;
+    cameraState?: GaussianCameraState | null;
   },
 ): Promise<GaussianRuntimeController | null> {
   const breakpoint = parseInt(bg.dataset.mobileBreakpoint || '768', 10);

@@ -60,16 +60,19 @@ export function createGaussianLodController({
   const isContextExhaustion = (error) => /context|webgl/i.test(String(error?.message ?? error));
 
   const attemptFull = async (allowRetry) => {
+    // Captured before any disposal: the successor scene starts from exactly
+    // where the preview is, so the cross-fade changes opacity and nothing else.
     const initialActiveSeconds = previewRuntime?.getState().activeSeconds ?? 0;
+    const cameraState = previewRuntime?.getCameraState?.() ?? null;
     try {
-      return await mountFull({ initialActiveSeconds });
+      return await mountFull({ initialActiveSeconds, cameraState });
     } catch (error) {
       if (!allowRetry || !previewRuntime || !isContextExhaustion(error)) throw error;
       // A second WebGL context can exhaust the browser's limit. The full scene
       // is the real artwork, so the preview yields its context and we retry.
       console.warn('[gs-bg] retrying full scene without the preview', error);
       disposePreview();
-      return mountFull({ initialActiveSeconds });
+      return mountFull({ initialActiveSeconds, cameraState });
     }
   };
 

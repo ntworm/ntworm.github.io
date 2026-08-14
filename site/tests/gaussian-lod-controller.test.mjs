@@ -3,7 +3,7 @@ import test from 'node:test';
 
 import { createGaussianLodController } from '../src/scripts/gaussian-lod-controller.mjs';
 
-function fakeRuntime(label, activeSeconds = 0) {
+function fakeRuntime(label, activeSeconds = 0, camera = null) {
   const calls = [];
   return {
     label,
@@ -11,6 +11,7 @@ function fakeRuntime(label, activeSeconds = 0) {
     setActive: (value) => calls.push(value),
     dispose: () => calls.push('disposed'),
     getState: () => ({ active: true, disposed: false, activeSeconds, frameCount: 0 }),
+    getCameraState: () => camera,
   };
 }
 
@@ -64,6 +65,39 @@ test('hands the preview clock to the full scene', async () => {
   await controller.start();
   await controller.requestFull();
   assert.deepEqual(seen, [42]);
+});
+
+test('hands the preview camera to the full scene so the cross-fade moves nothing', async () => {
+  const camera = { angle: 3.5, radius: 2.4, pitch: -0.2, focusProximity: 0.8 };
+  const seen = [];
+  const { controller } = harness({
+    mountPreview: async () => fakeRuntime('preview', 42, camera),
+    mountFull: async (options) => {
+      seen.push(options.cameraState);
+      return fakeRuntime('full');
+    },
+  });
+  await controller.start();
+  await controller.requestFull();
+  assert.deepEqual(seen, [camera]);
+});
+
+test('still hands over the camera captured before the preview yields its context', async () => {
+  const camera = { angle: 1.25, radius: 5, pitch: 0.1, focusProximity: 0 };
+  const seen = [];
+  let attempts = 0;
+  const { controller } = harness({
+    mountPreview: async () => fakeRuntime('preview', 7, camera),
+    mountFull: async (options) => {
+      attempts += 1;
+      seen.push(options.cameraState);
+      if (attempts === 1) throw new Error('WebGL context limit reached');
+      return fakeRuntime('full');
+    },
+  });
+  await controller.start();
+  await controller.requestFull();
+  assert.deepEqual(seen, [camera, camera]);
 });
 
 test('keeps the preview alive when the full scene fails', async () => {
