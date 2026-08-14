@@ -51,4 +51,4 @@ Pre-Árvore Seca work in the Palmas scene is documented separately — see <a cl
 
 ## Music released from this era
 
-The experimental project **D4MN FR33 D00M** (Árvore Seca, 2020) released the album *DEMO* on Spotify with 2 bonus tracks — the project's anchor record. The Spotify artist/album URL isn't currently discoverable via web search; Gabriel can drop the direct link here when needed.
+The experimental project **D4MN FR33 D00M** (Árvore Seca, 2020) released the album *DEMO* on Spotify with 2 bonus tracks — the project's anchor record.

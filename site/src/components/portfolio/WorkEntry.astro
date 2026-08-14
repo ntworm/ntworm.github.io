@@ -1,4 +1,6 @@
 ---
+import dimensionsData from '../../data/asset-dimensions.json';
+
 interface Props {
   project: {
     id: string;
@@ -20,9 +22,13 @@ interface Props {
   };
   tier: 'featured' | 'more' | 'archive';
   index: number;
+  eager?: boolean;
 }
 
-const { project, tier, index } = Astro.props;
+const { project, tier, index, eager = false } = Astro.props;
+const dimensionsByProject = dimensionsData as Record<string, Array<{ file: string; w: number; h: number }>>;
+const coverFilename = project.media.cover?.split('/').pop();
+const coverDimensions = dimensionsByProject[project.id]?.find((dimension) => dimension.file === coverFilename);
 const summary = project.presentation.summary;
 const highlight = project.presentation.highlight;
 const highlightIndex = summary && highlight ? summary.indexOf(highlight) : -1;
@@ -56,6 +62,8 @@ const summaryParts = summary && highlight && highlightIndex >= 0
         loading="lazy"
         decoding="async"
         data-prewarm-image
+        width={coverDimensions?.w}
+        height={coverDimensions?.h}
       />
     </div>
   )}
@@ -65,8 +73,11 @@ const summaryParts = summary && highlight && highlightIndex >= 0
       <img
         src={project.media.cover}
         alt={`${project.data.title} — cover`}
-        loading={tier === 'featured' && index < 4 ? 'eager' : 'lazy'}
-        data-prewarm-image={tier === 'featured' && index < 4 ? undefined : true}
+        loading={eager ? 'eager' : 'lazy'}
+        decoding="async"
+        data-prewarm-image={eager ? undefined : true}
+        width={coverDimensions?.w}
+        height={coverDimensions?.h}
       />
     ) : (
       <div class="work-entry__placeholder"><span class="mono">image pending</span></div>
@@ -113,7 +124,7 @@ const summaryParts = summary && highlight && highlightIndex >= 0
         image.loading = 'eager';
         observer.unobserve(image);
       });
-    }, { rootMargin: '200% 0px' });
+    }, { rootMargin: '100% 0px' });
 
     images.forEach((image) => {
       if (image.dataset.prewarmReady === '1') return;
@@ -342,6 +353,7 @@ const summaryParts = summary && highlight && highlightIndex >= 0
   .work-entry--archive .work-entry__award,
   .work-entry--archive .work-entry__discipline {
     font-size: 0.72rem;
+    color: var(--work-archive-meta-color, var(--muted-graphite));
   }
 
   .work-entry:hover .work-entry__media,

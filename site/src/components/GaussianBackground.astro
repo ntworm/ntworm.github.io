@@ -62,16 +62,37 @@ if (!splats || splats.length === 0) {
 
 <script>
 import { createGaussianAutopilot, damp, gaussianFocusPoint, gaussianFocusProximity, gaussianPointerLook, gaussianToggleHotspot, sampleGaussianCamera } from '../scripts/gaussian-camera-motion.mjs';
+import { createPausableFrameLoop } from '../scripts/gaussian-frame-loop.mjs';
 import { calculateParticleBounds, createGaussianLightAutopilot, createGaussianParticleAutopilot, createGaussianParticleUniformController, createGaussianWorldTransition, gaussianParticleProfile, installGaussianParticleShaderPatch } from '../scripts/gaussian-particle-effects.mjs';
+import { shouldDelayHeavyMedia, shouldLoadHeavyMediaForIntent } from '../scripts/heavy-media-policy.mjs';
 
 type SplatEntry = { src: string; poster: string; label: string };
 
+interface GaussianRuntimeController {
+  setActive(active: boolean): void;
+  dispose(): void;
+  getState(): {
+    active: boolean;
+    disposed: boolean;
+    activeSeconds: number;
+    frameCount: number;
+  };
+}
+
 declare global {
+  interface Navigator {
+    connection?: { saveData?: boolean };
+    deviceMemory?: number;
+  }
+
   interface Window {
-    __gsBgStart?: (src: string, stage: HTMLElement) => Promise<void>;
+    __gsBgStart?: (src: string, stage: HTMLElement) => Promise<GaussianRuntimeController | null>;
     __gsBgLoaded?: boolean;
     __gsBgReady?: Promise<void>;
     __gsBgReadyResolve?: () => void;
+    __gsBgLifecycle?: {
+      createPausableFrameLoop: typeof createPausableFrameLoop;
+    };
     __gsBgMotion?: {
       createGaussianAutopilot: typeof createGaussianAutopilot;
       damp: typeof damp;
@@ -90,10 +111,16 @@ declare global {
       gaussianParticleProfile: typeof gaussianParticleProfile;
       installGaussianParticleShaderPatch: typeof installGaussianParticleShaderPatch;
     };
+    __gsBgDebug?: () => Array<{
+      placement: string;
+      state: string;
+      runtime: ReturnType<GaussianRuntimeController['getState']> | null;
+    }>;
   }
 }
 
 const SPLAT_LIB = 'https://esm.sh/gsplat@1.2.9';
+window.__gsBgLifecycle = { createPausableFrameLoop };
 window.__gsBgMotion = { createGaussianAutopilot, damp, gaussianFocusPoint, gaussianFocusProximity, gaussianPointerLook, gaussianToggleHotspot, sampleGaussianCamera };
 window.__gsBgParticles = { calculateParticleBounds, createGaussianLightAutopilot, createGaussianParticleAutopilot, createGaussianParticleUniformController, createGaussianWorldTransition, gaussianParticleProfile, installGaussianParticleShaderPatch };
 
@@ -109,6 +136,8 @@ async function loadSplatEngine(): Promise<void> {
     "  const scene = new SPLAT.Scene();",
     "  const camera = new SPLAT.Camera();",
     "  const particles = window.__gsBgParticles;",
+    "  const lifecycle = window.__gsBgLifecycle;",
+    "  if (!lifecycle) throw new Error('[gs-bg] lifecycle unavailable');",
     "  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;",
     "  const hasParticleEffects = stage.dataset.particleEffects === '1' && !reducedMotion && particles;",
     "  let renderer = null;",
@@ -209,7 +238,24 @@ async function loadSplatEngine(): Promise<void> {
     "    camera.rotation = SPLAT.Quaternion.FromEuler(new SPLAT.Vector3(pch, yaw, cameraRoll));",
     "  }",
     "  setCameraOnOrbit(0, 0, 0, 0);",
-    "  await SPLAT.Loader.LoadAsync(src, scene, () => {});",
+    "  try {",
+    "    await SPLAT.Loader.LoadAsync(src, scene, () => {});",
+    "  } catch (error) {",
+    "    window.removeEventListener('resize', forceSize);",
+    "    window.removeEventListener('pointermove', onPointerMove);",
+    "    window.removeEventListener('mouseout', onPointerOut);",
+    "    renderer.dispose();",
+    "    renderer.canvas.remove();",
+    "    throw error;",
+    "  }",
+    "  if (!stage.isConnected || stage.dataset.gsDisposed === '1') {",
+    "    window.removeEventListener('resize', forceSize);",
+    "    window.removeEventListener('pointermove', onPointerMove);",
+    "    window.removeEventListener('mouseout', onPointerOut);",
+    "    renderer.dispose();",
+    "    renderer.canvas.remove();",
+    "    return null;",
+    "  }",
     "  const splatObject = scene.objects.find((object) => object && object.data && object.data.positions);",
     "  const particleBounds = particleShaderActive ? particles.calculateParticleBounds(splatObject && splatObject.data.positions) : null;",
     "  const particleSeed = ((stage.dataset.placement === 'section-left' ? 4253 : 9719) ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;",
@@ -243,17 +289,11 @@ async function loadSplatEngine(): Promise<void> {
     "    window.addEventListener('click', onWorldToggle);",
     "  }",
     "  window.__gsBgLoaded = true;",
-    "  let lastTime = performance.now();",
-    "  const frame = function(now) {",
-    "    if (!stage.isConnected) {",
-    "      window.removeEventListener('resize', forceSize);",
-    "      window.removeEventListener('pointermove', onPointerMove);",
-    "      window.removeEventListener('mouseout', onPointerOut);",
-    "      window.removeEventListener('click', onWorldToggle);",
+    "  const renderFrame = ({ deltaSeconds, activeSeconds }) => {",
+    "    if (!stage.isConnected || stage.dataset.gsDisposed === '1') {",
+    "      controller.dispose();",
     "      return;",
     "    }",
-    "    const deltaSeconds = Math.max(0, Math.min(0.05, (now - lastTime) / 1000));",
-    "    lastTime = now;",
     "    if (hasCameraMotion && !reducedMotion) {",
     "      const host = stage.parentElement || stage;",
     "      const rect = host.getBoundingClientRect();",
@@ -278,7 +318,7 @@ async function loadSplatEngine(): Promise<void> {
     "      });",
     "      focusProximity = motion.damp(focusProximity, focusTarget, 5.5, deltaSeconds);",
     "      const sampled = motion.sampleGaussianCamera({",
-    "        scrollProgress, focusProximity, zoomScale, timeSeconds: now / 1000",
+    "        scrollProgress, focusProximity, zoomScale, timeSeconds: activeSeconds",
     "      });",
     "      const autonomous = autopilot.sample(deltaSeconds);",
     "      aimOffsetX = motion.damp(aimOffsetX, pointerLookTarget.targetX, 1.15, deltaSeconds);",
@@ -327,9 +367,28 @@ async function loadSplatEngine(): Promise<void> {
     "      });",
     "    }",
     "    renderer.render(scene, camera);",
-    "    requestAnimationFrame(frame);",
     "  };",
-    "  requestAnimationFrame(frame);",
+    "  const frameLoop = lifecycle.createPausableFrameLoop({",
+    "    onFrame: ({ deltaSeconds, activeSeconds }) => renderFrame({ deltaSeconds, activeSeconds })",
+    "  });",
+    "  let disposed = false;",
+    "  const controller = {",
+    "    setActive(active) { frameLoop.setActive(active); },",
+    "    dispose() {",
+    "      if (disposed) return;",
+    "      disposed = true;",
+    "      stage.dataset.gsDisposed = '1';",
+    "      frameLoop.dispose();",
+    "      window.removeEventListener('resize', forceSize);",
+    "      window.removeEventListener('pointermove', onPointerMove);",
+    "      window.removeEventListener('mouseout', onPointerOut);",
+    "      window.removeEventListener('click', onWorldToggle);",
+    "      renderer.dispose();",
+    "      renderer.canvas.remove();",
+    "    },",
+    "    getState() { return frameLoop.getState(); }",
+    "  };",
+    "  return controller;",
     "};",
     "  window.__gsBgReadyResolve && window.__gsBgReadyResolve();",
   ].join('\n');
@@ -361,51 +420,203 @@ function pickRandomSplat(bg: HTMLElement): SplatEntry | null {
   }
 }
 
-async function mountGaussianBackground(bg: HTMLElement): Promise<void> {
-  const pick = pickRandomSplat(bg);
-  if (!pick) return;
+async function mountGaussianBackground(
+  bg: HTMLElement,
+  pick: SplatEntry,
+): Promise<GaussianRuntimeController | null> {
+  const breakpoint = parseInt(bg.dataset.mobileBreakpoint || '768', 10);
+  if (window.innerWidth < breakpoint) return null;
+  if (!bg.querySelector<HTMLCanvasElement>('.gs-bg__canvas')) return null;
 
-  // The matching poster is a lightweight, deliberately blurred outer layer.
-  // It makes the scene feel continuous while the sharp WebGL core fades away.
+  await loadSplatEngine();
+  if (!bg.isConnected || bg.dataset.gsDisposed === '1') return null;
+  if (!pick.src || !window.__gsBgStart) return null;
+  return window.__gsBgStart(pick.src, bg);
+}
+
+type GaussianMountController = {
+  bg: HTMLElement;
+  load: () => Promise<void>;
+  loadForIntent: () => void;
+  refreshActivity: () => void;
+  dispose: () => void;
+  getState: () => {
+    placement: string;
+    state: string;
+    runtime: ReturnType<GaussianRuntimeController['getState']> | null;
+  };
+};
+
+const gaussianControllers = new Set<GaussianMountController>();
+
+function createGaussianMountController(bg: HTMLElement): GaussianMountController | null {
+  const pick = pickRandomSplat(bg);
+  if (!pick) return null;
+
+  const delayHeavyMedia = shouldDelayHeavyMedia({
+    saveData: navigator.connection?.saveData,
+    deviceMemory: navigator.deviceMemory,
+  });
+  const loadRootMargin = delayHeavyMedia ? '0px' : '200% 0px';
+
+  // Install the selected poster synchronously so observer timing cannot reveal
+  // the bare background while the full-quality scene is still outside range.
   if (pick.poster) {
     bg.style.setProperty('--gs-poster', `url(${JSON.stringify(pick.poster)})`);
     bg.classList.add('gs-bg--poster');
   }
 
+  const host = bg.closest('.code__hero, .code__lower-showcase') ?? bg.parentElement ?? bg;
   const breakpoint = parseInt(bg.dataset.mobileBreakpoint || '768', 10);
-  if (window.innerWidth < breakpoint) return; // mobile = blurred poster, no WebGL
+  let disposed = false;
+  let insideActiveZone = false;
+  let runtime: GaussianRuntimeController | null = null;
+  let loadPromise: Promise<void> | null = null;
+  let loadObserver: IntersectionObserver | null = null;
+  let activityObserver: IntersectionObserver | null = null;
 
-  if (!bg.querySelector<HTMLCanvasElement>('.gs-bg__canvas')) return;
+  const refreshActivity = () => {
+    runtime?.setActive(insideActiveZone && !document.hidden);
+    if (runtime) {
+      bg.dataset.gsState = insideActiveZone && !document.hidden ? 'ready-active' : 'ready-paused';
+    }
+  };
 
-  try {
-    await loadSplatEngine();
-    if (!pick.src || !window.__gsBgStart) return;
-    await window.__gsBgStart(pick.src, bg);
-    bg.classList.add('gs-bg--live');
-  } catch (err) {
-    console.error('[gs-bg] failed', err);
+  const load = (): Promise<void> => {
+    if (loadPromise || disposed) return loadPromise ?? Promise.resolve();
+    loadObserver?.unobserve(host);
+    bg.dataset.gsState = 'loading';
+    loadPromise = mountGaussianBackground(bg, pick)
+      .then((mountedRuntime) => {
+        if (disposed) {
+          mountedRuntime?.dispose();
+          return;
+        }
+        runtime = mountedRuntime;
+        if (!runtime) {
+          bg.dataset.gsState = 'poster-only';
+          return;
+        }
+        bg.classList.add('gs-bg--live');
+        refreshActivity();
+      })
+      .catch((error) => {
+        if (disposed) return;
+        bg.dataset.gsState = 'failed';
+        console.error('[gs-bg] failed', error);
+      });
+    return loadPromise;
+  };
+
+  const loadForIntent = (): void => {
+    const hostRect = host.getBoundingClientRect();
+    if (!shouldLoadHeavyMediaForIntent({
+      delayHeavyMedia,
+      hostTop: hostRect.top,
+      hostBottom: hostRect.bottom,
+      viewportHeight: window.innerHeight,
+    })) return;
+    void load();
+  };
+
+  const dispose = () => {
+    if (disposed) return;
+    disposed = true;
+    bg.dataset.gsDisposed = '1';
+    bg.dataset.gsState = 'disposed';
+    loadObserver?.disconnect();
+    activityObserver?.disconnect();
+    runtime?.dispose();
+  };
+
+  const getState = () => ({
+    placement: bg.dataset.placement ?? '',
+    state: bg.dataset.gsState ?? '',
+    runtime: runtime?.getState() ?? null,
+  });
+
+  const controller = { bg, load, loadForIntent, refreshActivity, dispose, getState };
+  bg.dataset.gsState = 'waiting';
+
+  if (window.innerWidth < breakpoint) {
+    bg.dataset.gsState = 'poster-only';
+    return controller;
   }
+
+  if (!('IntersectionObserver' in window)) {
+    insideActiveZone = true;
+    void load();
+    return controller;
+  }
+
+  loadObserver = new IntersectionObserver((entries) => {
+    if (entries.some((entry) => entry.isIntersecting)) void load();
+  }, { rootMargin: loadRootMargin });
+
+  activityObserver = new IntersectionObserver((entries) => {
+    const hostEntry = entries.find((entry) => entry.target === host);
+    if (!hostEntry) return;
+    insideActiveZone = hostEntry.isIntersecting;
+    refreshActivity();
+  }, { rootMargin: '75% 0px' });
+
+  loadObserver.observe(host);
+  activityObserver.observe(host);
+  return controller;
+}
+
+function firstCodeGaussian(): GaussianMountController | undefined {
+  return [...gaussianControllers].find(({ bg }) => bg.dataset.placement === 'hero-right');
 }
 
 function attachAll(): void {
-  const bgs = document.querySelectorAll<HTMLElement>('.gs-bg');
-  bgs.forEach((bg) => {
+  document.querySelectorAll<HTMLElement>('.gs-bg').forEach((bg) => {
     if (bg.dataset.gsAttached === '1') return;
     bg.dataset.gsAttached = '1';
-
-    // Both continuous-page scenes mount immediately. Their .splat requests
-    // are already preloaded from <head>, so scrolling never triggers a late
-    // network/decoder/GPU setup pause at the Code chapter boundary.
-    void mountGaussianBackground(bg);
+    bg.dataset.gsDisposed = '0';
+    const controller = createGaussianMountController(bg);
+    if (controller) gaussianControllers.add(controller);
   });
+
+  if (location.hash === '#code') firstCodeGaussian()?.loadForIntent();
 }
 
+function handleCodeNavigation(event: MouseEvent): void {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  const anchor = target.closest<HTMLAnchorElement>('a[href]');
+  if (!anchor) return;
+  const url = new URL(anchor.href, location.href);
+  if (
+    url.origin === location.origin &&
+    url.pathname === location.pathname &&
+    url.search === location.search &&
+    url.hash === '#code'
+  ) {
+    firstCodeGaussian()?.loadForIntent();
+  }
+}
+
+function refreshGaussianVisibility(): void {
+  gaussianControllers.forEach((controller) => controller.refreshActivity());
+}
+
+function cleanupGaussianBackgrounds(): void {
+  gaussianControllers.forEach((controller) => controller.dispose());
+  gaussianControllers.clear();
+}
+
+window.__gsBgDebug = () => [...gaussianControllers].map((controller) => controller.getState());
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', attachAll);
+  document.addEventListener('DOMContentLoaded', attachAll, { once: true });
 } else {
   attachAll();
 }
+document.addEventListener('click', handleCodeNavigation);
+document.addEventListener('visibilitychange', refreshGaussianVisibility);
 document.addEventListener('astro:page-load', attachAll);
+document.addEventListener('astro:before-swap', cleanupGaussianBackgrounds);
 </script>
 
 

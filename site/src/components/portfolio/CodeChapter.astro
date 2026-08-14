@@ -7,7 +7,7 @@ import GaussianBackground from '../GaussianBackground.astro';
 const GH = {
   login: 'ntworm',
   name: 'Gabriel Worm',
-  bio: 'Generalist programmer working across audio, web and APIs. Currently shipping Ableton Live extensions — usually something else cooking.',
+  bio: 'Sound director working between cinema, music, and code. Building creative tools for performance and Ableton Live.',
   avatar: 'https://avatars.githubusercontent.com/u/103321841?v=4',
   url: 'https://github.com/ntworm',
 };
@@ -26,7 +26,7 @@ const GH_REPOS = [
   {
     name: 'ableton-mcp-server',
     url: 'https://github.com/ntworm/ableton-mcp-server',
-    desc: 'Open Model Context Protocol (MCP) server for Ableton Live 12. 65 tools over TCP and WebSockets for AI agents (Claude, Antigravity, Gemini, Codex) and audio developers to query parameters, drive transport, automate clips, analyze mix audio in non-realtime, and run atomic batch transactions.',
+    desc: 'Open Model Context Protocol (MCP) server for Ableton Live 12. 75 tools in v0.5.3 over TCP and WebSockets for AI agents (Claude, Antigravity, Gemini, Codex) and audio developers to query parameters, drive transport, automate clips, analyze mix audio in non-realtime, and run grouped batch commands.',
   },
   {
     name: 'Fxhash_Template_HYDRA_with_P5',
@@ -59,7 +59,7 @@ const tools = [
     title: 'Ableton MCP Server',
     year: '2026',
     role: 'Author',
-    desc: 'Model Context Protocol server for Ableton Live 12. Exposes 65 tools over TCP and WebSockets for AI agents and Python scripts to query parameters, drive transport, automate clips, analyze mix audio in non-realtime, and run atomic batch transactions. Open-source.',
+    desc: 'Model Context Protocol server for Ableton Live 12. Exposes 75 tools in v0.5.3 over TCP and WebSockets for AI agents and Python scripts to query parameters, drive transport, automate clips, analyze mix audio in non-realtime, and run grouped batch commands. Open-source.',
     img: '/work/ableton-mcp-server/1.jpg',
     href: 'https://github.com/ntworm/ableton-mcp-server',
   },
@@ -115,7 +115,11 @@ const SPLATS = [
     <div class="wrap code__hero-inner">
       <div class="code__hero-copy">
         <span class="eyebrow">Code</span>
-        <h1 class="code__title" data-reveal="typewriter">
+        <h2
+          class="code__title"
+          data-reveal="typewriter"
+          aria-label="Tools and instruments for music and audiovisual performance."
+        >
           <span class="reveal-seg">Tools </span>
           <span class="reveal-seg">and </span>
           <span class="reveal-seg">instruments </span>
@@ -125,7 +129,7 @@ const SPLATS = [
           <span class="reveal-seg">audiovisual </span>
           <span class="reveal-seg reveal-amber">performance.</span>
           <span class="reveal-caret" aria-hidden="true">_</span>
-        </h1>
+        </h2>
         <p class="code__intro">
           Personal, open-source, and source-available projects spanning Max4Live devices, generative
           audiovisual systems, and live instruments. Most of what's here runs in
@@ -166,15 +170,15 @@ const SPLATS = [
       <div class="tools__grid">
         {tools.map((t) => (
           <article class="tool-card">
-            <a class="tool-card__media" href={t.href || '#'} rel={t.href ? 'noopener' : undefined} aria-label={t.href ? `${t.title} — open project` : t.title}>
+            <div class="tool-card__media" aria-hidden="true">
               {t.img ? (
-                <img src={t.img} alt={`${t.title} — preview`} loading="lazy" width="800" height="450" />
+                <img src={t.img} alt="" loading="lazy" width="800" height="450" />
               ) : (
-                <div class="tool-card__placeholder" aria-label="Cover image pending">
+                <div class="tool-card__placeholder">
                   <span class="mono">image pending</span>
                 </div>
               )}
-            </a>
+            </div>
             <div class="tool-card__body">
               <span class="tool-card__year mono">{t.year}</span>
               <h3 class="tool-card__name">

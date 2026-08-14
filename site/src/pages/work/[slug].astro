@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { getProjectMedia } from '../../utils/project-images';
 import dimensionsData from '../../data/asset-dimensions.json';
+import { buildCanonical, excerptMarkdown } from '../../utils/seo.mjs';
 
 interface Props {
   entry: CollectionEntry<'projects'>;
@@ -59,7 +60,7 @@ const seasonFiles = new Set((seasons ?? []).map((s) => s.img));
 const galleryItems = media.gallery
   .map((src, i) => {
     const filename = src.split('/').pop() ?? '';
-    return { src, type: media.galleryTypes[i], filename, dim: dimFor(filename) };
+    return { src, type: media.galleryTypes[i], filename, dim: dimFor(filename), visualIndex: i + 1 };
   })
   .filter((g) => !seasonFiles.has(g.filename));
 const galleryTop = galleryItems.slice(0, splitIdx);
@@ -75,12 +76,24 @@ const showCover = !seasons && !data.youtubeId && media.cover;
 // surfaces a thumb + title + description + external link. Designed for
 // projects whose primary artefact is a list of pieces (e.g. fxhash).
 const fxhashPieces = data.fxhashPieces ?? [];
+const canonicalUrl = buildCanonical(Astro.site?.origin ?? Astro.url.origin, Astro.url.pathname);
+const description = excerptMarkdown(entry.body, 160);
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  name: data.title,
+  creditText: role,
+  temporalCoverage: String(year),
+  image: media.cover ? buildCanonical(Astro.site?.origin ?? Astro.url.origin, media.cover) : undefined,
+  url: canonicalUrl,
+  description,
+};
 
 function mediaStyle(dim?: { ar: string }) {
   return dim ? `aspect-ratio:${dim.ar};` : '';
 }
 ---
-<Layout title={data.title} description={`${data.title} — ${role} (${year})`} image={media.cover} type="article">
+<Layout title={data.title} description={description || `${data.title} — ${role} (${year})`} image={media.cover} type="article" canonicalUrl={canonicalUrl} structuredData={structuredData}>
   <article class="case wrap">
     <header class="case__header">
       <span class="eyebrow case__act">{act}</span>
@@ -90,7 +103,7 @@ function mediaStyle(dim?: { ar: string }) {
 
     {media.trailer && (
       <figure class="case__trailer">
-        <video src={media.trailer} autoplay muted loop playsinline preload="metadata" />
+        <video src={media.trailer} controls autoplay muted loop playsinline preload="metadata" data-case-motion-video />
       </figure>
     )}
 
@@ -138,7 +151,7 @@ function mediaStyle(dim?: { ar: string }) {
         data-interactive-host={interactiveEmbed ? '' : undefined}
       >
         {media.coverType === 'video' ? (
-          <video src={media.cover} autoplay muted loop playsinline preload="metadata" />
+          <video src={media.cover} controls autoplay muted loop playsinline preload="metadata" data-case-motion-video />
         ) : interactiveEmbed ? (
           <button
             class="case__interactive-launch"
@@ -160,6 +173,7 @@ function mediaStyle(dim?: { ar: string }) {
               <strong data-interactive-label>{interactiveEmbed.cta}</strong>
             </span>
           </button>
+          <p class="case__interactive-status" role="status" aria-live="polite" data-interactive-status></p>
         ) : (
           <img
             src={media.cover}
@@ -179,7 +193,7 @@ function mediaStyle(dim?: { ar: string }) {
             {m.type === 'video' ? (
               <video src={m.src} controls preload="metadata" width={m.dim?.w} height={m.dim?.h} />
             ) : (
-              <img src={m.src} alt="" loading="lazy" width={m.dim?.w} height={m.dim?.h} />
+              <img src={m.src} alt={`${data.title} \u2014 project visual ${m.visualIndex}`} loading="lazy" width={m.dim?.w} height={m.dim?.h} />
             )}
           </figure>
         ))}
@@ -226,7 +240,7 @@ function mediaStyle(dim?: { ar: string }) {
             {m.type === 'video' ? (
               <video src={m.src} controls preload="metadata" width={m.dim?.w} height={m.dim?.h} />
             ) : (
-              <img src={m.src} alt="" loading="lazy" width={m.dim?.w} height={m.dim?.h} />
+              <img src={m.src} alt={`${data.title} \u2014 project visual ${m.visualIndex}`} loading="lazy" width={m.dim?.w} height={m.dim?.h} />
             )}
           </figure>
         ))}
@@ -683,39 +697,116 @@ function mediaStyle(dim?: { ar: string }) {
 </style>
 
 <script>
-  function attachInteractiveCases(): void {
-    document.querySelectorAll<HTMLButtonElement>('[data-interactive-launch]:not([data-interactive-bound])').forEach((button) => {
-      button.dataset.interactiveBound = 'true';
-      button.addEventListener('click', () => {
-        const host = button.closest<HTMLElement>('[data-interactive-host]');
-        const src = button.dataset.src;
-        if (!host || !src) return;
+  import { createCaseMediaMotionController } from '../../scripts/case-media-controller.mjs';
 
-        button.disabled = true;
-        const label = button.querySelector<HTMLElement>('[data-interactive-label]');
-        if (label) label.textContent = 'Loading live work…';
+  let disposeCaseMedia = () => {};
 
-        const frame = document.createElement('iframe');
-        frame.className = 'case__interactive-frame';
-        frame.src = src;
-        frame.title = button.dataset.title ?? 'Interactive artwork';
-        frame.allow = 'autoplay; fullscreen';
-        frame.allowFullscreen = true;
-        frame.referrerPolicy = 'no-referrer';
-        frame.addEventListener('load', () => {
-          frame.classList.add('is-ready');
-          button.remove();
-          host.dataset.interactiveLoaded = 'true';
-        }, { once: true });
-        host.append(frame);
-      }, { once: true });
+  function attachCaseMedia(): void {
+    disposeCaseMedia();
+    const cleanups: Array<() => void> = [];
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const motionController = createCaseMediaMotionController({
+      documentRef: document,
+      motionQuery,
     });
+    cleanups.push(() => motionController.dispose());
+
+    document.querySelectorAll<HTMLButtonElement>('[data-interactive-launch]').forEach((button) => {
+      const host = button.closest<HTMLElement>('[data-interactive-host]');
+      const src = button.dataset.src;
+      const label = button.querySelector<HTMLElement>('[data-interactive-label]');
+      const status = host?.querySelector<HTMLElement>('[data-interactive-status]');
+      if (!host || !src || !status) return;
+
+      const initialLabel = label?.textContent ?? button.getAttribute('aria-label') ?? 'Open live work';
+      let disposed = false;
+      let attempt = 0;
+      let timeoutId: number | undefined;
+      let frame: HTMLIFrameElement | undefined;
+
+      const clearPendingFrame = () => {
+        if (timeoutId !== undefined) {
+          window.clearTimeout(timeoutId);
+          timeoutId = undefined;
+        }
+        frame?.remove();
+        frame = undefined;
+      };
+
+      const restoreRetry = (token = attempt) => {
+        if (disposed || token !== attempt) return;
+        clearPendingFrame();
+        host.removeAttribute('data-interactive-loaded');
+        button.disabled = false;
+        button.hidden = false;
+        if (label) label.textContent = initialLabel;
+        status.textContent = 'Could not load the live work. Try again.';
+      };
+
+      const launch = (event: MouseEvent) => {
+        if (!event.isTrusted || button.disabled) return;
+
+        const token = ++attempt;
+        button.disabled = true;
+        if (label) label.textContent = 'Loading live work...';
+        status.textContent = 'Loading live work.';
+
+        const nextFrame = document.createElement('iframe');
+        frame = nextFrame;
+        nextFrame.className = 'case__interactive-frame';
+        nextFrame.src = src;
+        nextFrame.title = button.dataset.title ?? 'Interactive artwork';
+        nextFrame.tabIndex = -1;
+        nextFrame.style.pointerEvents = 'none';
+        nextFrame.allow = 'autoplay; fullscreen';
+        nextFrame.allowFullscreen = true;
+        nextFrame.sandbox.add('allow-scripts', 'allow-same-origin');
+        nextFrame.referrerPolicy = 'no-referrer';
+
+        nextFrame.addEventListener('load', () => {
+          if (disposed || token !== attempt || frame !== nextFrame) return;
+          if (timeoutId !== undefined) {
+            window.clearTimeout(timeoutId);
+            timeoutId = undefined;
+          }
+          nextFrame.classList.add('is-ready');
+          nextFrame.tabIndex = 0;
+          nextFrame.style.pointerEvents = 'auto';
+          host.dataset.interactiveLoaded = 'true';
+          button.hidden = true;
+          status.textContent = 'Live work loaded.';
+          requestAnimationFrame(() => {
+            if (!disposed && token === attempt && nextFrame.isConnected) nextFrame.focus();
+          });
+        }, { once: true });
+        nextFrame.addEventListener('error', () => restoreRetry(token), { once: true });
+        timeoutId = window.setTimeout(() => restoreRetry(token), 12000);
+        host.append(nextFrame);
+      };
+
+      button.addEventListener('click', launch);
+      cleanups.push(() => {
+        disposed = true;
+        attempt += 1;
+        button.removeEventListener('click', launch);
+        clearPendingFrame();
+        button.disabled = false;
+        button.hidden = false;
+        if (label) label.textContent = initialLabel;
+      });
+    });
+
+    disposeCaseMedia = () => {
+      cleanups.splice(0).forEach((cleanup) => cleanup());
+      disposeCaseMedia = () => {};
+    };
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', attachInteractiveCases, { once: true });
+    document.addEventListener('DOMContentLoaded', attachCaseMedia, { once: true });
   } else {
-    attachInteractiveCases();
+    attachCaseMedia();
   }
-  document.addEventListener('astro:page-load', attachInteractiveCases);
+  document.addEventListener('astro:page-load', attachCaseMedia);
+  document.addEventListener('astro:before-swap', () => disposeCaseMedia());
 </script>

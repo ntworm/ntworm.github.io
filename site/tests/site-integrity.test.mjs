@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import test from 'node:test';
 
@@ -44,6 +44,43 @@ function attr(tag, name) {
   return match ? (match[1] ?? match[2] ?? match[3]) : null;
 }
 
+test('built homepage and case studies expose parseable canonical discovery metadata', () => {
+  const documents = htmlFiles();
+  const findDocument = (label) => documents.find((document) => document.label === label)?.html ?? '';
+  const structuredData = (html) => [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    .map((match) => JSON.parse(match[1]));
+
+  const home = findDocument('index.html');
+  const person = structuredData(home).find((data) => data['@type'] === 'Person');
+  const canonicalFrom = (html) => html.match(/<link rel="canonical" href="([^"]+)">/)?.[1];
+  const homeCanonical = canonicalFrom(home);
+  assert.equal(person?.url, homeCanonical);
+  assert.equal(homeCanonical, 'https://ntworm.github.io/');
+
+  const cases = documents.filter((document) => {
+    const label = document.label.replaceAll('\\', '/');
+    return label.startsWith('work/') && label !== 'work/index.html';
+  });
+  assert.equal(cases.length, 25);
+  const caseCanonicals = new Set();
+  for (const document of cases) {
+    const work = structuredData(document.html).find((data) => data['@type'] === 'CreativeWork');
+    assert.ok(work, document.label + ': CreativeWork metadata missing');
+    assert.equal(/[?#]/.test(work.url), false, document.label + ': canonical metadata contains query or hash');
+    assert.equal(work.url, canonicalFrom(document.html), document.label + ': JSON-LD URL differs from canonical');
+    assert.match(work.url, /\/work\/[^/]+\/$/, document.label + ': case canonical lacks trailing slash');
+    assert.equal(typeof work.creditText, 'string', document.label + ': CreativeWork needs creditText');
+    assert.equal(typeof work.temporalCoverage, 'string', document.label + ': CreativeWork needs temporalCoverage');
+    assert.equal('role' in work, false, document.label + ': JSON-LD must not use role');
+    assert.equal('dateCreated' in work, false, document.label + ': JSON-LD must not use dateCreated');
+    caseCanonicals.add(work.url);
+  }
+
+  const sitemap = readFileSync(join(distDir, 'sitemap.xml'), 'utf8');
+  const sitemapUrls = new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]));
+  assert.deepEqual(sitemapUrls, new Set([homeCanonical, ...caseCanonicals]));
+});
+
 function localPathExists(url) {
   const pathname = decodeURIComponent(url.split(/[?#]/, 1)[0]);
   const direct = join(distDir, pathname.replace(/^\/+/, ''));
@@ -56,6 +93,193 @@ function localPathExists(url) {
     return false;
   }
 }
+
+test('build dependencies are direct and Astro is on the audited release line', () => {
+  const packageJson = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'));
+  const packageLock = JSON.parse(readFileSync(join(process.cwd(), 'package-lock.json'), 'utf8'));
+  const rootPackage = packageLock.packages?.[''];
+  const isAtLeast = (actual, minimum) => {
+    const parse = (version) => {
+      const match = version?.match(/^(\d+)\.(\d+)\.(\d+)$/);
+      return match?.slice(1).map(Number);
+    };
+    const actualParts = parse(actual);
+    const minimumParts = parse(minimum);
+    if (!actualParts || !minimumParts) return false;
+
+    for (let index = 0; index < minimumParts.length; index += 1) {
+      if (actualParts[index] !== minimumParts[index]) {
+        return actualParts[index] > minimumParts[index];
+      }
+    }
+    return true;
+  };
+
+  assert.equal(packageJson.dependencies?.astro, '^7.2.1');
+  assert.equal(packageJson.devDependencies?.sharp, '^0.35.3');
+  assert.equal(rootPackage?.dependencies?.astro, packageJson.dependencies.astro);
+  assert.equal(rootPackage?.devDependencies?.sharp, packageJson.devDependencies.sharp);
+  assert.ok(isAtLeast(packageLock.packages?.['node_modules/astro']?.version, '7.2.1'));
+  assert.ok(isAtLeast(packageLock.packages?.['node_modules/sharp']?.version, '0.35.3'));
+});
+
+function assertDeploymentWorkflowContract(workflow) {
+  const jobBody = (name) => {
+    const match = workflow.match(new RegExp(`^  ${name}:\\r?\\n([\\s\\S]*?)(?=^  [^\\s].*:\\r?$|$(?![\\s\\S]))`, 'm'));
+    assert.ok(match, `deployment workflow must define the ${name} job`);
+    return match[1];
+  };
+  const stepsIn = (job) => [...job.matchAll(/^      - name: ([^\r\n]+)\r?\n([\s\S]*?)(?=^      - name:|$(?![\s\S]))/gm)]
+    .map((match) => ({ name: match[1], body: match[2] }));
+  const exactValue = (body, indentation, key) => {
+    const siblingKey = `^${' '.repeat(indentation)}[^\\s\\r\\n][^:\\r\\n]*:(?:[\\t ]|$)`;
+    const matches = [...body.matchAll(new RegExp(
+      `^${' '.repeat(indentation)}${key}:[\\t ]*([\\s\\S]*?)(?=${siblingKey}|$(?![\\s\\S]))`,
+      'gm',
+    ))];
+    assert.equal(matches.length, 1, `${key} must appear exactly once`);
+    const scalar = matches[0][1];
+    assert.doesNotMatch(
+      scalar.replace(/[\r\n]+$/, ''),
+      /[\r\n]/,
+      `${key} must use a single-line scalar`,
+    );
+    return scalar.trim();
+  };
+  const onlyNamedStep = (steps, name) => {
+    const matches = steps.filter((step) => step.name === name);
+    assert.equal(matches.length, 1, `build job must contain exactly one ${name} step`);
+    return matches[0];
+  };
+  const buildSteps = stepsIn(jobBody('build'));
+  const install = onlyNamedStep(buildSteps, 'Install dependencies');
+  const testStep = onlyNamedStep(buildSteps, 'Test and build Astro site');
+  const upload = onlyNamedStep(buildSteps, 'Upload Pages artifact');
+  const installIndex = buildSteps.indexOf(install);
+  const testIndex = buildSteps.indexOf(testStep);
+  const uploadIndex = buildSteps.indexOf(upload);
+
+  assert.equal(exactValue(install.body, 8, 'working-directory'), 'site');
+  assert.equal(exactValue(install.body, 8, 'run'), 'npm ci');
+  assert.equal(exactValue(testStep.body, 8, 'working-directory'), 'site');
+  assert.equal(exactValue(testStep.body, 8, 'run'), 'npm test');
+  const continueOnError = [...testStep.body.matchAll(/^        continue-on-error:\s*([^\r\n]+)\s*$/gm)];
+  const testStepKeys = [
+    'name',
+    ...[...testStep.body.matchAll(/^        ([^:\r\n]+):(?:\s|$)/gm)].map((match) => match[1].trim()),
+  ].sort();
+  assert.deepEqual(
+    testStepKeys,
+    continueOnError.length === 0
+      ? ['name', 'run', 'working-directory']
+      : ['continue-on-error', 'name', 'run', 'working-directory'],
+    'test step must use only its required keys and an optional continue-on-error: false',
+  );
+  if (continueOnError.length === 1) {
+    assert.equal(continueOnError[0][1].trim(), 'false', 'test step must not continue after an error');
+  }
+  assert.equal(exactValue(upload.body, 8, 'uses'), 'actions/upload-pages-artifact@v3');
+  assert.equal(exactValue(upload.body, 10, 'path').replace(/^\.\//, ''), 'site/dist');
+  assert.ok(installIndex < testIndex, 'npm ci must run before npm test');
+  assert.ok(testIndex < uploadIndex, 'artifact upload must run after npm test');
+  assert.equal(
+    buildSteps.slice(testIndex + 1).some((step) => /\bnpm run build\b/.test(step.body)),
+    false,
+    'deployment workflow must not build again after npm test',
+  );
+
+  const deployJob = jobBody('deploy');
+  assert.equal(exactValue(deployJob, 4, 'needs'), 'build');
+  const deployStep = onlyNamedStep(stepsIn(deployJob), 'Deploy to GitHub Pages');
+  assert.equal(exactValue(deployStep.body, 8, 'uses'), 'actions/deploy-pages@v4');
+}
+
+test('deployment workflow tests the site before uploading its artifact', () => {
+  const workflow = readFileSync(join(process.cwd(), '..', '.github', 'workflows', 'deploy.yml'), 'utf8');
+
+  assertDeploymentWorkflowContract(workflow);
+});
+
+test('deployment workflow contract rejects bypass and artifact mutations', () => {
+  const workflow = readFileSync(join(process.cwd(), '..', '.github', 'workflows', 'deploy.yml'), 'utf8');
+  const uploadStep = `      - name: Upload Pages artifact\n        uses: actions/upload-pages-artifact@v3\n        with:\n          path: ./site/dist\n`;
+  const sabotages = [
+    ['allows test failures', workflow.replace('run: npm test', 'run: npm test || true')],
+    ['uses a multiline run that hides a test failure', workflow.replace(
+      '        run: npm test',
+      '        run: npm test\n          || true',
+    )],
+    ['runs a filtered test suite', workflow.replace('run: npm test', 'run: npm test -- --test-name-pattern=deployment')],
+    ['continues when the test fails', workflow.replace(
+      '        run: npm test',
+      '        continue-on-error: true\n        run: npm test',
+    )],
+    ['uses a string continue-on-error value', workflow.replace(
+      '        run: npm test',
+      '        continue-on-error: "true"\n        run: npm test',
+    )],
+    ['conditionally skips the test', workflow.replace(
+      '        run: npm test',
+      '        if: ${{ always() }}\n        run: npm test',
+    )],
+    ['uses a shell that hides a test failure', workflow.replace(
+      '        run: npm test',
+      '        shell: bash {0} || true\n        run: npm test',
+    )],
+    ['sets NODE_OPTIONS that filters the test suite', workflow.replace(
+      '        run: npm test',
+      '        env:\n          NODE_OPTIONS: --test-name-pattern=deployment\n        run: npm test',
+    )],
+    ['includes an unexpected test-step key', workflow.replace(
+      '        run: npm test',
+      '        timeout-minutes: 1\n        run: npm test',
+    )],
+    ['runs the test from another directory', workflow.replace(
+      '      - name: Test and build Astro site\n        working-directory: site',
+      '      - name: Test and build Astro site\n        working-directory: site/tests',
+    )],
+    ['omits the upload action', workflow.replace('        uses: actions/upload-pages-artifact@v3\n', '')],
+    ['uses a different upload action', workflow.replace('actions/upload-pages-artifact@v3', 'actions/upload-pages-artifact@v2')],
+    ['uploads a different artifact path', workflow.replace('path: ./site/dist', 'path: ./site/preview')],
+    ['moves upload outside the build job', workflow
+      .replace(uploadStep, '')
+      .replace('        uses: actions/deploy-pages@v4\n', `        uses: actions/deploy-pages@v4\n${uploadStep}`)],
+    ['does not make deployment depend on build', workflow.replace('needs: build', 'needs: test')],
+    ['uses a different deploy action', workflow.replace('actions/deploy-pages@v4', 'actions/deploy-pages@v3')],
+  ];
+
+  for (const [label, mutatedWorkflow] of sabotages) {
+    assert.throws(() => assertDeploymentWorkflowContract(mutatedWorkflow), label);
+  }
+});
+
+test('Hydra uses a disposable parent lifecycle and a decorative non-focusable iframe', () => {
+  const component = readFileSync(join(process.cwd(), 'src', 'components', 'HydraBackground.astro'), 'utf8');
+  const controller = readFileSync(join(process.cwd(), 'src', 'scripts', 'hydra-frame-controller.mjs'), 'utf8');
+
+  assert.doesNotMatch(component.match(/^---([\s\S]*?)---/)?.[1] ?? '', /createHydraFrameController/);
+  assert.match(component, /<script>\s*import \{ createHydraFrameController \} from '\.\.\/scripts\/hydra-frame-controller\.mjs';/s);
+  assert.match(component, /tabindex="-1"/);
+  assert.match(component, /createHydraFrameController\(\{\s*host: background,\s*iframe,\s*source: iframe\.dataset\.hydraSrc,\s*\}\)/s);
+  assert.match(component, /document\.addEventListener\('astro:before-swap'/);
+  assert.doesNotMatch(component, /requestAnimationFrame/);
+  assert.match(controller, /insideRange\s*&&\s*!documentRef\.hidden\s*&&\s*!motionQuery\?\.matches\s*&&\s*connection\?\.saveData !== true/s);
+  assert.match(controller, /iframe\.addEventListener\('load', onIframeLoad\)/);
+  assert.match(controller, /observer\?\.disconnect\(\)/);
+  assert.match(controller, /send\(false\);/);
+});
+
+test('Hydra parent controller is bundled into a browser module instead of called as a free symbol', () => {
+  const index = readFileSync(join(distDir, 'index.html'), 'utf8');
+  const externalModuleSources = [...index.matchAll(/<script type="module" src="([^\"]+\.js)"><\/script>/g)]
+    .map(([, src]) => readFileSync(join(distDir, src.replace(/^\//, '')), 'utf8'));
+  const inlineModuleSources = [...index.matchAll(/<script type="module">([\s\S]*?)<\/script>/g)]
+    .map(([, source]) => source);
+  const moduleSources = [...externalModuleSources, ...inlineModuleSources];
+
+  assert.equal(/<script type="module">[^<]*createHydraFrameController/s.test(index), false);
+  assert.ok(moduleSources.some((source) => source.includes('Hydra host and iframe are required')));
+});
 
 test('every anchor has a non-empty href', () => {
   const failures = [];
@@ -132,6 +356,55 @@ test('featured-work copy contains only the confirmed credits', () => {
   assert.match(aiAm, /directed by Danny J/i);
 });
 
+test('public identity, chapter links, and media documentation match verified site copy', () => {
+  const rootReadme = readFileSync(join(process.cwd(), '..', 'README.md'), 'utf8');
+  const mediaReadme = readFileSync(join(process.cwd(), 'public', 'work', 'README.md'), 'utf8');
+  const code = readFileSync(codeChapterSourcePath, 'utf8');
+  const work = readFileSync(join(process.cwd(), 'src', 'components', 'portfolio', 'WorkChapter.astro'), 'utf8');
+  const ableton = readFileSync(join(process.cwd(), 'src', 'content', 'projects', 'ableton-mcp-server.md'), 'utf8');
+  const arvoreSeca = readFileSync(join(process.cwd(), 'src', 'content', 'projects', 'arvore-seca.md'), 'utf8');
+  const publishedCopy = [rootReadme, mediaReadme, code, work, ableton, arvoreSeca].join('\n');
+
+  assert.match(
+    code,
+    /Sound director working between cinema, music, and code\. Building creative tools for performance and Ableton Live\./,
+  );
+  assert.doesNotMatch(
+    code,
+    /Building tools for Ableton Live, real-time systems, and audiovisual work\./,
+  );
+  assert.equal((code.match(/75 tools in v0\.5\.3/g) ?? []).length, 2);
+  assert.equal((code.match(/grouped batch commands/g) ?? []).length, 2);
+  assert.doesNotMatch(code, /atomic batch|with rollback/i);
+  assert.match(
+    work,
+    /Selected work across cinema, television, music, generative art, performance, and tools\./,
+  );
+  assert.doesNotMatch(publishedCopy, /65 tools|Generalist programmer|Spotify URL has not yet been discovered/i);
+  assert.doesNotMatch(
+    publishedCopy,
+    /Spotify[\s\S]{0,160}(?:isn't currently discoverable|direct link here)/i,
+  );
+
+  assert.match(rootReadme, /^# ntworm\.github\.io$/m);
+  assert.doesNotMatch(rootReadme, /gabrielworm\.github\.io/i);
+  assert.match(
+    rootReadme,
+    /\[About\]\(https:\/\/ntworm\.github\.io\/#about\)[\s\S]*\[Work\]\(https:\/\/ntworm\.github\.io\/#work\)[\s\S]*\[Code\]\(https:\/\/ntworm\.github\.io\/#code\)[\s\S]*\[Archive\]\(https:\/\/ntworm\.github\.io\/#archive\)[\s\S]*\[Contact\]\(https:\/\/ntworm\.github\.io\/#contact\)/,
+  );
+
+  assert.match(mediaReadme, /site\/src\/utils\/project-images\.ts/);
+  assert.match(mediaReadme, /site\/src\/pages\/work\/\[slug\]\.astro/);
+  assert.match(mediaReadme, /first image[\s\S]*cover/i);
+  assert.match(mediaReadme, /first video[\s\S]*trailer/i);
+  assert.match(mediaReadme, /first two gallery items[\s\S]*before the project prose/i);
+  assert.match(mediaReadme, /remaining gallery items[\s\S]*after the project prose/i);
+  assert.match(mediaReadme, /non-media files[\s\S]*links\.txt[\s\S]*ignored/i);
+  assert.match(mediaReadme, /\| o-compositor \| 1\.jpg \| trailer\.mp4 \| 2\.jpg[^\n]*7\.jpg \|/);
+  assert.match(mediaReadme, /\| el-tono-del-mar \| 2\.jpg \| trailer1\.mp4 \| 3\.jpg[^\n]*trailer2\.mp4[^\n]*trailermain\.mp4 \|/);
+  assert.match(mediaReadme, /\| rc-setlist \| 1\.jpg \| — \| 2\.jpg[^\n]*5\.jpg \|/);
+});
+
 test('code page stacks two scroll-bound borderless Gaussians', () => {
   for (const [label, code] of builtCodeDocuments()) {
     const heroStart = code.indexOf('<header class="code__hero"');
@@ -189,19 +462,95 @@ test('live Gaussian canvas overrides the renderer black surface', () => {
   );
 });
 
-test('continuous Gaussians begin loading before their chapters enter the viewport', () => {
+test('Gaussian runtime exposes an idempotent pausable and disposable controller', () => {
+  const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
+  const renderFrameStart = source.indexOf('"  const renderFrame =');
+  const renderFrameGuard = source.slice(
+    renderFrameStart,
+    source.indexOf('"    if (hasCameraMotion', renderFrameStart),
+  );
+
+  assert.match(source, /import \{ createPausableFrameLoop \} from '\.\.\/scripts\/gaussian-frame-loop\.mjs';/);
+  assert.match(source, /interface GaussianRuntimeController\s*\{[^}]*setActive\(active: boolean\): void;[^}]*dispose\(\): void;[^}]*getState\(\): \{[^}]*active: boolean;[^}]*disposed: boolean;[^}]*activeSeconds: number;[^}]*frameCount: number;[^}]*\};[^}]*\}/s);
+  assert.match(source, /__gsBgStart\?: \(src: string, stage: HTMLElement\) => Promise<GaussianRuntimeController \| null>/);
+  assert.match(source, /window\.__gsBgLifecycle = \{ createPausableFrameLoop \};/);
+  assert.match(source, /const lifecycle = window\.__gsBgLifecycle;/);
+  assert.match(source, /lifecycle\.createPausableFrameLoop\(\{/);
+  assert.match(source, /const renderFrame = \(\{ deltaSeconds, activeSeconds \}\) => \{/);
+  assert.match(
+    renderFrameGuard,
+    /if \(!stage\.isConnected \|\| stage\.dataset\.gsDisposed === '1'\) \{",\s*"      controller\.dispose\(\);",\s*"      return;",\s*"    }",/,
+  );
+  assert.match(source, /onFrame: \(\{ deltaSeconds, activeSeconds \}\) => renderFrame\(\{ deltaSeconds, activeSeconds \}\)/);
+  assert.match(source, /timeSeconds: activeSeconds/);
+  assert.match(source, /setActive\(active\) \{ frameLoop\.setActive\(active\); \}/);
+  assert.match(source, /if \(disposed\) return;[^]*disposed = true;[^]*frameLoop\.dispose\(\);[^]*renderer\.dispose\(\);[^]*renderer\.canvas\.remove\(\);/);
+  assert.match(source, /stage\.dataset\.gsDisposed === '1'/);
+  assert.match(source, /return window\.__gsBgStart\(pick\.src, bg\);/);
+  assert.doesNotMatch(source, /runtime\?\.setActive\(true\);/);
+  assert.doesNotMatch(source, /requestAnimationFrame\(frame\)/);
+});
+
+test('continuous Gaussians load predictively without document-head splat preload', () => {
   const gaussianSource = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
   const homepageSource = readFileSync(homepageSourcePath, 'utf8');
   const layoutSource = readFileSync(join(process.cwd(), 'src', 'layouts', 'Layout.astro'), 'utf8');
-  const attachAll = gaussianSource.slice(
-    gaussianSource.indexOf('function attachAll'),
-    gaussianSource.indexOf("if (document.readyState === 'loading')"),
-  );
 
-  assert.match(attachAll, /void mountGaussianBackground\(bg\)/);
-  assert.doesNotMatch(attachAll, /IntersectionObserver/);
-  assert.match(homepageSource, /preload=\{\[\s*SPLATS\[0\]\.src,\s*SPLATS\[1\]\.src\s*\]\}/s);
-  assert.match(layoutSource, /preload\.map\(\(href\) => <link rel="preload" href=\{href\} as="fetch"/);
+  assert.doesNotMatch(homepageSource, /const SPLATS|preload=\{/);
+  assert.doesNotMatch(layoutSource, /preload\?: string\[\]|as="fetch" type="application\/octet-stream"/);
+  assert.match(gaussianSource, /rootMargin: loadRootMargin/);
+  assert.match(gaussianSource, /rootMargin: '75% 0px'/);
+  assert.match(gaussianSource, /closest\('\.code__hero, \.code__lower-showcase'\)/);
+  assert.match(gaussianSource, /location\.hash === '#code'/);
+  assert.match(
+    gaussianSource,
+    /url\.origin === location\.origin &&\s*url\.pathname === location\.pathname &&\s*url\.search === location\.search &&\s*url\.hash === '#code'/s,
+  );
+  assert.match(gaussianSource, /document\.addEventListener\('astro:before-swap', cleanupGaussianBackgrounds\)/);
+});
+
+test('constrained devices defer Gaussian loading and obsolete PLY viewer assets are absent', () => {
+  const gaussianSource = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
+  const sourceFiles = walk(join(process.cwd(), 'src'), '').filter((path) => /\.(astro|js|mjs|ts|tsx)$/.test(path));
+  const legacyViewerPath = join(process.cwd(), 'src', 'components', 'GaussianViewer.astro');
+  const legacyPlyPath = join(process.cwd(), 'public', 'work', 'code', 'splats', 'carro', 'carro.compressed.ply');
+
+  assert.match(gaussianSource, /import \{ shouldDelayHeavyMedia, shouldLoadHeavyMediaForIntent \} from '\.\.\/scripts\/heavy-media-policy\.mjs';/);
+  assert.match(
+    gaussianSource,
+    /shouldDelayHeavyMedia\(\{\s*saveData: navigator\.connection\?\.saveData,\s*deviceMemory: navigator\.deviceMemory,\s*\}\)/s,
+  );
+  assert.match(
+    gaussianSource,
+    /const delayHeavyMedia = shouldDelayHeavyMedia\([^]*?\);\s*const loadRootMargin = delayHeavyMedia \? '0px' : '200% 0px';/,
+  );
+  assert.match(gaussianSource, /\}, \{ rootMargin: loadRootMargin \}\);/);
+  assert.match(gaussianSource, /shouldLoadHeavyMediaForIntent\(\{[^]*?delayHeavyMedia,[^]*?hostTop: hostRect\.top,[^]*?hostBottom: hostRect\.bottom,[^]*?viewportHeight: window\.innerHeight,/);
+  assert.match(gaussianSource, /loadForIntent: \(\) => void/);
+  assert.match(gaussianSource, /firstCodeGaussian\(\)\?\.loadForIntent\(\)/);
+  assert.ok(sourceFiles.every((path) => {
+    const source = readFileSync(path, 'utf8');
+    return !source.includes('GaussianViewer') && !source.includes('.ply');
+  }));
+  assert.equal(existsSync(legacyViewerPath), false);
+  assert.equal(existsSync(legacyPlyPath), false);
+  assert.deepEqual(walk(join(process.cwd(), 'public'), '.ply'), []);
+});
+
+test('predictive Gaussian controllers load once and preserve poster continuity', () => {
+  const source = readFileSync(join(process.cwd(), 'src', 'components', 'GaussianBackground.astro'), 'utf8');
+  const posterStyle = source.indexOf("bg.style.setProperty('--gs-poster'");
+  const posterClass = source.indexOf("bg.classList.add('gs-bg--poster')");
+  const observerSetup = source.indexOf('loadObserver = new IntersectionObserver');
+
+  assert.match(source, /let loadPromise: Promise<void> \| null = null/);
+  assert.match(source, /if \(loadPromise \|\| disposed\) return loadPromise/);
+  assert.ok(posterStyle >= 0 && posterStyle < observerSetup, 'poster style must be assigned before observers');
+  assert.ok(posterClass >= 0 && posterClass < observerSetup, 'poster class must be assigned before observers');
+  assert.match(source, /runtime\?\.setActive\(insideActiveZone && !document\.hidden\)/);
+  assert.match(source, /runtime\?\.dispose\(\)/);
+  assert.match(source, /bg\.dataset\.gsDisposed = '1'/);
+  assert.match(source, /window\.__gsBgDebug = \(\) => \[\.\.\.gaussianControllers\]\.map\(\(controller\) => controller\.getState\(\)\)/);
 });
 
 test('code cards stay above softened Gaussian spill', () => {
@@ -214,7 +563,7 @@ test('code cards stay above softened Gaussian spill', () => {
   assert.match(source, /\.tool-card__media\s*\{[^}]*background:\s*rgba\(11, 11, 12, 0\.64\)/s);
 });
 
-test('code hero removes the top bar and reaches farther into GitHub', () => {
+test('code hero keeps the layout flow while navigation owns its backing', () => {
   const codeSource = readFileSync(codeChapterSourcePath, 'utf8');
   const homepageSource = readFileSync(homepageSourcePath, 'utf8');
   const layoutSource = readFileSync(join(process.cwd(), 'src', 'layouts', 'Layout.astro'), 'utf8');
@@ -222,7 +571,7 @@ test('code hero removes the top bar and reaches farther into GitHub', () => {
 
   assert.match(homepageSource, /<Layout[^>]*mode="continuous"/);
   assert.match(layoutSource, /:global\(body\[data-immersive="true"\] main\)\s*\{\s*padding-top:\s*0;/);
-  assert.match(layoutSource, /:global\(body\[data-immersive="true"\] \.nav\)[^{]*\{[^}]*background:\s*transparent !important;/s);
+  assert.doesNotMatch(layoutSource, /body\[data-immersive="true"\] \.nav/);
   assert.match(codeSource, /\.code__hero\s*\{[^}]*background:\s*transparent;/s);
   assert.match(gaussianSource, /data-placement="hero-right"\]\[data-contained="1"\][^{]*\{[^}]*bottom:\s*-88vh;/s);
 });
@@ -353,6 +702,10 @@ test('primary navigation labels have no individual surface behind them', () => {
   assert.doesNotMatch(source, /\.nav__link\s*\{[^}]*padding:/s);
   assert.doesNotMatch(source, /\.nav\[data-scrolled="true"\]/);
   assert.doesNotMatch(source, /syncNavScrollState/);
+  assert.match(source, /\.nav::before\s*\{[^}]*z-index:\s*0;[^}]*linear-gradient/s);
+  assert.match(source, /background:\s*linear-gradient\(to bottom,/);
+  assert.match(source, /\.nav__inner\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1;/s);
+  assert.match(source, /@media \(max-width: 640px\)[\s\S]*?\.nav__link\s*\{[^}]*min-height:\s*32px;[^}]*font-size:\s*11px;/s);
 });
 
 test('scroll progress resets safely after Astro page navigation', () => {
@@ -401,12 +754,75 @@ test('interactive artwork receives global iframe sizing and a capped balanced la
   assert.match(template, /:global\(\.case__interactive-frame\.is-ready\)/);
 });
 
+test('case-study media keeps motion, gallery labels, and interactive focus safe', () => {
+  const template = readFileSync(join(process.cwd(), 'src', 'pages', 'work', '[slug].astro'), 'utf8');
+  const motionController = readFileSync(join(process.cwd(), 'src', 'scripts', 'case-media-controller.mjs'), 'utf8');
+
+  assert.match(template, /<video src=\{media\.trailer\} controls autoplay muted loop playsinline preload="metadata"/);
+  assert.match(template, /<video src=\{media\.cover\} controls autoplay muted loop playsinline preload="metadata"/);
+  assert.match(template, /data-case-motion-video/);
+  assert.match(template, /document\.addEventListener\('DOMContentLoaded', attachCaseMedia/);
+  assert.match(template, /document\.addEventListener\('astro:page-load', attachCaseMedia/);
+  assert.match(template, /import \{ createCaseMediaMotionController \} from '\.\.\/\.\.\/scripts\/case-media-controller\.mjs';/);
+  assert.match(template, /createCaseMediaMotionController\(\{\s*documentRef: document,\s*motionQuery,\s*\}\)/s);
+  assert.match(motionController, /const originalMotionStates = new WeakMap\(\);/);
+  assert.match(motionController, /const existingState = originalMotionStates\.get\(video\);\s*if \(existingState\) return existingState;/s);
+  assert.match(motionController, /autoplay: video\.autoplay,/);
+  assert.match(motionController, /loop: video\.loop,/);
+  assert.match(motionController, /shouldPlay: video\.autoplay,/);
+  assert.match(motionController, /motionQuery\.addEventListener\('change', syncReducedMotion\)/);
+  assert.match(motionController, /video\.autoplay = false;/);
+  assert.match(motionController, /video\.loop = false;/);
+  assert.match(motionController, /video\.pause\(\);/);
+  assert.match(motionController, /video\.autoplay = state\.autoplay;/);
+  assert.match(motionController, /video\.loop = state\.loop;/);
+  assert.match(motionController, /if \(state\.shouldPlay && !documentRef\.hidden\) \{/);
+  assert.match(motionController, /void video\.play\(\)\.catch\(\(\) => \{\}\);/);
+  assert.match(template, /document\.addEventListener\('astro:before-swap', \(\) => disposeCaseMedia\(\)\)/);
+  assert.doesNotMatch(template, /document\.addEventListener\('astro:before-swap', disposeCaseMedia\)/);
+  assert.match(template, /alt=\{`\$\{data\.title\} \\u2014 project visual \$\{m\.visualIndex\}`\}/);
+  assert.doesNotMatch(template, /case__gallery-item[\s\S]*?alt=""/);
+  assert.match(template, /role="status" aria-live="polite" data-interactive-status/);
+  assert.match(template, /if \(!event\.isTrusted \|\| button\.disabled\) return;/);
+  const beforeLoad = template.slice(
+    template.indexOf('const nextFrame = document.createElement'),
+    template.indexOf("nextFrame.addEventListener('load'"),
+  );
+  const onLoad = template.slice(
+    template.indexOf("nextFrame.addEventListener('load'"),
+    template.indexOf("nextFrame.addEventListener('error'"),
+  );
+  assert.match(beforeLoad, /nextFrame\.tabIndex = -1;/);
+  assert.match(beforeLoad, /nextFrame\.style\.pointerEvents = 'none';/);
+  assert.doesNotMatch(beforeLoad, /nextFrame\.tabIndex = 0;/);
+  assert.match(onLoad, /nextFrame\.tabIndex = 0;/);
+  assert.match(onLoad, /nextFrame\.style\.pointerEvents = 'auto';/);
+  assert.match(template, /nextFrame\.focus\(\);/);
+  assert.match(template, /nextFrame\.sandbox\.add\('allow-scripts', 'allow-same-origin'\);/);
+  assert.match(template, /nextFrame\.referrerPolicy = 'no-referrer';/);
+  assert.match(template, /window\.setTimeout\(\(\) => restoreRetry\(token\), 12000\)/);
+  assert.match(template, /nextFrame\.addEventListener\('error', \(\) => restoreRetry\(token\), \{ once: true \}\);/);
+  assert.doesNotMatch(template, /button\.remove\(\);/);
+  assert.doesNotMatch(template, /function attachInteractiveCases\(\): void/);
+});
+
+test('Code tool cards expose each project destination only once to keyboard users', () => {
+  const source = readFileSync(codeChapterSourcePath, 'utf8');
+
+  assert.match(source, /<div class="tool-card__media" aria-hidden="true">/);
+  assert.doesNotMatch(source, /<a class="tool-card__media"/);
+  assert.doesNotMatch(source, /href=\{t\.href \|\| '#'/);
+  assert.doesNotMatch(source, /href=['"]#['"]/);
+  assert.match(source, /<img src=\{t\.img\} alt="" loading="lazy"/);
+  assert.match(source, /<h3 class="tool-card__name">[\s\S]*?<a href=\{t\.href\}/);
+});
+
 test('each homepage chapter keeps its own hero copy and reveal language', () => {
   const work = readFileSync(join(process.cwd(), 'src', 'components', 'portfolio', 'WorkChapter.astro'), 'utf8');
   const about = readFileSync(join(process.cwd(), 'src', 'components', 'portfolio', 'AboutChapter.astro'), 'utf8');
   const code = readFileSync(codeChapterSourcePath, 'utf8');
 
-  assert.match(work, /<h1[^>]*[\s\S]*?data-work-title-reveal/);
+  assert.match(work, /<h2[^>]*[\s\S]*?data-work-title-reveal/);
   assert.match(work, /Sound direction,/);
   assert.match(work, /music production,/);
   assert.match(work, /creative systems\./);
@@ -416,7 +832,7 @@ test('each homepage chapter keeps its own hero copy and reveal language', () => 
   assert.match(about, /listening/);
   assert.match(about, /systems, and collaboration\./);
 
-  assert.match(code, /<h1[^>]*data-reveal="typewriter"/);
+  assert.match(code, /<h2[^>]*data-reveal="typewriter"/);
   assert.match(code, /Tools/);
   assert.match(code, /audiovisual/);
   assert.match(code, /performance\./);

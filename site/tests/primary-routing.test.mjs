@@ -28,13 +28,15 @@ test('legacy top-level pages redirect into the continuous homepage', () => {
     [['pages', 'work', 'index.astro'], '/#work'],
     [['pages', 'code.astro'], '/#code'],
     [['pages', 'contact.astro'], '/#contact'],
-    [['pages', 'continuous.astro'], '/'],
   ]);
 
   for (const [parts, target] of redirects) {
     const page = source(...parts);
-    assert.match(page, new RegExp(`Astro\\.redirect\\(['"]${target.replace('/', '\\/')}['"]`));
+    assert.match(page, /LegacyRedirect/);
+    assert.match(page, new RegExp(`destination=['"]${target.replace('/', '\\/')}['"]`));
   }
+
+  assert.match(source('pages', 'continuous.astro'), /Astro\.redirect\(['"]\/['"]\)/);
 });
 
 test('project case studies remain real pages', () => {

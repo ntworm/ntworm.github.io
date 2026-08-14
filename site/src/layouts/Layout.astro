@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import { buildCanonical } from '../utils/seo.mjs';
 
 interface Props {
   title: string;
@@ -11,9 +12,9 @@ interface Props {
   type?: 'website' | 'article';
   /** Canonical URL for the page. Auto-derived from Astro.url when omitted. */
   canonicalUrl?: string;
+  structuredData?: Record<string, unknown> | Array<Record<string, unknown>>;
   mode?: 'standard' | 'continuous';
   immersive?: boolean;
-  preload?: string[];
 }
 
 const {
@@ -21,10 +22,10 @@ const {
   description = 'Sound direction, music production, and creative tooling for cinema, performance, and live instruments.',
   image = null,
   type = 'website',
-  canonicalUrl = Astro.url.href,
+  canonicalUrl,
+  structuredData,
   mode = 'standard',
   immersive = false,
-  preload = [],
 } = Astro.props;
 const isContinuous = mode === 'continuous';
 const isImmersive = immersive || isContinuous;
@@ -33,6 +34,8 @@ const isImmersive = immersive || isContinuous;
 // Astro.site gives the configured site origin; on dev it falls back to localhost.
 const siteOrigin = Astro.site?.origin ?? `${Astro.url.protocol}//${Astro.url.host}`;
 const ogImage = image ? (image.startsWith('http') ? image : `${siteOrigin}${image}`) : null;
+const cleanCanonicalUrl = buildCanonical(siteOrigin, canonicalUrl ?? Astro.url.pathname);
+const jsonLd = structuredData ? JSON.stringify(structuredData).replace(/</g, '\\u003c') : null;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -41,13 +44,16 @@ const ogImage = image ? (image.startsWith('http') ? image : `${siteOrigin}${imag
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title} &mdash; Gabriel Worm</title>
     <meta name="description" content={description}>
-    <link rel="canonical" href={canonicalUrl}>
+    <link rel="canonical" href={cleanCanonicalUrl}>
+    <meta name="theme-color" content="#0B0B0C">
+    <link rel="manifest" href="/site.webmanifest">
+    {jsonLd && <script type="application/ld+json" set:html={jsonLd}></script>}
 
     <!-- Open Graph -->
     <meta property="og:type" content={type}>
     <meta property="og:title" content={`${title} — Gabriel Worm`}>
     <meta property="og:description" content={description}>
-    <meta property="og:url" content={canonicalUrl}>
+    <meta property="og:url" content={cleanCanonicalUrl}>
     {ogImage && <meta property="og:image" content={ogImage}>}
     <meta property="og:site_name" content="Gabriel Worm">
 
@@ -58,8 +64,6 @@ const ogImage = image ? (image.startsWith('http') ? image : `${siteOrigin}${imag
     {ogImage && <meta name="twitter:image" content={ogImage}>}
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    {preload.length > 0 && <link rel="preconnect" href="https://esm.sh">}
-    {preload.map((href) => <link rel="preload" href={href} as="fetch" type="application/octet-stream">)}
     <ClientRouter />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -100,11 +104,6 @@ const ogImage = image ? (image.startsWith('http') ? image : `${siteOrigin}${imag
     transform: translateY(100%);
   }
   :global(body[data-immersive="true"] main) { padding-top: 0; }
-  :global(body[data-immersive="true"] .nav) {
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
   :global(body[data-layout="continuous"] main) { padding-bottom: 0; }
   @media (prefers-reduced-motion: reduce) {
     .page-curtain { transition: none; }

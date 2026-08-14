@@ -81,6 +81,16 @@ function codeSignature(html) {
   };
 }
 
+function builtCaseDocuments() {
+  return readdirSync(join(distDir, 'work'), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .filter((entry) => existsSync(join(distDir, 'work', entry.name, 'index.html')))
+    .map((entry) => {
+      const label = `work/${entry.name}/index.html`;
+      return { label, html: readFileSync(join(distDir, label), 'utf8') };
+    });
+}
+
 test('homepage renders five finite chapters once and in order', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
   const chapters = [...html.matchAll(/data-portfolio-chapter="(about|work|code|archive|contact)"/g)]
@@ -88,6 +98,19 @@ test('homepage renders five finite chapters once and in order', () => {
 
   assert.deepEqual(chapters, ['about', 'work', 'code', 'archive', 'contact']);
   for (const id of chapters) assert.match(html, new RegExp(`id="${id}"`));
+});
+
+test('continuous homepage reserves its single H1 for About and preserves chapter headline styles', () => {
+  const html = readFileSync(join(distDir, 'index.html'), 'utf8');
+  const work = readFileSync(workChapterPath, 'utf8');
+  const code = readFileSync(join(process.cwd(), 'src', 'components', 'portfolio', 'CodeChapter.astro'), 'utf8');
+
+  assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
+  assert.match(work, /<h2[^>]*data-work-title-reveal/);
+  assert.doesNotMatch(work, /<h1[^>]*data-work-title-reveal/);
+  assert.match(work, /\.portfolio-work__header h2/);
+  assert.match(code, /<h2[^>]*class="code__title"[^>]*data-reveal="typewriter"[^>]*aria-label="Tools and instruments for music and audiovisual performance\."/);
+  assert.doesNotMatch(code, /<h1[^>]*data-reveal="typewriter"/);
 });
 
 test('public homepage serves the continuous portfolio as the primary experience', () => {
@@ -178,6 +201,7 @@ test('Lines and Cells stays anchored to About and scrolls out before Work', () =
   const about = chapterSlice(html, 'about', 'work');
   const work = chapterSlice(html, 'work', 'code');
   const source = existsSync(hydraBackgroundPath) ? readFileSync(hydraBackgroundPath, 'utf8') : '';
+  const sketch = readFileSync(join(process.cwd(), 'public', 'hydra', 'lines-and-cells.mjs'), 'utf8');
   const aboutSource = readFileSync(aboutChapterPath, 'utf8');
   const homepage = readFileSync(homepagePath, 'utf8');
   const layout = readFileSync(layoutPath, 'utf8');
@@ -186,11 +210,12 @@ test('Lines and Cells stays anchored to About and scrolls out before Work', () =
   assert.ok(about.indexOf('class="portfolio-about__live-bg"') < about.indexOf('class="portfolio-about__hero"'));
   assert.match(html, /class="portfolio-about__live-stage"/);
   assert.match(html, /title="Lines and Cells live generative background"/);
-  assert.match(html, /width="1280"/);
-  assert.match(html, /height="720"/);
-  assert.match(html, /data-hydra-src="https:\/\/dweb\.link\/ipfs\/Qmb4ktMbn1Sef6i5sMYy17MTzGmjRT8TuWsgLAhsQMRbrU\?fxhash=opTgZfTemeT4UtGTA95AUh97CWnCstz2XW359tw1Hv7588x551j"/);
-  assert.match(html, /https:\/\/dweb\.link\/ipfs\/Qmb4ktMbn1Sef6i5sMYy17MTzGmjRT8TuWsgLAhsQMRbrU\?fxhash=opTgZfTemeT4UtGTA95AUh97CWnCstz2XW359tw1Hv7588x551j/);
-  assert.match(html, /loading="eager"/);
+  assert.match(html, /width="640"/);
+  assert.match(html, /height="360"/);
+  assert.match(html, /src="about:blank"/);
+  assert.match(html, /data-hydra-src="\/hydra\/lines-and-cells\.html\?fxhash=opTgZfTemeT4UtGTA95AUh97CWnCstz2XW359tw1Hv7588x551j"/);
+  assert.doesNotMatch(html, /dweb\.link\/ipfs\/Qmb4ktMbn1Sef6i5sMYy17MTzGmjRT8TuWsgLAhsQMRbrU/);
+  assert.match(html, /loading="lazy"/);
   assert.match(html, /sandbox="allow-scripts allow-same-origin"/);
   assert.doesNotMatch(source, /portfolio-about__live-bg-fallback|lines-and-cells\.webp/);
   assert.doesNotMatch(work, /portfolio-(?:about|work)__live-bg|Lines and Cells live generative background/);
@@ -203,11 +228,12 @@ test('Lines and Cells stays anchored to About and scrolls out before Work', () =
   assert.doesNotMatch(source, /getBoundingClientRect\(\)/);
   assert.match(source, /\.portfolio-about__live-stage\s*\{[^}]*position:\s*relative;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*overflow:\s*hidden;/s);
   assert.match(source, /linear-gradient\(180deg,\s*#000 0%,\s*#000 86%,\s*rgba\(0, 0, 0, 0\.72\) 90%,\s*transparent 100%\)/s);
-  assert.match(source, /\.portfolio-about__live-bg iframe\s*\{[^}]*width:\s*min\(100vw,\s*1280px\);[^}]*height:\s*min\(100vh,\s*720px\);[^}]*transform:\s*translate\(-50%,\s*-50%\) scale\(var\(--hydra-scale-x\),\s*var\(--hydra-scale-y\)\);/s);
-  assert.match(source, /Math\.min\(window\.innerWidth,\s*1280\)/);
-  assert.match(source, /Math\.min\(window\.innerHeight,\s*720\)/);
-  assert.match(source, /stage\.clientHeight\s*\/\s*baseHeight/);
-  assert.match(source, /requestAnimationFrame\(\(\)\s*=>\s*requestAnimationFrame\(loadHydra\)\)/);
+  assert.match(source, /\.portfolio-about__live-bg iframe\s*\{[^}]*inset:\s*0;[^}]*width:\s*100%;[^}]*height:\s*100%;/s);
+  assert.doesNotMatch(source, /--hydra-scale-[xy]|ResizeObserver|scale\(var\(--hydra-scale/);
+  assert.match(source, /prefers-reduced-motion:\s*reduce/);
+  assert.match(sketch, /new Hydra\(\{ detectAudio: false, canvas: hydraCanvas, autoLoop: false \}\)/);
+  assert.match(sketch, /hydra\.tick\(now - lastHydraTick\)/);
+  assert.doesNotMatch(source, /frame\s*=\s*requestAnimationFrame\(\(\)\s*=>\s*\{\s*frame\s*=\s*requestAnimationFrame\(loadHydra\);\s*\}\)/s);
   assert.match(aboutSource, /\.portfolio-about__hero\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1;/s);
   assert.match(aboutSource, /\.portfolio-about__thread\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1;/s);
 });
@@ -224,9 +250,12 @@ test('Work intro pairs the editorial statement with the original project spotlig
   assert.match(work, /Music Production/);
   assert.match(work, /Creative Coding/);
   assert.match(work, /Live \/ Experimental/);
-  assert.match(source, /animation:\s*work-spotlight-cycle/);
-  assert.match(source, /animation-delay:\s*calc\(var\(--i\) \* -6s\)/);
-  assert.match(source, /\.portfolio-work__spotlight:hover \.work-spotlight-cell/);
+  assert.match(source, /createSpotlightController/);
+  assert.match(source, /motionQuery\.addEventListener\('change', syncReducedMotion\)/);
+  assert.match(source, /controller\.setPaused\('reduced-motion', event\.matches\)/);
+  assert.match(source, /motionQuery\.removeEventListener\('change', syncReducedMotion\)/);
+  assert.match(source, /\.work-spotlight-cell\.is-active/);
+  assert.doesNotMatch(source, /@keyframes work-spotlight-cycle/);
   assert.match(source, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(work, /class="portfolio-work__runway"/);
   assert.match(work, /class="portfolio-work__runway-count mono"[^>]*>01—13<\/span>/);
@@ -339,7 +368,7 @@ test('Work media prewarms before native lazy loading can leave visible cards bla
 
   assert.match(source, /data-prewarm-image/);
   assert.match(source, /new IntersectionObserver/);
-  assert.match(source, /rootMargin:\s*['"]200% 0px['"]/);
+  assert.match(source, /rootMargin:\s*['"]100% 0px['"]/);
   assert.match(source, /image\.loading\s*=\s*['"]eager['"]/);
 });
 
@@ -370,6 +399,8 @@ test('homepage renders the complete Code structure once', () => {
     fxhash: 1,
     splats: 1,
   });
+  assert.equal((code.match(/<a\b[^>]*class="tool-card__media"/g) ?? []).length, 0);
+  assert.equal((code.match(/<div\b[^>]*class="tool-card__media"[^>]*aria-hidden="true"/g) ?? []).length, 6);
 });
 
 test('homepage owns Code while the legacy Code route redirects to its chapter', () => {
@@ -378,5 +409,35 @@ test('homepage owns Code while the legacy Code route redirects to its chapter', 
 
   assert.match(homepage, /import CodeChapter/);
   assert.match(homepage, /<CodeChapter\s*\/>/);
-  assert.match(legacy, /Astro\.redirect\(['"]\/#code['"]\)/);
+  assert.match(legacy, /import LegacyRedirect from '\.\.\/components\/LegacyRedirect\.astro';/);
+  assert.match(legacy, /<LegacyRedirect destination="\/#code"\s*\/>/);
+});
+
+test('built case studies preserve accessible media fallbacks across optional case features', () => {
+  const cases = builtCaseDocuments();
+  const trailers = cases.filter(({ html }) => html.includes('class="case__trailer"'));
+  const galleries = cases.filter(({ html }) => html.includes('class="case__gallery '));
+  const interactive = cases.filter(({ html }) => /<figure\b[^>]*\bdata-interactive-host\b/.test(html));
+
+  assert.equal(cases.length, 25);
+  assert.ok(trailers.length > 0, 'expected at least one case with a trailer');
+  assert.ok(trailers.length < cases.length, 'expected cases without trailers');
+  assert.ok(galleries.length > 0, 'expected at least one case with a gallery');
+  assert.ok(galleries.length < cases.length, 'expected cases without a gallery');
+  assert.equal(interactive.length, 1);
+
+  for (const { html, label } of trailers) {
+    assert.match(html, /<figure\b[^>]*class="case__trailer"[^>]*>\s*<video\b[^>]*\bcontrols\b/s, `${label} trailer has controls`);
+  }
+  for (const { html, label } of galleries) {
+    const galleryImages = [...html.matchAll(/<section class="case__gallery[^>]*>[\s\S]*?<\/section>/g)]
+      .flatMap((section) => [...section[0].matchAll(/<img\b[^>]*>/g)].map((match) => match[0]));
+    assert.ok(galleryImages.length > 0, `${label} has gallery images`);
+    assert.ok(galleryImages.every((image) => (attr(image, 'alt') ?? '').trim().length > 0), `${label} gallery images have fallback labels`);
+  }
+
+  const [interactiveCase] = interactive;
+  assert.match(interactiveCase.html, /<button\b[^>]*data-interactive-launch[^>]*>/);
+  assert.match(interactiveCase.html, /role="status" aria-live="polite" data-interactive-status/);
+  assert.doesNotMatch(interactiveCase.html, /class="case__interactive-frame"/);
 });

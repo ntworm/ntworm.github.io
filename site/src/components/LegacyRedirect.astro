@@ -1,0 +1,28 @@
+---
+import { buildCanonical } from '../utils/seo.mjs';
+
+interface Props {
+  destination: string;
+}
+
+const { destination } = Astro.props;
+const origin = Astro.site?.origin ?? Astro.url.origin;
+const canonicalUrl = buildCanonical(origin, destination);
+const redirectScript = 'location.replace(' + JSON.stringify(destination).replace(/</g, '\\u003c') + ');';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex,follow">
+    <link rel="canonical" href={canonicalUrl}>
+    <meta http-equiv="refresh" content={'0; url=' + destination}>
+    <title>Redirecting</title>
+  </head>
+  <body>
+    <p>Redirecting to <a href={destination}>Continue</a>.</p>
+    <script is:inline set:html={redirectScript}></script>
+  </body>
+</html>

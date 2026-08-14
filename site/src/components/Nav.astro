@@ -20,6 +20,7 @@ function isActive(href: string): boolean {
           <li>
             <a
               href={link.href}
+              data-nav-section
               class:list={['nav__link', isActive(link.href) && 'is-active']}
               aria-current={isActive(link.href) ? 'page' : undefined}
             >
@@ -32,15 +33,32 @@ function isActive(href: string): boolean {
   </div>
 </header>
 
+<script>
+  import { installSectionNavigation } from '../scripts/nav-section-controller.mjs';
+
+  installSectionNavigation(document);
+</script>
+
 <style>
   .nav {
     position: sticky;
     top: 0;
     z-index: 50;
     height: 64px;
-    background: transparent;
+    isolation: isolate;
+  }
+  .nav::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(11, 11, 12, 0.8), rgba(11, 11, 12, 0.26) 68%, transparent);
+    opacity: 0.72;
   }
   .nav__inner {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -77,6 +95,11 @@ function isActive(href: string): boolean {
   @media (max-width: 640px) {
     .nav { height: 56px; }
     .nav__list { gap: var(--s-4); }
-    .nav__link { font-size: 10px; }
+    .nav__link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      font-size: 11px;
+    }
   }
 </style>
