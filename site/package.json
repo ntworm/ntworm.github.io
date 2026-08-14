@@ -11,7 +11,7 @@
     "prebuild": "node scripts/asset-dimensions.mjs",
     "prepreview": "node scripts/asset-dimensions.mjs",
     "pretest": "npm run build",
-    "test": "node --test tests/case-media-controller.test.mjs tests/nav-section-controller.test.mjs tests/continuous-document.test.mjs tests/gaussian-camera-motion.test.mjs tests/gaussian-frame-loop.test.mjs tests/gaussian-particle-effects.test.mjs tests/heavy-media-policy.test.mjs tests/hydra-frame-controller.test.mjs tests/hydra-adaptive-resolution.test.mjs tests/primary-routing.test.mjs tests/rc-surface-license.test.mjs tests/seo.test.mjs tests/site-integrity.test.mjs tests/splat-preview.test.mjs tests/spotlight-controller.test.mjs tests/work-presentation.test.mjs",
+    "test": "node --test tests/case-media-controller.test.mjs tests/nav-section-controller.test.mjs tests/continuous-document.test.mjs tests/gaussian-camera-motion.test.mjs tests/gaussian-frame-loop.test.mjs tests/gaussian-lod-controller.test.mjs tests/gaussian-particle-effects.test.mjs tests/heavy-media-policy.test.mjs tests/hydra-frame-controller.test.mjs tests/hydra-adaptive-resolution.test.mjs tests/primary-routing.test.mjs tests/rc-surface-license.test.mjs tests/seo.test.mjs tests/site-integrity.test.mjs tests/splat-preview.test.mjs tests/spotlight-controller.test.mjs tests/work-presentation.test.mjs",
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
