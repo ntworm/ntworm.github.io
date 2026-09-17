@@ -20,7 +20,7 @@ Shooting took place between April and May 2026 across Palmas and the surrounding
 
 ## On set as Sound Assistant
 
-My role on the film was Sound Assistant on the production sound team — set-based only, no post-production involvement. The job was straightforward: support the boom operator and production sound mixer, manage cable and wireless discipline on location, wrangle lavs on talent across interior and exterior setups, and keep the production sound chain running through long location days in the Tocantins heat.
+My role on the film was Sound Assistant on the production sound team — set-based only, no post-production involvement. The job was straightforward: support the boom operator and production sound mixer, manage cable and wireless discipline on location, wrangle lavs on talent across interior and exterior setups, and keep the production sound chain running through long location days in the Tocantins heat. The production sound rig centered on a Sound Devices MixPre-6 recorder, Schoeps microphones in Mid-Side (MS) stereo configuration for locational ambiances, shotgun on boom, and wireless lavaliers.
 
 Most days were outdoors or in active community spaces (churches, povoados, streets). Wind and ambient crowd were the persistent constraints; the interiors needed fast turnaround between setups because the production schedule was tight and locations had to be returned the same day.
 
@@ -30,6 +30,11 @@ It was a local crew through and through, and that mattered. Working on a Tocanti
 
 - **Direction and screenplay**: Juliane Almeida
 - **Production**: MZN Filmes (Marcio Mazaron) · Borboletas Filmes · Jubalina Produções · Sucupira Filmes
+- **Sound department**:
+  - **Production Sound Mixer / Técnico de som direto**: Diogo Goulart
+  - **Boom Operator / Operador de boom**: Yuri Vilar (Yuri Grooveman)
+  - **Sound Assistant / Assistente de som**: Gabriel Worm
+  - **Production sound package**: Sound Devices MixPre-6 recorder, Schoeps MS stereo setup, boom shotgun, and talent wireless lavaliers
 - **Lead**: Christian Malheiros
 - **Special appearance**: Augusto Madeira
 - **Cast**: Amanda Nobre, Ana Kamila Castanõ, André Araújo, Ava Simões, Bruno Barros, Caro Marafiga, Cinthia Abreu, Cleuda Milhomem, Felipe Kanishi, Fernanda Rodrigues, Gabriel Deeaz, Guildo Jargões, Guilherme Gandara, Hitalon Bastos, and others

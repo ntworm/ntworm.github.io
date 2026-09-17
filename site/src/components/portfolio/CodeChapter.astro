@@ -21,7 +21,7 @@ const GH_REPOS = [
   {
     name: 'rc-setlist',
     url: 'https://github.com/ntworm/rc-setlist',
-    desc: 'Source-available Ableton Live extension that turns Arrangement locators into an operator setlist with synchronized lyrics, tempo and click feedback, and guarded transport controls. Local-first via WebSocket on port 4444. No account, no cloud, no telemetry.',
+    desc: 'Source-available Ableton Live extension built on the Ableton Extensions SDK that turns Arrangement locators into an operator setlist with synchronized lyrics, tempo and click feedback, and guarded transport controls. Local-first via WebSocket on port 4444. No account, no cloud, no telemetry.',
   },
   {
     name: 'ableton-mcp-server',
@@ -41,7 +41,7 @@ const tools = [
     title: 'RC Surface',
     year: '2026',
     role: 'Author',
-    desc: 'Extension for Ableton Live. Phone browser becomes a wireless MIDI + multi-sensor controller: 12 performance pads, two physics XY pads, knobs & faders, sensor mappings (motion, orientation, audio, vision), in-browser mapping editor. Source-available under the PolyForm Noncommercial 1.0.0 license.',
+    desc: 'Extension for Ableton Live built with the Ableton Extensions SDK (.ablx). Phone browser becomes a wireless MIDI + multi-sensor controller: 12 performance pads, two physics XY pads, knobs & faders, sensor mappings (motion, orientation, audio, vision), in-browser mapping editor. Source-available under the PolyForm Noncommercial 1.0.0 license.',
     img: '/work/rc-surface/1.jpg',
     href: 'https://github.com/ntworm/ableton-rc-surface',
   },
@@ -50,7 +50,7 @@ const tools = [
     title: 'RC Setlist',
     year: '2026',
     role: 'Author',
-    desc: 'Ableton Live extension that turns Arrangement locators into an operator setlist. Synchronized .lrc lyrics, tempo and click feedback, guarded transport, /setlist and /performance views served over WebSocket. Source-available under the PolyForm Noncommercial 1.0.0 license.',
+    desc: 'Ableton Live extension built on the Ableton Extensions SDK that turns Arrangement locators into an operator setlist. Synchronized .lrc lyrics, tempo and click feedback, guarded transport, /setlist and /performance views served over WebSocket. Source-available under the PolyForm Noncommercial 1.0.0 license.',
     img: '/work/rc-setlist/1.jpg',
     href: 'https://github.com/ntworm/rc-setlist',
   },
@@ -59,7 +59,7 @@ const tools = [
     title: 'Ableton MCP Server',
     year: '2026',
     role: 'Author',
-    desc: 'Model Context Protocol server for Ableton Live 12. Exposes 75 tools in v0.5.3 over TCP and WebSockets for AI agents and Python scripts to query parameters, drive transport, automate clips, analyze mix audio in non-realtime, and run grouped batch commands. Open-source.',
+    desc: 'Model Context Protocol server for Ableton Live 12 bridging the Ableton Extensions SDK and MIDI Remote Scripts. Exposes 75 tools in v0.5.3 over TCP and WebSockets for AI agents and Python scripts to query parameters, drive transport, automate clips, analyze mix audio in non-realtime, and run grouped batch commands. Open-source.',
     img: '/work/ableton-mcp-server/1.jpg',
     href: 'https://github.com/ntworm/ableton-mcp-server',
   },
@@ -132,7 +132,9 @@ const SPLATS = [
         </h2>
         <p class="code__intro">
           Personal, open-source, and source-available projects spanning Max4Live devices, generative
-          audiovisual systems, and live instruments. Most of what's here runs in
+          audiovisual systems, and live instruments. A core focus is pioneering native tools on the
+          official <strong>Ableton Extensions SDK</strong> (Live 12.4+ Node.js runtime), expanding DAW capabilities
+          for stage performance and AI agent integration. Most of what's here runs in
           real time on a stage or in a studio somewhere.
         </p>
       </div>

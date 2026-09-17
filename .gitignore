@@ -38,3 +38,19 @@ AGENTS.md
 
 # Local-only writing drafts (never published)
 /site/drafts/
+
+# Fontes pessoais consolidadas (CVs, prospecção, briefs de clientes, estratégia).
+# Repositório é público e tem deploy automático: aqui se ignora tudo por padrão
+# e se libera por exceção, para que nenhum arquivo novo vaze por esquecimento.
+# Usa profile/* e não profile/: o Git não reinclui arquivo dentro de diretório
+# excluído, então a exceção do README só funciona com o glob.
+profile/*
+!profile/README.md
+
+# Diretório local do plano de carreira (pesquisa e logs gerados localmente)
+plano-de-carreira/
+
+# Despejos de scraping de vagas (UTF-16, ~400 KB, não pertencem ao portfólio)
+/job_text.txt
+/latest_jobs.txt
+/soundlister.txt
