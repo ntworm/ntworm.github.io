@@ -27,33 +27,31 @@ test('Hydra render size stays finite for an unmeasured panel', () => {
   });
 });
 
-test('local Hydra shell keeps the original seed and loads a same-origin sketch', () => {
+test('local Hydra shell loads a same-origin sketch with local runtime and no external dependencies', () => {
   const html = readFileSync(join(hydraDirectory, 'lines-and-cells.html'), 'utf8');
 
-  assert.match(html, /new URLSearchParams\(window\.location\.search\)\.get\('fxhash'\)/);
-  assert.match(html, /hydra-js\.js/);
+  assert.doesNotMatch(html, /fxhash|sfc32|fxrand/);
+  assert.match(html, /hydra-synth\.js/);
   assert.match(html, /src="\.\/lines-and-cells\.mjs"/);
+  assert.match(html, /<canvas id="hydra-canvas"><\/canvas>/);
   assert.match(html, /Content-Security-Policy/);
-  assert.match(html, /script-src 'self' 'unsafe-inline' 'unsafe-eval' https:\/\/bafybeif5cwpqes6z4djhvx7hg6oerygkztlglcvvu3ocahtuzsgpu6ud3u\.ipfs\.dweb\.link\/p5\.js https:\/\/bafybeif5cwpqes6z4djhvx7hg6oerygkztlglcvvu3ocahtuzsgpu6ud3u\.ipfs\.dweb\.link\/hydra-js\.js/);
+  assert.match(html, /script-src 'self' 'unsafe-inline' 'unsafe-eval'/);
+  assert.doesNotMatch(html, /dweb\.link|ipfs\.io|p5\.js/);
   assert.match(html, /style-src 'self' 'unsafe-inline'/);
   assert.match(html, /img-src 'self' data: blob:/);
   assert.match(html, /connect-src 'none'/);
 });
 
-test('Hydra sketch adapts both render buffers to the measured iframe ratio', () => {
+test('Hydra sketch adapts render buffer to measured iframe ratio with pure native Hydra', () => {
   const sketch = readFileSync(join(hydraDirectory, 'lines-and-cells.mjs'), 'utf8');
 
   assert.match(sketch, /calculateHydraRenderSize/);
-  assert.match(sketch, /pixelDensity\(1\)/);
   assert.match(sketch, /hydra\.setResolution\(WIDTH, HEIGHT\)/);
-  assert.match(sketch, /resizeCanvas\(WIDTH, HEIGHT\)/);
-  assert.match(sketch, /createGraphics\(WIDTH, HEIGHT\)/);
-  assert.match(sketch, /new Hydra\(\{ detectAudio: false, canvas: hydraCanvas, autoLoop: false \}\)/);
-  assert.match(sketch, /hydra\.tick\(now - lastHydraTick\)/);
+  assert.match(sketch, /new Hydra\(\{[\s\S]*canvas,[\s\S]*autoLoop:\s*false,[\s\S]*makeGlobal:\s*true[\s\S]*\}\)/);
+  assert.match(sketch, /hydra\.tick\(dt\)/);
   assert.match(sketch, /event\.origin !== window\.location\.origin/);
   assert.match(sketch, /event\.source !== window\.parent/);
-  assert.match(sketch, /noLoop\(\)/);
-  assert.match(sketch, /lastHydraTick = performance\.now\(\);/);
-  assert.match(sketch, /loop\(\)/);
-  assert.doesNotMatch(sketch, /aspectratioaux|qualityofrender|pixelDensity\(2\.5/);
+  assert.match(sketch, /cancelAnimationFrame\(animFrameId\)/);
+  assert.match(sketch, /requestAnimationFrame\(renderLoop\)/);
+  assert.doesNotMatch(sketch, /fxhash|fxrand|aspectratioaux|qualityofrender|p5graphics|createGraphics|createCanvas/);
 });

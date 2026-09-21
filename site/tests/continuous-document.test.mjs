@@ -213,8 +213,8 @@ test('Lines and Cells stays anchored to About and scrolls out before Work', () =
   assert.match(html, /width="640"/);
   assert.match(html, /height="360"/);
   assert.match(html, /src="about:blank"/);
-  assert.match(html, /data-hydra-src="\/hydra\/lines-and-cells\.html\?fxhash=opTgZfTemeT4UtGTA95AUh97CWnCstz2XW359tw1Hv7588x551j"/);
-  assert.doesNotMatch(html, /dweb\.link\/ipfs\/Qmb4ktMbn1Sef6i5sMYy17MTzGmjRT8TuWsgLAhsQMRbrU/);
+  assert.match(html, /data-hydra-src="\/hydra\/lines-and-cells\.html"/);
+  assert.doesNotMatch(html, /lines-and-cells\.html\?fxhash/);
   assert.match(html, /loading="lazy"/);
   assert.match(html, /sandbox="allow-scripts allow-same-origin"/);
   assert.doesNotMatch(source, /portfolio-about__live-bg-fallback|lines-and-cells\.webp/);
@@ -231,8 +231,8 @@ test('Lines and Cells stays anchored to About and scrolls out before Work', () =
   assert.match(source, /\.portfolio-about__live-bg iframe\s*\{[^}]*inset:\s*0;[^}]*width:\s*100%;[^}]*height:\s*100%;/s);
   assert.doesNotMatch(source, /--hydra-scale-[xy]|ResizeObserver|scale\(var\(--hydra-scale/);
   assert.match(source, /prefers-reduced-motion:\s*reduce/);
-  assert.match(sketch, /new Hydra\(\{ detectAudio: false, canvas: hydraCanvas, autoLoop: false \}\)/);
-  assert.match(sketch, /hydra\.tick\(now - lastHydraTick\)/);
+  assert.match(sketch, /new Hydra\(\{[\s\S]*canvas,[\s\S]*autoLoop:\s*false[\s\S]*\}\)/);
+  assert.match(sketch, /hydra\.tick\(dt\)/);
   assert.doesNotMatch(source, /frame\s*=\s*requestAnimationFrame\(\(\)\s*=>\s*\{\s*frame\s*=\s*requestAnimationFrame\(loadHydra\);\s*\}\)/s);
   assert.match(aboutSource, /\.portfolio-about__hero\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1;/s);
   assert.match(aboutSource, /\.portfolio-about__thread\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1;/s);

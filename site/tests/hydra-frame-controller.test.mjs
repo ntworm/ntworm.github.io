@@ -127,7 +127,7 @@ test('Hydra parent resends its current state when the iframe loads', () => {
 
 test('Hydra parent loads the local shell once when it first becomes active', () => {
   const harness = createHarness();
-  harness.iframe.dataset = { hydraSrc: '/hydra/lines-and-cells.html?fxhash=seed' };
+  harness.iframe.dataset = { hydraSrc: '/hydra/lines-and-cells.html' };
   const controller = createHydraFrameController({
     host: harness.host,
     iframe: harness.iframe,
@@ -141,7 +141,7 @@ test('Hydra parent loads the local shell once when it first becomes active', () 
   harness.intersecting(false);
   harness.intersecting(true);
 
-  assert.equal(harness.iframe.src, '/hydra/lines-and-cells.html?fxhash=seed');
+  assert.equal(harness.iframe.src, '/hydra/lines-and-cells.html');
   assert.equal(harness.iframe.dataset.hydraLoaded, 'true');
   controller.dispose();
 });
