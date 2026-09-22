@@ -6,8 +6,12 @@ country: "Palmas, Tocantins, Brazil"
 type: "Ableton Live Extension"
 production: "Source-available · PolyForm Noncommercial 1.0.0"
 links:
-  - url: "https://github.com/ntworm/ableton-rc-surface"
+  - url: "https://github.com/ntworm/rc-surface"
     label: "GitHub"
+  - url: "https://ntworm.github.io/rc-surface/"
+    label: "Landing"
+  - url: "https://github.com/ntworm/rc-surface/releases/latest"
+    label: "Latest release"
 tags: ["code", "max4live", "ableton", "tool"]
 ---
 
