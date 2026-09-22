@@ -234,7 +234,7 @@ test('project case copy keeps the verified Ableton, MOTELX, and Spotify facts', 
   const arvoreSeca = readFileSync(new URL('../src/content/projects/arvore-seca.md', import.meta.url), 'utf8');
   const motelxWinnersUrl = 'https://www.motelx.org/noticias/motelx-2025-os-vencedores-da-19-a-edicao';
 
-  assert.match(ableton, /75 tools in v0\.5\.3/);
+  assert.match(ableton, /97 tools in v0\.7\.0/);
   assert.match(
     ableton,
     /one grouped undo step; successful earlier commands persist if a later command fails/,

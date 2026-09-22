@@ -12,11 +12,11 @@ links:
     label: "Landing"
   - url: "https://github.com/ntworm/rc-surface/releases/latest"
     label: "Latest release"
-tags: ["code", "max4live", "ableton", "tool"]
+tags: ["code", "ableton", "tool"]
 ---
 
 ## RC Surface
 
-A <a class="entity-link" href="https://www.ableton.com/en/live/max-for-live" target="_blank" rel="noopener noreferrer">Max4Live</a> device for <a class="entity-link" href="https://www.ableton.com" target="_blank" rel="noopener noreferrer">Ableton Live</a>, source-available under the PolyForm Noncommercial 1.0.0 license. Turns any phone browser into a wireless MIDI + multi-sensor controller: 12 performance pads, two physics XY pads, knobs & faders, sensor mappings (motion, orientation, audio, vision), in-browser mapping editor. No phone install required.
+An extension for <a class="entity-link" href="https://www.ableton.com" target="_blank" rel="noopener noreferrer">Ableton Live</a>, source-available under the PolyForm Noncommercial 1.0.0 license. Turns any phone browser into a wireless MIDI + multi-sensor controller: 12 performance pads, two XY pads (one with physics), knobs & faders, sensor mappings (motion, orientation, audio, vision), in-browser mapping editor. No phone install required.
 
-Built on the official <a class="entity-link" href="https://www.ableton.com" target="_blank" rel="noopener noreferrer">Ableton</a> Extensions SDK (Live 12.4+ Node.js runtime, `.ablx`). The mobile side runs as a web app on the phone's browser; the desktop side runs as an Extension inside Live. Both talk over WebSocket, and the mapping editor lives in the browser too — so you can build or change a layout from the phone while Live is on stage.
+Built on the official <a class="entity-link" href="https://www.ableton.com" target="_blank" rel="noopener noreferrer">Ableton</a> Extensions SDK (Live 12.4.5+ Suite, Node.js runtime, `.ablx`). The mobile side runs as a web app on the phone's browser; the desktop side runs as an Extension inside Live. Both talk over WebSocket, and the mapping editor lives in the browser too — so you can build or change a layout from the phone while Live is on stage.
