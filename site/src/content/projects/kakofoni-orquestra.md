@@ -7,16 +7,16 @@ type: "Generative audiovisual"
 collaborator: "Rangga Purnama Aji (main visuals)"
 production: "Rangga Purnama Aji + nt_worm / fxhash"
 links:
-  - url: "https://www.fxhash.xyz/article/kakofoni-orquestra"
-    label: "Read the fxhash article"
+  - url: "https://killedbyapixel.github.io/fxhashArchive/#/token/kakofoni-orquestra"
+    label: "Read the fxhash article & archive"
   - url: "https://lnkd.in/d5nphBnu"
     label: "Madison Museum of Art and Technology"
   - url: "https://lnkd.in/dJEfXHVs"
     label: "Collection announcement"
   - url: "https://www.instagram.com/ranggapurnamaaji/"
     label: "Rangga Purnama Aji"
-  - url: "https://www.fxhash.xyz/u/nt_worm"
-    label: "nt_worm profile"
+  - url: "https://killedbyapixel.github.io/fxhashArchive/#/artist/tz1du7JyqkpAWrQf7kspXS383wpMxkVWCoqQ"
+    label: "nt_worm profile on fxhash archive"
 interactiveEmbed:
   url: "https://gateway.fxhash2.xyz/ipfs/Qmau3NDFiN3UtNscCsv7J7aNV9BEsP8pT7m3YHamap387y/?cid=ipfs%3A%2F%2FQmau3NDFiN3UtNscCsv7J7aNV9BEsP8pT7m3YHamap387y&fxhash=ooKcyMA3VbfJzYWNWypoqDij5NWsHzW6SYpoCMqwDXzQ8CTJ4fC&fxminter=tz1BwbSPy4QxnJF2SieQSU9tzEgTt3VfTQ8N&fxiteration=1&fxcontext=standalone&fxchain=TEZOS&legacy=false"
   title: "KAKOFONI ORQUESTRA — live generative work"
@@ -41,4 +41,4 @@ The visuals are a collaboration. Rangga built the textures and the initial visua
 
 The work is not a recording with a video placed on top. Sound and image are outputs of the same loop, the same code and the same moment. That shared running system is what lets the piece feel alive rather than merely configurable.
 
-[Read the full fxhash article about the work](https://www.fxhash.xyz/article/kakofoni-orquestra).
+[View KAKOFONI ORQUESTRA in the fxhash archive](https://killedbyapixel.github.io/fxhashArchive/#/token/kakofoni-orquestra).
