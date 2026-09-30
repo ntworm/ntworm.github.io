@@ -20,9 +20,9 @@ Public case-study media lives in one folder per project slug under `site/public/
 
 Use numbered image filenames when presentation order matters. Image and video dimensions are recorded by `site/scripts/asset-dimensions.mjs` in `site/src/data/asset-dimensions.json`.
 
-## Asset state (2026-08-13)
+## Asset state (2026-09-30)
 
-All 25 project cases currently have an image cover. The table reflects the exact output of the discovery rules above; `—` means no dedicated trailer or gallery item.
+All 26 project cases currently have an image cover. The table reflects the exact output of the discovery rules above; `—` means no dedicated trailer or gallery item.
 
 | Project | Cover | Trailer | Gallery |
 |---|---|---|---|
@@ -46,6 +46,7 @@ All 25 project cases currently have an image cover. The table reflects the exact
 | o-compositor | 1.jpg | trailer.mp4 | 2.jpg–7.jpg |
 | rc-setlist | 1.jpg | — | 2.jpg–5.jpg |
 | rc-surface | 1.jpg | — | — |
+| soundwalking-lisboa | 1.jpg | — | — |
 | this-feminine-side | 1.jpg | — | — |
 | ticha-penicheiro | 1.jpg | — | — |
 | trisal | 1.jpg | — | — |

@@ -61,7 +61,7 @@ test('built homepage and case studies expose parseable canonical discovery metad
     const label = document.label.replaceAll('\\', '/');
     return label.startsWith('work/') && label !== 'work/index.html';
   });
-  assert.equal(cases.length, 25);
+  assert.equal(cases.length, 26);
   const caseCanonicals = new Set();
   for (const document of cases) {
     const work = structuredData(document.html).find((data) => data['@type'] === 'CreativeWork');

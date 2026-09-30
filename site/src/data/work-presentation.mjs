@@ -116,6 +116,7 @@ export const DISCIPLINE_BY_ID = Object.freeze({
   'rc-surface': 'tools',
   'rc-setlist': 'tools',
   'ableton-mcp-server': 'tools',
+  'soundwalking-lisboa': 'sound art',
 });
 
 const REQUIRED_WORK_IDS = [...FEATURED_WORK_IDS, ...MORE_WORK_IDS];
