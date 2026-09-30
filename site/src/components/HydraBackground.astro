@@ -1,5 +1,10 @@
 ---
+import { localeFromPath } from '../i18n/locales.mjs';
+
 const linesAndCellsUrl = '/hydra/lines-and-cells.html';
+const frameTitle = localeFromPath(Astro.url) === 'pt'
+  ? 'Lines and Cells — fundo generativo ao vivo'
+  : 'Lines and Cells live generative background';
 ---
 
 <div class="portfolio-about__live-bg" aria-hidden="true">
@@ -7,7 +12,7 @@ const linesAndCellsUrl = '/hydra/lines-and-cells.html';
     <iframe
       src="about:blank"
       data-hydra-src={linesAndCellsUrl}
-      title="Lines and Cells live generative background"
+      title={frameTitle}
       width="640"
       height="360"
       loading="lazy"

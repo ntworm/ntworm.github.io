@@ -2,6 +2,7 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import HydraBackground from '../HydraBackground.astro';
+import { localeFromPath, localizePath } from '../../i18n/locales.mjs';
 
 const PORTRAIT_DIR = join(process.cwd(), 'public', 'portrait');
 const IMG_EXTS = /\.(jpe?g|png|webp|avif|gif)$/i;
@@ -25,36 +26,101 @@ const portraitFiles = (() => {
   }
 })();
 
+const locale = localeFromPath(Astro.url);
+const workHref = (slug: string) => localizePath(`/work/${slug}`, locale);
+const copy = {
+  en: {
+    eyebrow: 'About',
+    lead: 'Sound direction, music production, and creative tooling — for cinema, performance, and live instruments. Based in Palmas, Tocantins, Brazil.',
+    portraits: 'Portraits',
+    portraitAlt: (index: number, total: number) => `Portrait ${index} of ${total}`,
+    threadEyebrow: 'Practice',
+    threadTitle: 'Three movements. Four areas. One thread.',
+  },
+  pt: {
+    eyebrow: 'Sobre',
+    lead: 'Direção de som, produção musical e ferramentas criativas — para cinema, performance e instrumentos ao vivo. Com base em Palmas, no Tocantins.',
+    portraits: 'Retratos',
+    portraitAlt: (index: number, total: number) => `Retrato ${index} de ${total}`,
+    threadEyebrow: 'Prática',
+    threadTitle: 'Três movimentos. Quatro áreas. Um fio condutor.',
+  },
+}[locale];
+const areas = [
+  {
+    id: 'film-audio',
+    title: { en: 'Film Audio', pt: 'Som para cinema' },
+    text: {
+      en: 'Sound direction, production recording, design, editing, and mix for short film, television, animation, and documentary. The work moves from the first sonic idea through final delivery.',
+      pt: 'Direção de som, som direto, desenho, edição e mixagem para curta-metragem, televisão, animação e documentário. O trabalho vai da primeira ideia sonora até a entrega final.',
+    },
+  },
+  {
+    id: 'music-production',
+    title: { en: 'Music Production', pt: 'Produção musical' },
+    text: {
+      en: 'Production, recording, mix, and master for independent artists, shaped by the Palmas and Tocantins scene — small rooms, recurring collaborators, and records built from local continuity.',
+      pt: 'Produção, gravação, mixagem e masterização para artistas independentes, moldadas pela cena de Palmas e do Tocantins — salas pequenas, parceiros de longa data e discos que nascem da continuidade local.',
+    },
+  },
+  {
+    id: 'creative-coding',
+    title: { en: 'Creative Coding', pt: 'Programação criativa' },
+    text: {
+      en: 'Max4Live devices and generative audiovisual systems organized around real-time signal flow. The tools feed the art, the art feeds the tools, and both share patches, modules, and live risk.',
+      pt: 'Devices para Max4Live e sistemas audiovisuais generativos organizados em torno do fluxo de sinal em tempo real. As ferramentas alimentam a arte, a arte alimenta as ferramentas, e as duas dividem patches, módulos e o risco do ao vivo.',
+    },
+  },
+  {
+    id: 'live-experimental',
+    title: { en: 'Live & Experimental', pt: 'Ao vivo e experimental' },
+    text: {
+      en: 'Festival curation, live sound, livecoding, and installations rooted in collective production. A piece either survives the room or it does not; the stage keeps the studio work honest.',
+      pt: 'Curadoria de festivais, som ao vivo, livecoding e instalações enraizadas na produção coletiva. Ou uma peça sobrevive à sala, ou não sobrevive; é o palco que mantém honesto o trabalho de estúdio.',
+    },
+  },
+];
 ---
 
 <section id="about" class="portfolio-about wrap" data-portfolio-chapter="about">
   <HydraBackground />
   <div class="portfolio-about__hero">
     <div class="portfolio-about__copy">
-      <span class="eyebrow">About</span>
-      <h1
-        class="about-title"
-        data-reveal="focus"
-        aria-label="A practice shaped by listening, systems, and collaboration."
-      >
-        <span class="reveal-seg">A practice</span>
-        <span class="reveal-seg">shaped by</span>
-        <span class="reveal-seg reveal-amber">listening,</span>
-        <span class="reveal-seg">systems,</span>
-        <span class="reveal-seg">and collaboration.</span>
-      </h1>
-      <p class="portfolio-about__lead">
-        Sound direction, music production, and creative tooling — for cinema, performance,
-        and live instruments. Based in Palmas, Tocantins, Brazil.
-      </p>
+      <span class="eyebrow">{copy.eyebrow}</span>
+      {locale === 'pt' ? (
+        <h1
+          class="about-title"
+          data-reveal="focus"
+          aria-label="Uma prática moldada pela escuta, pelos sistemas e pela colaboração."
+        >
+          <span class="reveal-seg">Uma prática</span>
+          <span class="reveal-seg">moldada pela</span>
+          <span class="reveal-seg reveal-amber">escuta,</span>
+          <span class="reveal-seg">pelos sistemas</span>
+          <span class="reveal-seg">e pela colaboração.</span>
+        </h1>
+      ) : (
+        <h1
+          class="about-title"
+          data-reveal="focus"
+          aria-label="A practice shaped by listening, systems, and collaboration."
+        >
+          <span class="reveal-seg">A practice</span>
+          <span class="reveal-seg">shaped by</span>
+          <span class="reveal-seg reveal-amber">listening,</span>
+          <span class="reveal-seg">systems,</span>
+          <span class="reveal-seg">and collaboration.</span>
+        </h1>
+      )}
+      <p class="portfolio-about__lead">{copy.lead}</p>
     </div>
 
-    <div class="portfolio-about__portraits" aria-label="Portraits">
+    <div class="portfolio-about__portraits" aria-label={copy.portraits}>
       {portraitFiles.map((file, index) => (
         <figure>
           <img
             src={`/portrait/${file}`}
-            alt={`Portrait ${index + 1} of ${portraitFiles.length}`}
+            alt={copy.portraitAlt(index + 1, portraitFiles.length)}
             loading="lazy"
           />
         </figure>
@@ -64,10 +130,43 @@ const portraitFiles = (() => {
 
   <section class="portfolio-about__thread" aria-labelledby="about-thread-title">
     <header class="portfolio-about__thread-heading">
-      <span class="eyebrow">Practice</span>
-      <h2 id="about-thread-title">Three movements. Four areas. One thread.</h2>
+      <span class="eyebrow">{copy.threadEyebrow}</span>
+      <h2 id="about-thread-title">{copy.threadTitle}</h2>
     </header>
 
+    {locale === 'pt' ? (
+    <div class="portfolio-about__thread-copy">
+      <p>
+        Trabalho no cruzamento entre o som para cinema, a produção musical e as ferramentas criativas.
+        Minha prática transita pelo <em>cinema</em> — direção, desenho e mixagem de som para filmes e
+        televisão; pela <em>música</em> — produção, mixagem e masterização para artistas e bandas
+        independentes brasileiras; e pelo <em>código</em> — devices para Max4Live, sistemas audiovisuais
+        generativos e instrumentos para tocar ao vivo.
+      </p>
+      <p>
+        Nas três frentes, o fio é o mesmo: construo instrumentos — acústicos, digitais, conceituais —
+        para fazer um trabalho específico, situado e comprometido com o lugar onde nasce. Entre os
+        trabalhos recentes estão <a class="entity-link" href={workHref('o-compositor')}>O Compositor</a>,
+        vencedor do prêmio de Melhor Curta de Terror Portuguesa no MOTELX 2025; o{' '}
+        <a class="entity-link" href={workHref('ep-rinoceronte')}>EP Rinoceronte</a>, de Luzo Cairo; e{' '}
+        <a class="entity-link" href={workHref('rc-surface')}>RC Surface</a> (PolyForm Noncommercial 1.0.0) e{' '}
+        <a class="entity-link" href={workHref('rc-setlist')}>RC Setlist</a>, ferramentas para Ableton Live
+        criadas para situações reais de palco.
+      </p>
+      <p>
+        O percurso foi tão geográfico quanto técnico. Passei seis anos na cena musical de Palmas como
+        compositor, guitarrista e produtor; depois, trabalhei entre o Brasil e Lisboa enquanto concluía
+        a graduação em Som na Universidade Lusófona. Voltei a Palmas em 2025 trazendo na bagagem as
+        ferramentas e os hábitos das duas cenas.
+      </p>
+      <p>
+        O trabalho conecta essas cenas por meio da Lusófona e do REANIMA, na prática audiovisual; da AMMP,
+        na televisão portuguesa; da Artpalco, nas séries mais recentes; do acervo do Madison Museum, com
+        Kakofoni Orquestra; e do edital Aldir Blanc / PAAR, que viabilizou o Rinoceronte. Nenhum deles é
+        morada definitiva: são passagens de uma mesma prática.
+      </p>
+    </div>
+    ) : (
     <div class="portfolio-about__thread-copy">
       <p>
         I work at the intersection of film sound, music production, and creative tooling. My practice
@@ -97,36 +196,15 @@ const portraitFiles = (() => {
         they are passages through one practice.
       </p>
     </div>
+    )}
 
     <div class="portfolio-about__areas">
-      <article data-practice-area="film-audio">
-        <h3><span class="mono">01</span> Film Audio</h3>
-        <p>
-          Sound direction, production recording, design, editing, and mix for short film, television,
-          animation, and documentary. The work moves from the first sonic idea through final delivery.
-        </p>
-      </article>
-      <article data-practice-area="music-production">
-        <h3><span class="mono">02</span> Music Production</h3>
-        <p>
-          Production, recording, mix, and master for independent artists, shaped by the Palmas and
-          Tocantins scene — small rooms, recurring collaborators, and records built from local continuity.
-        </p>
-      </article>
-      <article data-practice-area="creative-coding">
-        <h3><span class="mono">03</span> Creative Coding</h3>
-        <p>
-          Max4Live devices and generative audiovisual systems organized around real-time signal flow.
-          The tools feed the art, the art feeds the tools, and both share patches, modules, and live risk.
-        </p>
-      </article>
-      <article data-practice-area="live-experimental">
-        <h3><span class="mono">04</span> Live &amp; Experimental</h3>
-        <p>
-          Festival curation, live sound, livecoding, and installations rooted in collective production.
-          A piece either survives the room or it does not; the stage keeps the studio work honest.
-        </p>
-      </article>
+      {areas.map((area, index) => (
+        <article data-practice-area={area.id}>
+          <h3><span class="mono">{String(index + 1).padStart(2, '0')}</span> {area.title[locale]}</h3>
+          <p>{area.text[locale]}</p>
+        </article>
+      ))}
     </div>
   </section>
 </section>

@@ -1,11 +1,17 @@
 ---
 import WorkEntry from './WorkEntry.astro';
+import { localeFromPath } from '../../i18n/locales.mjs';
 
 interface Props {
   projects: Parameters<typeof WorkEntry>[0]['project'][];
 }
 
 const { projects } = Astro.props;
+const locale = localeFromPath(Astro.url);
+const copy = {
+  en: { eyebrow: 'Archive', title: 'Complete project index.' },
+  pt: { eyebrow: 'Arquivo', title: 'Índice completo de projetos.' },
+}[locale];
 ---
 
 <section
@@ -14,8 +20,8 @@ const { projects } = Astro.props;
   data-portfolio-chapter="archive"
   aria-labelledby="archive-title"
 >
-  <span class="eyebrow">Archive</span>
-  <h2 id="archive-title">Complete project index.</h2>
+  <span class="eyebrow">{copy.eyebrow}</span>
+  <h2 id="archive-title">{copy.title}</h2>
   <div class="portfolio-archive__grid">
     {projects.map((project, index) => (
       <WorkEntry project={project} tier="archive" index={index} />

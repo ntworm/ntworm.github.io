@@ -1,5 +1,16 @@
 ---
+import { localeFromPath, localizePath } from '../i18n/locales.mjs';
+import { useTranslations } from '../i18n/ui.mjs';
+
+const locale = localeFromPath(Astro.url);
+const t = useTranslations(locale);
 const year = new Date().getFullYear();
+const chapters = [
+  { href: '/#work', label: 'nav.work' },
+  { href: '/#about', label: 'nav.about' },
+  { href: '/#code', label: 'nav.code' },
+  { href: '/#contact', label: 'nav.contact' },
+];
 ---
 <footer class="foot">
   <div class="wrap foot__inner">
@@ -7,15 +18,14 @@ const year = new Date().getFullYear();
       <span class="foot__copy mono">© {year} Gabriel Worm</span>
       <span class="foot__loc mono">Palmas, TO · BR</span>
     </div>
-    <nav aria-label="Footer">
+    <nav aria-label={t('footer.label')}>
       <ul class="foot__nav">
         <li><a href="https://www.imdb.com/name/nm16356368/" rel="noopener">IMDB</a></li>
         <li><a href="https://github.com/ntworm" rel="noopener">GitHub</a></li>
-        <li><a href="mailto:gabrielwormm@gmail.com">Email</a></li>
-        <li><a href="/#work">Work</a></li>
-        <li><a href="/#about">About</a></li>
-        <li><a href="/#code">Code</a></li>
-        <li><a href="/#contact">Contact</a></li>
+        <li><a href="mailto:gabrielwormm@gmail.com">{t('footer.email')}</a></li>
+        {chapters.map((chapter) => (
+          <li><a href={localizePath(chapter.href, locale)}>{t(chapter.label)}</a></li>
+        ))}
       </ul>
     </nav>
   </div>

@@ -1,6 +1,7 @@
 ---
 import WorkEntry from './WorkEntry.astro';
 import dimensionsData from '../../data/asset-dimensions.json';
+import { localeFromPath, localizePath } from '../../i18n/locales.mjs';
 
 interface Props {
   presentation: {
@@ -10,6 +11,37 @@ interface Props {
 }
 
 const { presentation } = Astro.props;
+const locale = localeFromPath(Astro.url);
+const copy = {
+  en: {
+    eyebrow: 'Work',
+    title: 'Sound direction, music production, and creative systems.',
+    titleLines: ['Sound direction,', 'music production,', 'and creative systems.'],
+    intro: 'Selected work across cinema, television, music, generative art, performance, and tools.',
+    practiceLabel: 'Practice areas',
+    practice: ['Film Audio', 'Music Production', 'Creative Coding', 'Live / Experimental'],
+    spotlightLabel: 'Project spotlight',
+    spotlightFallbackRole: 'Work',
+    selectedEyebrow: 'Selected Work',
+    selectedTitle: 'Defining Projects.',
+    moreEyebrow: 'More Work',
+    moreTitle: 'Further work across the practice.',
+  },
+  pt: {
+    eyebrow: 'Trabalhos',
+    title: 'Direção de som, produção musical e sistemas criativos.',
+    titleLines: ['Direção de som,', 'produção musical', 'e sistemas criativos.'],
+    intro: 'Uma seleção de trabalhos entre cinema, televisão, música, arte generativa, performance e ferramentas.',
+    practiceLabel: 'Áreas de atuação',
+    practice: ['Som para cinema', 'Produção musical', 'Programação criativa', 'Ao vivo / Experimental'],
+    spotlightLabel: 'Projetos em destaque',
+    spotlightFallbackRole: 'Trabalho',
+    selectedEyebrow: 'Trabalhos selecionados',
+    selectedTitle: 'Projetos que me definem.',
+    moreEyebrow: 'Mais trabalhos',
+    moreTitle: 'Outros caminhos da mesma prática.',
+  },
+}[locale];
 
 const spotlightIds = [
   'a-quermesse',
@@ -39,40 +71,37 @@ function coverDimensions(project: (typeof spotlightProjects)[number]) {
   <header class="portfolio-work__header">
     <div class="portfolio-work__hero">
       <div class="portfolio-work__hero-copy">
-        <span class="eyebrow">Work</span>
+        <span class="eyebrow">{copy.eyebrow}</span>
         <h2
           class="portfolio-work__title"
           data-work-title-reveal
-          aria-label="Sound direction, music production, and creative systems."
+          aria-label={copy.title}
         >
-          <span class="portfolio-work__title-line"><span>Sound direction,</span></span>
-          <span class="portfolio-work__title-line"><span>music production,</span></span>
-          <span class="portfolio-work__title-line"><span>and creative systems.</span></span>
+          {copy.titleLines.map((line) => (
+            <span class="portfolio-work__title-line"><span>{line}</span></span>
+          ))}
         </h2>
-        <p>Selected work across cinema, television, music, generative art, performance, and tools.</p>
-        <ul class="portfolio-work__practice" aria-label="Practice areas">
-          <li>Film Audio</li>
-          <li>Music Production</li>
-          <li>Creative Coding</li>
-          <li>Live / Experimental</li>
+        <p>{copy.intro}</p>
+        <ul class="portfolio-work__practice" aria-label={copy.practiceLabel}>
+          {copy.practice.map((area) => <li>{area}</li>)}
         </ul>
       </div>
 
       <div
         class="portfolio-work__spotlight"
         role="group"
-        aria-label="Project spotlight"
+        aria-label={copy.spotlightLabel}
         data-spotlight
       >
         {spotlightProjects.map((project, index) => project && (
           <a
-            href={`/work/${project.id}`}
+            href={localizePath(`/work/${project.id}`, locale)}
             class="work-spotlight-cell"
             aria-hidden={index === 0 ? 'false' : 'true'}
             inert={index === 0 ? undefined : true}
             tabindex={index === 0 ? 0 : -1}
             data-spotlight-slide
-            aria-label={`${project.data.title} — ${project.data.role ?? 'Work'} (${project.data.year})`}
+            aria-label={`${project.data.title} — ${project.data.role ?? copy.spotlightFallbackRole} (${project.data.year})`}
           >
             <img
               src={index === 0 ? project.media.cover : undefined}
@@ -95,11 +124,11 @@ function coverDimensions(project: (typeof spotlightProjects)[number]) {
 
   <section class="portfolio-work__selected" aria-labelledby="selected-work-title">
     <div class="portfolio-work__runway">
-      <span class="eyebrow">Selected Work</span>
+      <span class="eyebrow">{copy.selectedEyebrow}</span>
       <span class="portfolio-work__runway-count mono">01—13</span>
       <span class="portfolio-work__runway-rule" aria-hidden="true"></span>
     </div>
-    <h2 id="selected-work-title">Defining Projects.</h2>
+    <h2 id="selected-work-title">{copy.selectedTitle}</h2>
     <div class="portfolio-work__featured">
       {presentation.featured.map((project, index) => (
         <WorkEntry
@@ -113,8 +142,8 @@ function coverDimensions(project: (typeof spotlightProjects)[number]) {
   </section>
 
   <section class="portfolio-work__more" aria-labelledby="more-work-title">
-    <span class="eyebrow">More Work</span>
-    <h2 id="more-work-title">Further work across the practice.</h2>
+    <span class="eyebrow">{copy.moreEyebrow}</span>
+    <h2 id="more-work-title">{copy.moreTitle}</h2>
     <div class="portfolio-work__more-grid">
       {presentation.more.map((project, index) => (
         <WorkEntry project={project} tier="more" index={index} />

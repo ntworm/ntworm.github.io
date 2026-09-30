@@ -57,13 +57,22 @@ test('built homepage and case studies expose parseable canonical discovery metad
   assert.equal(person?.url, homeCanonical);
   assert.equal(homeCanonical, 'https://ntworm.github.io/');
 
-  const cases = documents.filter((document) => {
+  const ptHome = findDocument('pt-br/index.html');
+  const ptPerson = structuredData(ptHome).find((data) => data['@type'] === 'Person');
+  const ptHomeCanonical = canonicalFrom(ptHome);
+  assert.equal(ptPerson?.url, ptHomeCanonical);
+  assert.equal(ptHomeCanonical, 'https://ntworm.github.io/pt-br/');
+
+  const casesIn = (prefix) => documents.filter((document) => {
     const label = document.label.replaceAll('\\', '/');
-    return label.startsWith('work/') && label !== 'work/index.html';
+    return label.startsWith(prefix + 'work/') && label !== prefix + 'work/index.html';
   });
+  const cases = casesIn('');
+  const ptCases = casesIn('pt-br/');
   assert.equal(cases.length, 26);
+  assert.equal(ptCases.length, 26);
   const caseCanonicals = new Set();
-  for (const document of cases) {
+  for (const document of [...cases, ...ptCases]) {
     const work = structuredData(document.html).find((data) => data['@type'] === 'CreativeWork');
     assert.ok(work, document.label + ': CreativeWork metadata missing');
     assert.equal(/[?#]/.test(work.url), false, document.label + ': canonical metadata contains query or hash');
@@ -78,7 +87,7 @@ test('built homepage and case studies expose parseable canonical discovery metad
 
   const sitemap = readFileSync(join(distDir, 'sitemap.xml'), 'utf8');
   const sitemapUrls = new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]));
-  assert.deepEqual(sitemapUrls, new Set([homeCanonical, ...caseCanonicals]));
+  assert.deepEqual(sitemapUrls, new Set([homeCanonical, ptHomeCanonical, ...caseCanonicals]));
 });
 
 function localPathExists(url) {
@@ -791,7 +800,7 @@ test('case-study media keeps motion, gallery labels, and interactive focus safe'
   assert.match(motionController, /void video\.play\(\)\.catch\(\(\) => \{\}\);/);
   assert.match(template, /document\.addEventListener\('astro:before-swap', \(\) => disposeCaseMedia\(\)\)/);
   assert.doesNotMatch(template, /document\.addEventListener\('astro:before-swap', disposeCaseMedia\)/);
-  assert.match(template, /alt=\{`\$\{data\.title\} \\u2014 project visual \$\{m\.visualIndex\}`\}/);
+  assert.match(template, /alt=\{`\$\{data\.title\} \\u2014 \$\{t\('case\.visual'\)\} \$\{m\.visualIndex\}`\}/);
   assert.doesNotMatch(template, /case__gallery-item[\s\S]*?alt=""/);
   assert.match(template, /role="status" aria-live="polite" data-interactive-status/);
   assert.match(template, /if \(!event\.isTrusted \|\| button\.disabled\) return;/);

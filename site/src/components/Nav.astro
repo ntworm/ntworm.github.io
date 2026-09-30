@@ -1,10 +1,16 @@
 ---
-const { pathname } = Astro.url;
+import { LOCALES, LOCALE_META, alternatePaths, localeFromPath, localizePath, unlocalizePath } from '../i18n/locales.mjs';
+import { useTranslations } from '../i18n/ui.mjs';
+
+const locale = localeFromPath(Astro.url);
+const t = useTranslations(locale);
+const pathname = unlocalizePath(Astro.url.pathname);
+const languagePaths = alternatePaths(Astro.url.pathname);
 const links = [
-  { href: '/#about', label: 'About' },
-  { href: '/#work', label: 'Work' },
-  { href: '/#code', label: 'Code' },
-  { href: '/#contact', label: 'Contact' },
+  { href: '/#about', label: 'nav.about' },
+  { href: '/#work', label: 'nav.work' },
+  { href: '/#code', label: 'nav.code' },
+  { href: '/#contact', label: 'nav.contact' },
 ];
 
 function isActive(href: string): boolean {
@@ -13,18 +19,38 @@ function isActive(href: string): boolean {
 ---
 <header class="nav">
   <div class="wrap nav__inner">
-    <a href="/" class="nav__logo" aria-label="GW Gabriel Worm — Home">GW</a>
-    <nav aria-label="Primary">
+    <div class="nav__brand">
+      <a href={localizePath('/', locale)} class="nav__logo" aria-label={t('nav.home')}>GW</a>
+      <ul class="nav__lang" aria-label={t('nav.language')}>
+        {LOCALES.map((option) => (
+          <li>
+            <a
+              href={languagePaths[option]}
+              hreflang={LOCALE_META[option].hreflang}
+              lang={LOCALE_META[option].htmlLang}
+              title={LOCALE_META[option].name}
+              class:list={['nav__lang-link', option === locale && 'is-active']}
+              aria-current={option === locale ? 'true' : undefined}
+              data-lang-switch
+              data-astro-reload
+            >
+              {LOCALE_META[option].label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+    <nav aria-label={t('nav.primary')}>
       <ul class="nav__list">
         {links.map(link => (
           <li>
             <a
-              href={link.href}
+              href={localizePath(link.href, locale)}
               data-nav-section
               class:list={['nav__link', isActive(link.href) && 'is-active']}
               aria-current={isActive(link.href) ? 'page' : undefined}
             >
-              {link.label}
+              {t(link.label)}
             </a>
           </li>
         ))}
@@ -37,6 +63,23 @@ function isActive(href: string): boolean {
   import { installSectionNavigation } from '../scripts/nav-section-controller.mjs';
 
   installSectionNavigation(document);
+
+  // Switching language reloads the whole page in the other locale. On the
+  // homepage, carry the chapter being read so the reader lands in the same
+  // place instead of back at the top.
+  document.addEventListener('click', (event) => {
+    const link = event.target instanceof Element
+      ? event.target.closest<HTMLAnchorElement>('a[data-lang-switch]')
+      : null;
+    if (!link || link.getAttribute('aria-current') === 'true') return;
+    const chapter = document
+      .querySelector<HTMLAnchorElement>('[data-nav-section][aria-current="location"]')
+      ?.hash;
+    if (!chapter || chapter === '#about') return;
+    const url = new URL(link.href);
+    url.hash = chapter;
+    link.href = url.href;
+  });
 </script>
 
 <style>
@@ -73,6 +116,38 @@ function isActive(href: string): boolean {
     border-bottom: 0;
   }
   .nav__logo:hover { color: var(--accent-amber); }
+  .nav__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--s-5);
+  }
+  .nav__lang {
+    display: flex;
+    align-items: center;
+    list-style: none;
+  }
+  .nav__lang li + li::before {
+    content: '/';
+    margin: 0 0.6em;
+    color: var(--muted-graphite);
+    font-family: var(--font-mono);
+    font-size: var(--t-eyebrow);
+  }
+  .nav__lang-link {
+    font-family: var(--font-mono);
+    font-size: var(--t-eyebrow);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted-graphite);
+    border-bottom: 0;
+    transition: color var(--d-fast) var(--ease-out);
+  }
+  .nav__lang-link:hover,
+  .nav__lang-link:focus-visible { color: var(--accent-amber); }
+  .nav__lang-link.is-active {
+    color: var(--fg-bone);
+    border-bottom: 1px solid var(--accent-amber);
+  }
   .nav__list {
     display: flex;
     list-style: none;
@@ -94,12 +169,34 @@ function isActive(href: string): boolean {
 
   @media (max-width: 640px) {
     .nav { height: 56px; }
-    .nav__list { gap: var(--s-4); }
+    .nav__list { gap: var(--s-3); }
     .nav__link {
       display: inline-flex;
       align-items: center;
       min-height: 32px;
       font-size: 11px;
+      letter-spacing: 0.08em;
     }
+    /* The switch tucks under the monogram so the chapter links keep the row;
+       Portuguese labels are longer than English ones. */
+    .nav__brand {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+    }
+    .nav__logo { line-height: 1; }
+    .nav__lang-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+    }
+    .nav__lang li + li::before { font-size: 10px; margin: 0 0.4em; }
+  }
+
+  @media (max-width: 359px) {
+    .nav__list { gap: var(--s-2); }
+    .nav__link { font-size: 10px; }
   }
 </style>

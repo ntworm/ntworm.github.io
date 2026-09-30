@@ -88,15 +88,25 @@ test('legacy redirects provide an immediate, index-safe fallback', () => {
   assert.match(component, /buildCanonical/);
 });
 
-test('sitemap build output contains exactly the indexable canonical homepage and 26 case URLs', () => {
+test('sitemap build output contains exactly the indexable homepage and 26 case URLs in each language', () => {
   const sitemapPath = join(root, 'dist', 'sitemap.xml');
   assert.ok(existsSync(sitemapPath), 'sitemap.xml was emitted by the build');
   const sitemap = readFileSync(sitemapPath, 'utf8');
   const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+  const portuguese = urls.filter((url) => url.startsWith('https://ntworm.github.io/pt-br/'));
+  const english = urls.filter((url) => !portuguese.includes(url));
 
-  const caseUrls = urls.filter((url) => url.includes('/work/'));
-  assert.equal(urls.includes('https://ntworm.github.io/work/'), false);
-  assert.equal(urls.length, 27);
-  assert.equal(caseUrls.length, 26);
-  assert.ok(caseUrls.every((url) => /\/work\/[^/]+\/$/.test(url)));
+  for (const [label, localized, prefix] of [['en', english, ''], ['pt-br', portuguese, '/pt-br']]) {
+    const caseUrls = localized.filter((url) => url.includes('/work/'));
+    assert.equal(localized.includes(`https://ntworm.github.io${prefix}/work/`), false, label);
+    assert.equal(localized.includes(`https://ntworm.github.io${prefix}/`), true, label);
+    assert.equal(localized.length, 27, label);
+    assert.equal(caseUrls.length, 26, label);
+    assert.ok(caseUrls.every((url) => new RegExp(`^https://ntworm\\.github\\.io${prefix}/work/[^/]+/$`).test(url)), label);
+  }
+  assert.deepEqual(
+    portuguese.map((url) => url.replace('/pt-br/', '/')),
+    english,
+    'every English URL has a Portuguese counterpart in the same order',
+  );
 });

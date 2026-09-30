@@ -1,0 +1,23 @@
+---
+import CaseStudy from '../../work/[slug].astro';
+import { getLocalizedProjects } from '../../../i18n/collections';
+import { getProjectMedia } from '../../../utils/project-images';
+
+// Brazilian Portuguese case studies. The English route's template renders
+// the page; it reads the locale from the /pt-br/ URL for its labels and
+// links, and receives entries whose words come from src/content/projects-pt-br.
+export async function getStaticPaths() {
+  const projects = await getLocalizedProjects('pt');
+  return projects.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      prev: projects[i - 1] ?? null,
+      next: projects[i + 1] ?? null,
+      act: `ATO ${String(i + 1).padStart(2, '0')}`,
+      media: getProjectMedia(entry.id),
+    },
+  }));
+}
+---
+<CaseStudy {...Astro.props} />
