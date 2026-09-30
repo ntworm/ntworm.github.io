@@ -16,26 +16,19 @@ tags: ["generative", "code", "audiovisual", "hydra"]
 
 ## Eletronik Fields
 
-Cities hum with a sound nobody hears. Every cable, screen, lamp and phone radiates an electromagnetic field, and together they form a dense, restless layer of activity running beneath the audible city — constant, invisible and indifferent to us.
+An audiovisual system that converts electromagnetic fields into MIDI, music and real-time visuals. Tools: magnetic induction coil, audio recorder, Max, Ableton Live and Hydra.js.
 
-*Eletronik Fields* is an instrument built to listen to that layer. It captures electromagnetic noise and translates it into music and moving image, turning the hidden traffic of the electrical world into something the body can hear and see.
+## Signal chain
 
-## An instrument made of translations
+- **Capture:** a magnetic induction coil connected to an audio recorder picks up electromagnetic fields as an audio signal.
+- **Analysis:** <a class="entity-link" href="https://cycling74.com/products/max" target="_blank" rel="noopener noreferrer">Max</a> runs FFT analysis on that signal and converts it into MIDI.
+- **Sound:** <a class="entity-link" href="https://www.ableton.com" target="_blank" rel="noopener noreferrer">Ableton Live</a> receives the MIDI and generates the music.
+- **Image:** <a class="entity-link" href="https://hydra.ojack.xyz" target="_blank" rel="noopener noreferrer">Hydra.js</a> generates visuals that react to the same signal in real time.
 
-The work is a chain of translations, and each one is a choice. A magnetic induction coil converts fluctuating fields into electrical voltage. A recorder fixes that voltage as sound: hums, crackles, pulses and bursts — rhythms that belong to machines, not to musicians.
+## Field research
 
-In <a class="entity-link" href="https://cycling74.com/products/max" target="_blank" rel="noopener noreferrer">Max</a>, FFT analysis breaks that sound into its spectrum, reading where its energy sits and how it moves, and writes the reading out as MIDI. <a class="entity-link" href="https://www.ableton.com" target="_blank" rel="noopener noreferrer">Ableton Live</a> gives those notes a musical voice, while <a class="entity-link" href="https://hydra.ojack.xyz" target="_blank" rel="noopener noreferrer">Hydra.js</a> draws directly from the same signal. What you hear and what you see are two readings of a single field: nothing is illustrated, everything is derived.
+Before building the installation, I walked the streets with the coil and the recorder, capturing as many types of electromagnetic field as I could find, to learn how each source behaves through the chain. The survey showed which sources worked best as material: chargers, mobile phones, lights, UPS units and other powered equipment. The recordings from this stage, processed by the system, are the material of the video above.
 
-## The city as score
+## Installation
 
-With the coil plugged into the recorder, I walked through the city gathering its fields — a listening walk through a layer of urban life that surrounds us all the time and never reaches the ear. The recordings became a portrait of the city's invisible activity, the raw material the instrument later turned into the music and images of the video above.
-
-The city writes the material. The instrument decides how it is heard.
-
-## Listening with your hands
-
-As an installation, the piece asks for darkness: the darker the room, the more the space disappears and only the field remains. That is how it was set up at Universidade Lusófona, where I worked — a dark room, the coil within reach, a table of electronic devices waiting to be explored, and the projection facing the audience.
-
-Visitors picked up the coil and went searching. They walked the room, brought it close to their phones, pointed it at the lights, swept it across the devices on the table, and the projection answered in real time, in combinations of sound and image no one could predict. There was no finished piece to watch: the work existed only while someone kept listening with their hands.
-
-*Eletronik Fields* does not create sound out of nothing. It reveals what was already there.
+The installation was set up in a dark room at Universidade Lusófona, where I worked. The equipment identified in the field research — chargers, phones, lights, UPS units — was arranged on a table, and the coil was left free for visitors to use. Bringing the coil close to a device changes the captured signal, and the system turns that change into sound and projected visuals in real time. The projection faces the person holding the coil, so the result of each movement is immediate. Visitors could also test the coil on their own phones and on the room's lights.
