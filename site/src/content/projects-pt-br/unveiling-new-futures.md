@@ -1,13 +1,12 @@
 ---
-title: "Descobrir Novos Futuros"
 role: "Diretor de som + compositor"
 country: "Lisboa, Portugal"
 type: "Publicidade (campanha internacional)"
 ---
 
-## Descobrir Novos Futuros
+## Unveiling New Futures
 
-Dois filmes da campanha internacional de 2025 da Universidade Lusófona, “Descobrir Novos Futuros” / “Unveiling New Futures” — a principal ação internacional da universidade naquele ano, veiculada em Portugal e em outros mercados. Fui diretor de som e compositor nas duas peças: captei todo o som direto, compus a música original, mixei e entreguei.
+Dois filmes de “Unveiling New Futures”, a versão internacional da campanha “Descobrir Novos Futuros”, da Universidade Lusófona — a principal ação internacional da universidade em 2025, veiculada em Portugal e em outros mercados. Fui diretor de som e compositor nas duas peças: captei todo o som direto, compus a música original, mixei e entreguei.
 
 A campanha foi pensada como duas peças separadas, cada uma com desenho de som e trilha original próprios, mas dentro da mesma linguagem visual e musical. Assumi o som por inteiro, da captação no set à entrega final.
 

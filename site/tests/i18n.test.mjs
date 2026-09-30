@@ -209,7 +209,7 @@ test('the Portuguese homepage mirrors the English chapters, tiers and headings',
     assert.deepEqual(tierIds(html, tier), tierIds(english, tier), `${tier} tier matches English`);
   }
   // The archive is alphabetical by visible title within each year, so a
-  // translated title (Descobrir Novos Futuros) may move; the set is the same.
+  // translated title may move a project; the set of projects is the same.
   assert.deepEqual([...tierIds(html, 'archive')].sort(), [...tierIds(english, 'archive')].sort());
   const workLinks = [...html.matchAll(/<a\b[^>]*data-work-tier=[^>]*>/g)].map((match) => attr(match[0], 'href'));
   assert.ok(workLinks.every((href) => /^\/pt-br\/work\/[a-z0-9-]+$/.test(href)), 'cards stay in Portuguese');
