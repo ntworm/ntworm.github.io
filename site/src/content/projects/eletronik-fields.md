@@ -16,12 +16,26 @@ tags: ["generative", "code", "audiovisual", "hydra"]
 
 ## Eletronik Fields
 
-An audiovisual instrument that turns electromagnetic noise into music. A magnetic induction coil, plugged into a recorder, picks up the electromagnetic fields around it as an audio signal. <a class="entity-link" href="https://cycling74.com/products/max" target="_blank" rel="noopener noreferrer">Max</a> analyses that signal with FFT and converts it into MIDI, <a class="entity-link" href="https://www.ableton.com" target="_blank" rel="noopener noreferrer">Ableton Live</a> turns the MIDI into music, and <a class="entity-link" href="https://hydra.ojack.xyz" target="_blank" rel="noopener noreferrer">Hydra.js</a> draws visuals that react to the same signal.
+Cities hum with a sound nobody hears. Every cable, screen, lamp and phone radiates an electromagnetic field, and together they form a dense, restless layer of activity running beneath the audible city — constant, invisible and indifferent to us.
 
-## Listening to the city
+*Eletronik Fields* is an instrument built to listen to that layer. It captures electromagnetic noise and translates it into music and moving image, turning the hidden traffic of the electrical world into something the body can hear and see.
 
-I walked through the city with the coil and the recorder, capturing electromagnetic noise along the way. Back in the patch, those recordings became music and a visualization that reacts to it. The video above is the result.
+## An instrument made of translations
 
-## Installation
+The work is a chain of translations, and each one is a choice. A magnetic induction coil converts fluctuating fields into electrical voltage. A recorder fixes that voltage as sound: hums, crackles, pulses and bursts — rhythms that belong to machines, not to musicians.
 
-The piece is a visualization, and the darker the room, the better. It was set up as an installation at Universidade Lusófona, where I worked: a dark room, the coil within reach, and a table of devices to test it on. Visitors picked up the coil, walked around with it, held it near a phone or pointed it at a light, and the projection in front of them reacted on the spot, creating unpredictable combinations of sound and image.
+In <a class="entity-link" href="https://cycling74.com/products/max" target="_blank" rel="noopener noreferrer">Max</a>, FFT analysis breaks that sound into its spectrum, reading where its energy sits and how it moves, and writes the reading out as MIDI. <a class="entity-link" href="https://www.ableton.com" target="_blank" rel="noopener noreferrer">Ableton Live</a> gives those notes a musical voice, while <a class="entity-link" href="https://hydra.ojack.xyz" target="_blank" rel="noopener noreferrer">Hydra.js</a> draws directly from the same signal. What you hear and what you see are two readings of a single field: nothing is illustrated, everything is derived.
+
+## The city as score
+
+With the coil plugged into the recorder, I walked through the city gathering its fields — a listening walk through a layer of urban life that surrounds us all the time and never reaches the ear. The recordings became a portrait of the city's invisible activity, the raw material the instrument later turned into the music and images of the video above.
+
+The city writes the material. The instrument decides how it is heard.
+
+## Listening with your hands
+
+As an installation, the piece asks for darkness: the darker the room, the more the space disappears and only the field remains. That is how it was set up at Universidade Lusófona, where I worked — a dark room, the coil within reach, a table of electronic devices waiting to be explored, and the projection facing the audience.
+
+Visitors picked up the coil and went searching. They walked the room, brought it close to their phones, pointed it at the lights, swept it across the devices on the table, and the projection answered in real time, in combinations of sound and image no one could predict. There was no finished piece to watch: the work existed only while someone kept listening with their hands.
+
+*Eletronik Fields* does not create sound out of nothing. It reveals what was already there.
