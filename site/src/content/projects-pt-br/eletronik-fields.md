@@ -7,26 +7,19 @@ production: "Projeto independente"
 
 ## Eletronik Fields
 
-As cidades zumbem com um som que ninguém escuta. Cada cabo, tela, lâmpada e celular irradia um campo eletromagnético, e juntos eles formam uma camada densa e inquieta de atividade que corre por baixo da cidade audível — constante, invisível e indiferente a nós.
+Sistema audiovisual que converte campos eletromagnéticos em MIDI, música e visuais em tempo real. Ferramentas: bobina de indução magnética, gravador de áudio, Max, Ableton Live e Hydra.js.
 
-*Eletronik Fields* é um instrumento construído para escutar essa camada. Ele capta o ruído eletromagnético e o traduz em música e imagem em movimento, transformando o tráfego oculto do mundo elétrico em algo que o corpo pode ouvir e ver.
+## Cadeia de sinal
 
-## Um instrumento feito de traduções
+- **Captação:** uma bobina de indução magnética ligada a um gravador de áudio capta os campos eletromagnéticos como sinal de áudio.
+- **Análise:** o <a class="entity-link" href="https://cycling74.com/products/max" target="_blank" rel="noopener noreferrer">Max</a> faz a análise FFT desse sinal e a converte em MIDI.
+- **Som:** o <a class="entity-link" href="https://www.ableton.com" target="_blank" rel="noopener noreferrer">Ableton Live</a> recebe o MIDI e gera a música.
+- **Imagem:** o <a class="entity-link" href="https://hydra.ojack.xyz" target="_blank" rel="noopener noreferrer">Hydra.js</a> gera visuais que reagem ao mesmo sinal em tempo real.
 
-A obra é uma cadeia de traduções, e cada uma delas é uma escolha. Uma bobina de indução magnética converte campos que oscilam em tensão elétrica. Um gravador fixa essa tensão como som: zumbidos, estalos, pulsos e rajadas — ritmos que pertencem às máquinas, não aos músicos.
+## Pesquisa de campo
 
-No <a class="entity-link" href="https://cycling74.com/products/max" target="_blank" rel="noopener noreferrer">Max</a>, a análise por FFT decompõe esse som em seu espectro, lendo onde está a energia e como ela se move, e escreve essa leitura em MIDI. O <a class="entity-link" href="https://www.ableton.com" target="_blank" rel="noopener noreferrer">Ableton Live</a> dá voz musical a essas notas, enquanto o <a class="entity-link" href="https://hydra.ojack.xyz" target="_blank" rel="noopener noreferrer">Hydra.js</a> desenha diretamente a partir do mesmo sinal. O que se ouve e o que se vê são duas leituras de um único campo: nada é ilustração, tudo é derivado.
+Antes de montar a instalação, percorri as ruas com a bobina e o gravador, captando o maior número possível de tipos de campo eletromagnético, para entender como cada fonte se comporta ao passar pela cadeia. Esse levantamento mostrou quais fontes funcionavam melhor como material: carregadores, celulares, lâmpadas, nobreaks e outros equipamentos ligados à energia. As gravações dessa etapa, processadas pelo sistema, são o material do vídeo acima.
 
-## A cidade como partitura
+## Instalação
 
-Com a bobina ligada ao gravador, percorri a cidade colhendo seus campos — uma caminhada de escuta por uma camada da vida urbana que nos cerca o tempo todo e nunca chega aos ouvidos. As gravações formaram um retrato da atividade invisível da cidade, a matéria-prima que o instrumento depois transformou na música e nas imagens do vídeo acima.
-
-A cidade escreve o material. O instrumento decide como ele será ouvido.
-
-## Escutar com as mãos
-
-Como instalação, a peça pede escuridão: quanto mais escura a sala, mais o espaço desaparece e só o campo permanece. Assim ela foi montada na Universidade Lusófona, onde eu trabalhava — uma sala escura, a bobina ao alcance do público, uma mesa com aparelhos eletrônicos à espera de serem explorados e a projeção de frente para as pessoas.
-
-Os visitantes pegavam a bobina e saíam à procura. Andavam pela sala, aproximavam do celular, apontavam para as luzes, passavam pelos aparelhos da mesa — e a projeção respondia em tempo real, em combinações de som e imagem que ninguém conseguia prever. Não havia uma peça pronta para assistir: a obra só existia enquanto alguém continuasse escutando com as mãos.
-
-*Eletronik Fields* não cria som a partir do nada. Revela o que já estava lá.
+A instalação foi montada numa sala escura da Universidade Lusófona, onde eu trabalhava. Os equipamentos identificados na pesquisa de campo — carregadores, celulares, lâmpadas, nobreaks — ficaram dispostos sobre uma mesa, e a bobina ficou livre para o público usar. Ao aproximar a bobina de um equipamento, o sinal captado muda, e o sistema converte essa variação em som e em visuais projetados em tempo real. A projeção fica de frente para quem está com a bobina, então o resultado de cada movimento é imediato. Os visitantes também podiam testar a bobina nos próprios celulares e nas luzes da sala.
