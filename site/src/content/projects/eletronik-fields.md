@@ -5,7 +5,10 @@ role: "Creator"
 country: "Palmas, Tocantins, Brazil"
 type: "Generative audiovisual"
 production: "Independent project"
+youtubeId: "-LA7Wil530s"
 links:
+  - url: "https://youtu.be/-LA7Wil530s"
+    label: "YouTube"
   - url: "https://vimeo.com/672483901"
     label: "Vimeo"
 tags: ["generative", "code", "audiovisual", "hydra"]
