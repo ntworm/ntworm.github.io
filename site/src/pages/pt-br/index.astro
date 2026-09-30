@@ -1,0 +1,48 @@
+---
+import AboutChapter from '../../components/portfolio/AboutChapter.astro';
+import CodeChapter from '../../components/portfolio/CodeChapter.astro';
+import ContactChapter from '../../components/portfolio/ContactChapter.astro';
+import WorkChapter from '../../components/portfolio/WorkChapter.astro';
+import WorkArchive from '../../components/portfolio/WorkArchive.astro';
+import { buildWorkPresentation } from '../../data/work-presentation.mjs';
+import { getLocalizedProjects } from '../../i18n/collections';
+import Layout from '../../layouts/Layout.astro';
+import { getProjectMedia } from '../../utils/project-images';
+import { buildCanonical } from '../../utils/seo.mjs';
+
+// Brazilian Portuguese mirror of ../index.astro. The chapter components read
+// the locale from the URL, so they render in Portuguese under /pt-br/.
+const projects = (await getLocalizedProjects('pt')).map((entry) => ({
+  ...entry,
+  media: getProjectMedia(entry.id),
+}));
+const work = buildWorkPresentation(projects, { locale: 'pt' });
+const canonicalUrl = buildCanonical(Astro.site?.origin ?? Astro.url.origin, Astro.url.pathname);
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Gabriel Worm',
+  url: canonicalUrl,
+  jobTitle: 'Diretor de som',
+  sameAs: [
+    'https://www.linkedin.com/in/gabrielworm',
+    'https://www.imdb.com/name/nm16356368/',
+    'https://github.com/ntworm',
+    'https://killedbyapixel.github.io/fxhashArchive/#/artist/tz1du7JyqkpAWrQf7kspXS383wpMxkVWCoqQ',
+  ],
+};
+---
+
+<Layout
+  title="Som, Música e Sistemas Criativos"
+  image="/portrait/1.jpg"
+  mode="continuous"
+  canonicalUrl={canonicalUrl}
+  structuredData={structuredData}
+>
+  <AboutChapter />
+  <WorkChapter presentation={work} />
+  <CodeChapter />
+  <WorkArchive projects={work.archive} />
+  <ContactChapter />
+</Layout>

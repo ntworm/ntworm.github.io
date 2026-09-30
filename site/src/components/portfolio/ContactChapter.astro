@@ -1,6 +1,23 @@
 ---
+import { localeFromPath } from '../../i18n/locales.mjs';
+
+const locale = localeFromPath(Astro.url);
+const copy = {
+  en: {
+    eyebrow: 'Contact',
+    availability: 'Available for cinema, music, and creative coding projects.',
+    email: 'Email',
+    location: 'Currently based in Palmas, Tocantins, Brazil.',
+  },
+  pt: {
+    eyebrow: 'Contato',
+    availability: 'Disponível para projetos de cinema, música e programação criativa.',
+    email: 'E-mail',
+    location: 'Atualmente em Palmas, Tocantins, Brasil.',
+  },
+}[locale];
 const links = [
-  { label: 'Email', value: 'gabrielwormm@gmail.com', href: 'mailto:gabrielwormm@gmail.com' },
+  { label: copy.email, value: 'gabrielwormm@gmail.com', href: 'mailto:gabrielwormm@gmail.com' },
   { label: 'LinkedIn', value: 'gabrielworm', href: 'https://www.linkedin.com/in/gabrielworm' },
   { label: 'IMDB', value: 'nm16356368', href: 'https://www.imdb.com/name/nm16356368/' },
   { label: 'GitHub', value: '@ntworm', href: 'https://github.com/ntworm' },
@@ -10,8 +27,8 @@ const links = [
 
 <section id="contact" class="portfolio-contact wrap" data-portfolio-chapter="contact">
   <header>
-    <span class="eyebrow">Contact</span>
-    <p class="mono">Available for cinema, music, and creative coding projects.</p>
+    <span class="eyebrow">{copy.eyebrow}</span>
+    <p class="mono">{copy.availability}</p>
     <h2><a href="mailto:gabrielwormm@gmail.com">gabrielwormm@gmail.com</a></h2>
   </header>
 
@@ -24,7 +41,7 @@ const links = [
     ))}
   </ul>
 
-  <p class="portfolio-contact__location mono">Currently based in Palmas, Tocantins, Brazil.</p>
+  <p class="portfolio-contact__location mono">{copy.location}</p>
 </section>
 
 <style>

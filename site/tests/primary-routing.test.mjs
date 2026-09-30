@@ -12,14 +12,19 @@ test('primary navigation targets the continuous homepage chapters', () => {
 
   for (const chapter of ['about', 'work', 'code', 'contact']) {
     assert.match(nav, new RegExp(`href: '/#${chapter}'`));
-    assert.match(footer, new RegExp(`href="/#${chapter}"`));
+    assert.match(footer, new RegExp(`href: '/#${chapter}'`));
   }
 
   const navOrder = [...nav.matchAll(/href: '\/#([^']+)'/g)].map((match) => match[1]);
   assert.deepEqual(navOrder, ['about', 'work', 'code', 'contact']);
 
+  // Both lists run their chapter links through the locale mapper, so the
+  // Portuguese pages keep readers under /pt-br/.
+  assert.match(nav, /href=\{localizePath\(link\.href, locale\)\}/);
+  assert.match(footer, /href=\{localizePath\(chapter\.href, locale\)\}/);
+
   assert.doesNotMatch(nav, /href:\s*['"]\/(?:about|code|contact)['"]/);
-  assert.doesNotMatch(footer, /href="\/(?:about|code|contact)"/);
+  assert.doesNotMatch(footer, /href(?:=|:\s*)['"]\/(?:about|code|contact)['"]/);
 });
 
 test('legacy top-level pages redirect into the continuous homepage', () => {

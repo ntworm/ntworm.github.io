@@ -4,6 +4,8 @@ import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { getProjectMedia } from '../../utils/project-images';
 import dimensionsData from '../../data/asset-dimensions.json';
 import { buildCanonical, excerptMarkdown } from '../../utils/seo.mjs';
+import { LOCALE_META, localeFromPath, localizePath } from '../../i18n/locales.mjs';
+import { useTranslations } from '../../i18n/ui.mjs';
 
 interface Props {
   entry: CollectionEntry<'projects'>;
@@ -13,6 +15,9 @@ interface Props {
   media: ReturnType<typeof getProjectMedia>;
 }
 
+// English case studies. The Brazilian Portuguese routes in
+// ../pt-br/work/[slug].astro render this same template with localized
+// entries; every visible label below comes from the locale in the URL.
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
   return projects.map((entry, i) => ({
@@ -28,6 +33,8 @@ export async function getStaticPaths() {
 }
 
 const { entry, prev, next, act, media } = Astro.props;
+const locale = localeFromPath(Astro.url);
+const t = useTranslations(locale);
 const { Content } = await render(entry);
 const data = entry.data;
 const year = data.year ?? '';
@@ -87,6 +94,7 @@ const structuredData = {
   image: media.cover ? buildCanonical(Astro.site?.origin ?? Astro.url.origin, media.cover) : undefined,
   url: canonicalUrl,
   description,
+  inLanguage: LOCALE_META[locale].htmlLang,
 };
 
 function mediaStyle(dim?: { ar: string }) {
@@ -120,7 +128,7 @@ function mediaStyle(dim?: { ar: string }) {
     )}
 
     {seasons && (
-      <section class="case__seasons" aria-label="Seasons">
+      <section class="case__seasons" aria-label={t('case.seasons')}>
         {seasons.map((s) => {
           const dim = dimFor(s.img);
           return (
@@ -159,17 +167,23 @@ function mediaStyle(dim?: { ar: string }) {
             data-interactive-launch
             data-src={interactiveEmbed.url}
             data-title={interactiveEmbed.title}
+            data-frame-title={t('case.live.frame')}
+            data-open-label={t('case.live.open')}
+            data-loading-label={t('case.live.loadingLabel')}
+            data-loading-status={t('case.live.loading')}
+            data-loaded-status={t('case.live.loaded')}
+            data-failed-status={t('case.live.failed')}
             aria-label={interactiveEmbed.cta}
           >
             <img
               src={media.cover}
-              alt={`${data.title} â€” cover`}
+              alt={`${data.title} — ${t('work.cover')}`}
               loading="eager"
               width={coverDim?.w}
               height={coverDim?.h}
             />
             <span class="case__interactive-prompt">
-              <span class="eyebrow">Live generative work</span>
+              <span class="eyebrow">{t('case.liveWork')}</span>
               <strong data-interactive-label>{interactiveEmbed.cta}</strong>
             </span>
           </button>
@@ -177,7 +191,7 @@ function mediaStyle(dim?: { ar: string }) {
         ) : (
           <img
             src={media.cover}
-            alt={`${data.title} — cover`}
+            alt={`${data.title} — ${t('work.cover')}`}
             loading="eager"
             width={coverDim?.w}
             height={coverDim?.h}
@@ -187,30 +201,30 @@ function mediaStyle(dim?: { ar: string }) {
     )}
 
     {!hideGallery && galleryTop.length > 0 && (
-      <section class="case__gallery case__gallery--top" aria-label="Project visuals">
+      <section class="case__gallery case__gallery--top" aria-label={t('case.visuals')}>
         {galleryTop.map((m) => (
           <figure class="case__gallery-item" style={mediaStyle(m.dim)}>
             {m.type === 'video' ? (
               <video src={m.src} controls preload="metadata" width={m.dim?.w} height={m.dim?.h} />
             ) : (
-              <img src={m.src} alt={`${data.title} \u2014 project visual ${m.visualIndex}`} loading="lazy" width={m.dim?.w} height={m.dim?.h} />
+              <img src={m.src} alt={`${data.title} \u2014 ${t('case.visual')} ${m.visualIndex}`} loading="lazy" width={m.dim?.w} height={m.dim?.h} />
             )}
           </figure>
         ))}
       </section>
     )}
 
-    <aside class="case__meta" aria-label="Project metadata">
+    <aside class="case__meta" aria-label={t('case.metadata')}>
       <dl>
-        {year && (<><dt>Year</dt><dd>{year}</dd></>)}
-        {role && (<><dt>Role</dt><dd>{role}</dd></>)}
-        {country && (<><dt>Country</dt><dd>{country}</dd></>)}
-        {type && (<><dt>Type</dt><dd>{type}</dd></>)}
-        {production && (<><dt>Production</dt><dd>{production}</dd></>)}
+        {year && (<><dt>{t('case.year')}</dt><dd>{year}</dd></>)}
+        {role && (<><dt>{t('case.role')}</dt><dd>{role}</dd></>)}
+        {country && (<><dt>{t('case.country')}</dt><dd>{country}</dd></>)}
+        {type && (<><dt>{t('case.type')}</dt><dd>{type}</dd></>)}
+        {production && (<><dt>{t('case.production')}</dt><dd>{production}</dd></>)}
       </dl>
       {awards.length > 0 && (
         <div class="case__awards">
-          <span class="eyebrow">Awards</span>
+          <span class="eyebrow">{t('case.awards')}</span>
           <ul>
             {awards.map((a: string) => <li>{a}</li>)}
           </ul>
@@ -218,7 +232,7 @@ function mediaStyle(dim?: { ar: string }) {
       )}
       {links.length > 0 && (
         <div class="case__links">
-          <span class="eyebrow">Links</span>
+          <span class="eyebrow">{t('case.links')}</span>
           <ul>
             {links.map((l: { url: string; label: string }) => (
               <li><a href={l.url} rel="noopener">{l.label}</a></li>
@@ -234,13 +248,13 @@ function mediaStyle(dim?: { ar: string }) {
     </div>
 
     {!hideGallery && galleryBottom.length > 0 && (
-      <section class="case__gallery case__gallery--bottom" aria-label="More visuals">
+      <section class="case__gallery case__gallery--bottom" aria-label={t('case.moreVisuals')}>
         {galleryBottom.map((m) => (
           <figure class="case__gallery-item" style={mediaStyle(m.dim)}>
             {m.type === 'video' ? (
               <video src={m.src} controls preload="metadata" width={m.dim?.w} height={m.dim?.h} />
             ) : (
-              <img src={m.src} alt={`${data.title} \u2014 project visual ${m.visualIndex}`} loading="lazy" width={m.dim?.w} height={m.dim?.h} />
+              <img src={m.src} alt={`${data.title} \u2014 ${t('case.visual')} ${m.visualIndex}`} loading="lazy" width={m.dim?.w} height={m.dim?.h} />
             )}
           </figure>
         ))}
@@ -248,22 +262,22 @@ function mediaStyle(dim?: { ar: string }) {
     )}
 
     {fxhashPieces.length > 0 && (
-      <section class="case__catalog" aria-label="Mini-catalog">
+      <section class="case__catalog" aria-label={t('case.catalog')}>
         <header class="case__catalog-header">
-          <span class="eyebrow">Mini-catalog</span>
-          <h2 class="case__catalog-title">{fxhashPieces.length} pieces</h2>
+          <span class="eyebrow">{t('case.catalog')}</span>
+          <h2 class="case__catalog-title">{fxhashPieces.length} {t('case.pieces')}</h2>
         </header>
         <ul class="case__catalog-grid">
           {fxhashPieces.map((p) => (
             <li class="case__catalog-item">
               <a class="case__catalog-link" href={p.url} target="_blank" rel="noopener noreferrer">
                 <figure class="case__catalog-thumb" style={p.thumbAr ? `aspect-ratio:${p.thumbAr};` : ''}>
-                  <img src={p.thumb} alt={`${p.title} — thumb`} loading="lazy" />
+                  <img src={p.thumb} alt={`${p.title} — ${t('case.thumb')}`} loading="lazy" />
                 </figure>
                 <div class="case__catalog-body">
                   <h3 class="case__catalog-piece-title">{p.title}</h3>
                   {p.desc && <p class="case__catalog-desc">{p.desc}</p>}
-                  <span class="case__catalog-cta">Open on fxhash ↗</span>
+                  <span class="case__catalog-cta">{t('case.openOnFxhash')}</span>
                 </div>
               </a>
             </li>
@@ -272,19 +286,19 @@ function mediaStyle(dim?: { ar: string }) {
       </section>
     )}
 
-    <nav class="case__nav" aria-label="Case navigation">
+    <nav class="case__nav" aria-label={t('case.navigation')}>
       {prev ? (
-        <a href={`/work/${prev.id}`} class="case__nav-link case__nav-link--prev">
-          <span class="mono">← Previous</span>
+        <a href={localizePath(`/work/${prev.id}`, locale)} class="case__nav-link case__nav-link--prev">
+          <span class="mono">{t('case.previous')}</span>
           <span class="case__nav-title">{prev.data.title}</span>
         </a>
       ) : <span></span>}
-      <a href="/#work" class="case__nav-link case__nav-link--all">
-        <span class="mono">All Work</span>
+      <a href={localizePath('/#work', locale)} class="case__nav-link case__nav-link--all">
+        <span class="mono">{t('case.allWork')}</span>
       </a>
       {next ? (
-        <a href={`/work/${next.id}`} class="case__nav-link case__nav-link--next">
-          <span class="mono">Next →</span>
+        <a href={localizePath(`/work/${next.id}`, locale)} class="case__nav-link case__nav-link--next">
+          <span class="mono">{t('case.next')}</span>
           <span class="case__nav-title">{next.data.title}</span>
         </a>
       ) : <span></span>}
@@ -718,7 +732,13 @@ function mediaStyle(dim?: { ar: string }) {
       const status = host?.querySelector<HTMLElement>('[data-interactive-status]');
       if (!host || !src || !status) return;
 
-      const initialLabel = label?.textContent ?? button.getAttribute('aria-label') ?? 'Open live work';
+      const messages = {
+        loadingLabel: button.dataset.loadingLabel ?? 'Loading live work...',
+        loading: button.dataset.loadingStatus ?? 'Loading live work.',
+        loaded: button.dataset.loadedStatus ?? 'Live work loaded.',
+        failed: button.dataset.failedStatus ?? 'Could not load the live work. Try again.',
+      };
+      const initialLabel = label?.textContent ?? button.getAttribute('aria-label') ?? button.dataset.openLabel ?? 'Open live work';
       let disposed = false;
       let attempt = 0;
       let timeoutId: number | undefined;
@@ -740,7 +760,7 @@ function mediaStyle(dim?: { ar: string }) {
         button.disabled = false;
         button.hidden = false;
         if (label) label.textContent = initialLabel;
-        status.textContent = 'Could not load the live work. Try again.';
+        status.textContent = messages.failed;
       };
 
       const launch = (event: MouseEvent) => {
@@ -748,14 +768,14 @@ function mediaStyle(dim?: { ar: string }) {
 
         const token = ++attempt;
         button.disabled = true;
-        if (label) label.textContent = 'Loading live work...';
-        status.textContent = 'Loading live work.';
+        if (label) label.textContent = messages.loadingLabel;
+        status.textContent = messages.loading;
 
         const nextFrame = document.createElement('iframe');
         frame = nextFrame;
         nextFrame.className = 'case__interactive-frame';
         nextFrame.src = src;
-        nextFrame.title = button.dataset.title ?? 'Interactive artwork';
+        nextFrame.title = button.dataset.title ?? button.dataset.frameTitle ?? 'Interactive artwork';
         nextFrame.tabIndex = -1;
         nextFrame.style.pointerEvents = 'none';
         nextFrame.allow = 'autoplay; fullscreen';
@@ -774,7 +794,7 @@ function mediaStyle(dim?: { ar: string }) {
           nextFrame.style.pointerEvents = 'auto';
           host.dataset.interactiveLoaded = 'true';
           button.hidden = true;
-          status.textContent = 'Live work loaded.';
+          status.textContent = messages.loaded;
           requestAnimationFrame(() => {
             if (!disposed && token === attempt && nextFrame.isConnected) nextFrame.focus();
           });

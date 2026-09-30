@@ -3,6 +3,8 @@ import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import { LOCALES, LOCALE_META, alternatePaths, localeFromPath } from '../i18n/locales.mjs';
+import { useTranslations } from '../i18n/ui.mjs';
 import { buildCanonical } from '../utils/seo.mjs';
 
 interface Props {
@@ -17,9 +19,11 @@ interface Props {
   immersive?: boolean;
 }
 
+const locale = localeFromPath(Astro.url);
+const t = useTranslations(locale);
 const {
   title,
-  description = 'Sound direction, music production, and creative tooling for cinema, performance, and live instruments.',
+  description = t('layout.description'),
   image = null,
   type = 'website',
   canonicalUrl,
@@ -36,15 +40,22 @@ const siteOrigin = Astro.site?.origin ?? `${Astro.url.protocol}//${Astro.url.hos
 const ogImage = image ? (image.startsWith('http') ? image : `${siteOrigin}${image}`) : null;
 const cleanCanonicalUrl = buildCanonical(siteOrigin, canonicalUrl ?? Astro.url.pathname);
 const jsonLd = structuredData ? JSON.stringify(structuredData).replace(/</g, '\\u003c') : null;
+// Every page exists in both languages under the same path, so alternates
+// are derived from the canonical path rather than passed in.
+const alternates = alternatePaths(new URL(cleanCanonicalUrl).pathname);
 ---
 <!DOCTYPE html>
-<html lang="en">
+<html lang={LOCALE_META[locale].htmlLang}>
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title} &mdash; Gabriel Worm</title>
     <meta name="description" content={description}>
     <link rel="canonical" href={cleanCanonicalUrl}>
+    {LOCALES.map((alternate) => (
+      <link rel="alternate" hreflang={LOCALE_META[alternate].hreflang} href={buildCanonical(siteOrigin, alternates[alternate])}>
+    ))}
+    <link rel="alternate" hreflang="x-default" href={buildCanonical(siteOrigin, alternates.en)}>
     <meta name="theme-color" content="#0B0B0C">
     <link rel="manifest" href="/site.webmanifest">
     {jsonLd && <script type="application/ld+json" set:html={jsonLd}></script>}
@@ -56,6 +67,10 @@ const jsonLd = structuredData ? JSON.stringify(structuredData).replace(/</g, '\\
     <meta property="og:url" content={cleanCanonicalUrl}>
     {ogImage && <meta property="og:image" content={ogImage}>}
     <meta property="og:site_name" content="Gabriel Worm">
+    <meta property="og:locale" content={LOCALE_META[locale].ogLocale}>
+    {LOCALES.filter((alternate) => alternate !== locale).map((alternate) => (
+      <meta property="og:locale:alternate" content={LOCALE_META[alternate].ogLocale}>
+    ))}
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'}>
@@ -71,7 +86,7 @@ const jsonLd = structuredData ? JSON.stringify(structuredData).replace(/</g, '\\
   </head>
   <body data-layout={mode} data-immersive={isImmersive ? 'true' : 'false'}>
     <div class="page-curtain" transition:persist></div>
-    <a href="#main" class="skip-link">Skip to content</a>
+    <a href="#main" class="skip-link">{t('layout.skip')}</a>
     <Nav />
     <main id="main"><slot /></main>
     {!isContinuous && <Footer />}

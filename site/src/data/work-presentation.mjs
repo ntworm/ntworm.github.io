@@ -90,6 +90,72 @@ export const FEATURED_PRESENTATION_BY_ID = Object.freeze({
   }),
 });
 
+// Brazilian Portuguese copy for the featured cards. Media layout is shared
+// with the English entry; each highlight must appear verbatim in its summary.
+export const FEATURED_COPY_PT_BY_ID = Object.freeze({
+  'o-compositor': Object.freeze({
+    highlight: 'venceu o prêmio de Melhor Curta de Terror Portuguesa no MOTELX 2025',
+    summary: 'Como diretor de som, conduzi o filme do som direto no set até a mixagem final, passando pela composição e gravação com músicos de orquestra, pela edição e pelo desenho de som. O curta de terror de 18 minutos acompanha um violoncelista e compositor renomado que aprisiona o próprio aluno e transforma o sofrimento dele em matéria-prima para uma nova composição. O filme passou pelo FESTin e venceu o prêmio de Melhor Curta de Terror Portuguesa no MOTELX 2025; a trilha original foi indicada a Melhor Composição no Prémio Curtas 2026.',
+  }),
+  'unveiling-new-futures': Object.freeze({
+    highlight: 'campanha internacional de 2025 da Universidade Lusófona',
+    summary: 'Assinei a direção de som e a trilha de dois filmes para a campanha internacional de 2025 da Universidade Lusófona. Captei o som direto, construí uma linguagem musical e sonora comum às duas peças e cuidei das trilhas originais, das mixagens e da entrega final.',
+  }),
+  'o-clube': Object.freeze({
+    highlight: 'editor de som das temporadas 6 e 7 pela AMMP',
+    summary: 'Atuei como editor de som das temporadas 6 e 7 pela AMMP, na série da OPTO/SIC: gravei ambiências em surround por toda Lisboa, editei as camadas de ambiente da série e criei efeitos sonoros para as temporadas de 2025.',
+  }),
+  'this-feminine-side': Object.freeze({
+    highlight: 'documentário animado de Alice Siniscalchi sobre a cena artística LGBTQ+ de Lisboa',
+    summary: 'Dirigi e construí o universo sonoro do documentário animado de Alice Siniscalchi sobre a cena artística LGBTQ+ de Lisboa e uma feminilidade para além do binário. Assinei o desenho e a edição de som, com assistência de Miguel Colimão, sustentando as camadas de entrevistas, as oficinas colaborativas e a animação em técnica mista. O filme entrou na competição estudantil do ITFS 2026.',
+  }),
+  'ep-rinoceronte': Object.freeze({
+    highlight: 'viabilizado pela Política Nacional Aldir Blanc',
+    summary: 'Dirigi o som e o vídeo do EP de seis faixas de Luzo Cairo, em Palmas. Conduzi o apoio à composição, a gravação, a produção, a mixagem, a masterização, o vídeo, a distribuição e a transmissão ao vivo até o lançamento, completando o ciclo inteiro de um disco feito na própria cidade e viabilizado pela Política Nacional Aldir Blanc.',
+  }),
+  trisal: Object.freeze({
+    highlight: 'estreou no CineSesc Araguaína em 10 de junho de 2026',
+    summary: 'Assinei a direção de som de “Isso de novo não tem nada!”, episódio 2 da comédia tocantinense da Artpalco sobre os relacionamentos de hoje. Produzido com o Grupo Tukan, o episódio estreou no CineSesc Araguaína em 10 de junho de 2026.',
+  }),
+  'el-tono-del-mar': Object.freeze({
+    highlight: 'venceu o prêmio de Melhor Curta Estudantil Mexicano do Pixelatl 2024',
+    summary: 'Atuei como assistente e editor de som no curta de animação de Mica Bolaños Meade, contribuindo com assistência, edição e desenho de som. O filme venceu o prêmio de Melhor Curta Estudantil Mexicano do Pixelatl 2024 e foi exibido no GIFF e na competição internacional de estudantes do CINANIMA.',
+  }),
+  'kakofoni-orquestra': Object.freeze({
+    highlight: 'entrou para o acervo do Madison Museum of Art and Technology',
+    summary: 'Com Rangga Purnama Aji, construí o motor de áudio em Web Audio e a reatividade de cor do Hydra guiada por FFT, unindo som e imagem em um único sistema generativo que roda em tempo real. Publicada no fxhash em 2022, a edição #37 entrou para o acervo do Madison Museum of Art and Technology.',
+  }),
+  'em-agosto-chove': Object.freeze({
+    highlight: 'três singles, um álbum e um registro ao vivo para o Bem Ali Sessions',
+    summary: 'Compositor, guitarrista e produtor da banda palmense Em Agosto Chove, de 2015 a 2021. Em seis anos, lançamos três singles, um álbum e um registro ao vivo para o Bem Ali Sessions, construindo um catálogo enraizado na cena musical independente do Tocantins.',
+  }),
+  'ai-am': Object.freeze({
+    highlight: 'Compus a trilha original',
+    summary: 'Compus a trilha original do curta independente de ficção científica dirigido por Danny J em 2024. A música emoldura um encontro pós-apocalíptico entre um dos últimos sobreviventes humanos e uma sentinela de IA obsoleta, pondo em tensão a vulnerabilidade humana e o controle automatizado.',
+  }),
+  'unconscious-vision': Object.freeze({
+    highlight: 'todo o desenho de som, do zero até a mixagem final',
+    summary: 'Atuei como sound designer e mixador neste curta de terror da Universidade Lusófona, de 2024, criando todo o desenho de som, do zero até a mixagem final. Ambiências, room tone, impactos contidos e caudas que nunca se resolvem moldam aquilo que o público quase ouve antes que a imagem confirme.',
+  }),
+  'arvore-seca': Object.freeze({
+    highlight: 'a cofundação do Festival Som na Árvore 2019',
+    summary: 'Passei dois anos e meio na Produtora Árvore Seca como técnico de som de estúdio e de palco, produtor e organizador de festivais. O período reuniu gravação, mixagem, masterização, PA, monitor, editais de cultura e a cofundação do Festival Som na Árvore 2019, dentro da cena independente de Palmas.',
+  }),
+  lucy: Object.freeze({
+    highlight: 'dezesseis edições geradas por execuções que nunca se repetem exatamente',
+    summary: 'Criei um sistema audiovisual generativo e autônomo em Max, Ableton Live e Hydra.js, que compõe música e visuais reativos a partir de MIDI probabilístico, bancos de samples próprios e mudanças de seção em tempo real. Publicada na Teia e no fxhash, LUCY reúne dezesseis edições geradas por execuções que nunca se repetem exatamente.',
+  }),
+});
+
+export const DISCIPLINE_LABELS_PT = Object.freeze({
+  cinema: 'cinema',
+  production: 'produção',
+  music: 'música',
+  generative: 'arte generativa',
+  tools: 'ferramentas',
+  'sound art': 'arte sonora',
+});
+
 export const DISCIPLINE_BY_ID = Object.freeze({
   'a-quermesse': 'cinema',
   'ai-am': 'cinema',
@@ -126,7 +192,12 @@ function latestYear(year) {
   return Math.max(...years);
 }
 
-export function buildWorkPresentation(projects) {
+/**
+ * Groups projects into the homepage tiers. Pass `{ locale: 'pt' }` with
+ * already-localized project data to get the Portuguese card copy and
+ * discipline labels; tiers and archive order are the same in both languages.
+ */
+export function buildWorkPresentation(projects, { locale = 'en' } = {}) {
   const projectsById = new Map();
 
   for (const project of projects) {
@@ -153,10 +224,15 @@ export function buildWorkPresentation(projects) {
     if (!Object.hasOwn(DISCIPLINE_BY_ID, project.id)) {
       throw new Error(`Missing discipline: ${project.id}`);
     }
-    const discipline = DISCIPLINE_BY_ID[project.id];
+    const discipline = locale === 'pt'
+      ? DISCIPLINE_LABELS_PT[DISCIPLINE_BY_ID[project.id]]
+      : DISCIPLINE_BY_ID[project.id];
 
     const featuredPresentation = Object.hasOwn(FEATURED_PRESENTATION_BY_ID, project.id)
-      ? FEATURED_PRESENTATION_BY_ID[project.id]
+      ? {
+          ...FEATURED_PRESENTATION_BY_ID[project.id],
+          ...(locale === 'pt' ? FEATURED_COPY_PT_BY_ID[project.id] : {}),
+        }
       : {};
 
     decoratedById.set(project.id, Object.freeze({

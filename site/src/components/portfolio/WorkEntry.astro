@@ -1,5 +1,7 @@
 ---
 import dimensionsData from '../../data/asset-dimensions.json';
+import { localeFromPath, localizePath } from '../../i18n/locales.mjs';
+import { useTranslations } from '../../i18n/ui.mjs';
 
 interface Props {
   project: {
@@ -26,6 +28,8 @@ interface Props {
 }
 
 const { project, tier, index, eager = false } = Astro.props;
+const locale = localeFromPath(Astro.url);
+const t = useTranslations(locale);
 const dimensionsByProject = dimensionsData as Record<string, Array<{ file: string; w: number; h: number }>>;
 const coverFilename = project.media.cover?.split('/').pop();
 const coverDimensions = dimensionsByProject[project.id]?.find((dimension) => dimension.file === coverFilename);
@@ -42,7 +46,7 @@ const summaryParts = summary && highlight && highlightIndex >= 0
 ---
 
 <a
-  href={`/work/${project.id}`}
+  href={localizePath(`/work/${project.id}`, locale)}
   class:list={[
     'work-entry',
     `work-entry--${tier}`,
@@ -72,7 +76,7 @@ const summaryParts = summary && highlight && highlightIndex >= 0
     {project.media.cover ? (
       <img
         src={project.media.cover}
-        alt={`${project.data.title} — cover`}
+        alt={`${project.data.title} — ${t('work.cover')}`}
         loading={eager ? 'eager' : 'lazy'}
         decoding="async"
         data-prewarm-image={eager ? undefined : true}
@@ -80,7 +84,7 @@ const summaryParts = summary && highlight && highlightIndex >= 0
         height={coverDimensions?.h}
       />
     ) : (
-      <div class="work-entry__placeholder"><span class="mono">image pending</span></div>
+      <div class="work-entry__placeholder"><span class="mono">{t('work.imagePending')}</span></div>
     )}
   </div>
 

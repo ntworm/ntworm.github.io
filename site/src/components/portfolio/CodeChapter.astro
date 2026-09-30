@@ -1,5 +1,8 @@
 ---
 import GaussianBackground from '../GaussianBackground.astro';
+import { localeFromPath, localizePath } from '../../i18n/locales.mjs';
+
+const locale = localeFromPath(Astro.url);
 
 // GitHub data is hardcoded from the real public API
 // (https://api.github.com/users/ntworm). Update manually when profile
@@ -7,7 +10,10 @@ import GaussianBackground from '../GaussianBackground.astro';
 const GH = {
   login: 'ntworm',
   name: 'Gabriel Worm',
-  bio: 'Sound director working between cinema, music, and code. Building creative tools for performance and Ableton Live.',
+  bio: {
+    en: 'Sound director working between cinema, music, and code. Building creative tools for performance and Ableton Live.',
+    pt: 'Diretor de som entre o cinema, a música e o código. Desenvolvo ferramentas criativas para performance e para o Ableton Live.',
+  },
   avatar: 'https://avatars.githubusercontent.com/u/103321841?v=4',
   url: 'https://github.com/ntworm',
 };
@@ -16,32 +22,47 @@ const GH_REPOS = [
   {
     name: 'rc-surface',
     url: 'https://github.com/ntworm/rc-surface',
-    desc: 'Turn any phone browser into a wireless MIDI + multi-sensor controller for Ableton Live. 12 performance pads, two XY pads (one with physics), knobs & faders, sensor mappings (motion, orientation, audio, vision), in-browser mapping editor. No phone install. Source-available under the PolyForm Noncommercial 1.0.0 license, built on the Ableton Extensions SDK.',
+    desc: {
+      en: 'Turn any phone browser into a wireless MIDI + multi-sensor controller for Ableton Live. 12 performance pads, two XY pads (one with physics), knobs & faders, sensor mappings (motion, orientation, audio, vision), in-browser mapping editor. No phone install. Source-available under the PolyForm Noncommercial 1.0.0 license, built on the Ableton Extensions SDK.',
+      pt: 'Transforma o navegador de qualquer celular em um controlador MIDI sem fio, com múltiplos sensores, para o Ableton Live. 12 pads de performance, dois pads XY (um deles com física), knobs e faders, mapeamento de sensores (movimento, orientação, áudio, visão) e editor de mapeamento no próprio navegador. Nada para instalar no celular. Código-fonte disponível sob a licença PolyForm Noncommercial 1.0.0, construído sobre o Ableton Extensions SDK.',
+    },
   },
   {
     name: 'rc-setlist',
     url: 'https://github.com/ntworm/rc-setlist',
-    desc: 'Source-available Ableton Live extension built on the Ableton Extensions SDK that turns Arrangement locators into an operator setlist with synchronized lyrics, tempo and click feedback, and guarded transport controls. Local-first via WebSocket on port 4444. No account, no cloud, no telemetry.',
+    desc: {
+      en: 'Source-available Ableton Live extension built on the Ableton Extensions SDK that turns Arrangement locators into an operator setlist with synchronized lyrics, tempo and click feedback, and guarded transport controls. Local-first via WebSocket on port 4444. No account, no cloud, no telemetry.',
+      pt: 'Extensão para Ableton Live com código-fonte disponível, construída sobre o Ableton Extensions SDK, que transforma os locators do Arrangement em um setlist para o operador, com letras sincronizadas, indicação de andamento e click e controles de transporte com trava de segurança. Roda na rede local, via WebSocket na porta 4444. Sem conta, sem nuvem, sem telemetria.',
+    },
   },
   {
     name: 'ableton-mcp-server',
     url: 'https://github.com/ntworm/ableton-mcp-server',
-    desc: 'Open Model Context Protocol (MCP) server for Ableton Live 12. 97 tools in v0.7.0 over TCP and WebSockets for AI agents (Claude, Antigravity, Gemini, Codex) and audio developers to query parameters, drive transport, automate clips, analyze mix audio in non-realtime, and run grouped batch commands.',
+    desc: {
+      en: 'Open Model Context Protocol (MCP) server for Ableton Live 12. 97 tools in v0.7.0 over TCP and WebSockets for AI agents (Claude, Antigravity, Gemini, Codex) and audio developers to query parameters, drive transport, automate clips, analyze mix audio in non-realtime, and run grouped batch commands.',
+      pt: 'Servidor aberto de Model Context Protocol (MCP) para o Ableton Live 12. São 97 ferramentas na v0.7.0, via TCP e WebSockets, para que agentes de IA (Claude, Antigravity, Gemini, Codex) e desenvolvedores de áudio consultem parâmetros, controlem o transporte, automatizem clips, analisem o áudio da mixagem fora do tempo real e executem comandos em lote agrupados.',
+    },
   },
   {
     name: 'Fxhash_Template_HYDRA_with_P5',
     url: 'https://github.com/ntworm/Fxhash_Template_HYDRA_with_P5',
-    desc: 'FXHASH boilerplate (2022) for combining Hydra.js + p5.js in one fxhash-compatible sketch. Personal — paused.',
+    desc: {
+      en: 'FXHASH boilerplate (2022) for combining Hydra.js + p5.js in one fxhash-compatible sketch. Personal — paused.',
+      pt: 'Boilerplate para FXHASH (2022) que combina Hydra.js + p5.js em um único sketch compatível com o fxhash. Projeto pessoal — em pausa.',
+    },
   },
 ];
 
-const tools = [
+const TOOLS = [
   {
     slug: 'rc-surface',
     title: 'RC Surface',
     year: '2026',
-    role: 'Author',
-    desc: 'Extension for Ableton Live built with the Ableton Extensions SDK (.ablx). Phone browser becomes a wireless MIDI + multi-sensor controller: 12 performance pads, two XY pads (one with physics), knobs & faders, sensor mappings (motion, orientation, audio, vision), in-browser mapping editor. Source-available under the PolyForm Noncommercial 1.0.0 license.',
+    role: { en: 'Author', pt: 'Autor' },
+    desc: {
+      en: 'Extension for Ableton Live built with the Ableton Extensions SDK (.ablx). Phone browser becomes a wireless MIDI + multi-sensor controller: 12 performance pads, two XY pads (one with physics), knobs & faders, sensor mappings (motion, orientation, audio, vision), in-browser mapping editor. Source-available under the PolyForm Noncommercial 1.0.0 license.',
+      pt: 'Extensão para Ableton Live feita com o Ableton Extensions SDK (.ablx). O navegador do celular vira um controlador MIDI sem fio com múltiplos sensores: 12 pads de performance, dois pads XY (um deles com física), knobs e faders, mapeamento de sensores (movimento, orientação, áudio, visão) e editor de mapeamento no navegador. Código-fonte disponível sob a licença PolyForm Noncommercial 1.0.0.',
+    },
     img: '/work/rc-surface/1.jpg',
     href: 'https://github.com/ntworm/rc-surface',
   },
@@ -49,8 +70,11 @@ const tools = [
     slug: 'rc-setlist',
     title: 'RC Setlist',
     year: '2026',
-    role: 'Author',
-    desc: 'Ableton Live extension built on the Ableton Extensions SDK that turns Arrangement locators into an operator setlist. Synchronized .lrc lyrics, tempo and click feedback, guarded transport, /setlist and /performance views served over WebSocket. Source-available under the PolyForm Noncommercial 1.0.0 license.',
+    role: { en: 'Author', pt: 'Autor' },
+    desc: {
+      en: 'Ableton Live extension built on the Ableton Extensions SDK that turns Arrangement locators into an operator setlist. Synchronized .lrc lyrics, tempo and click feedback, guarded transport, /setlist and /performance views served over WebSocket. Source-available under the PolyForm Noncommercial 1.0.0 license.',
+      pt: 'Extensão para Ableton Live construída sobre o Ableton Extensions SDK que transforma os locators do Arrangement em um setlist para o operador. Letras .lrc sincronizadas, indicação de andamento e click, transporte com trava de segurança e as telas /setlist e /performance servidas via WebSocket. Código-fonte disponível sob a licença PolyForm Noncommercial 1.0.0.',
+    },
     img: '/work/rc-setlist/1.jpg',
     href: 'https://github.com/ntworm/rc-setlist',
   },
@@ -58,8 +82,11 @@ const tools = [
     slug: 'ableton-mcp-server',
     title: 'Ableton MCP Server',
     year: '2026',
-    role: 'Author',
-    desc: 'Model Context Protocol server for Ableton Live 12 bridging the Ableton Extensions SDK and MIDI Remote Scripts. Exposes 97 tools in v0.7.0 over TCP and WebSockets for AI agents and Python scripts to query parameters, drive transport, automate clips, analyze mix audio in non-realtime, and run grouped batch commands. Open-source.',
+    role: { en: 'Author', pt: 'Autor' },
+    desc: {
+      en: 'Model Context Protocol server for Ableton Live 12 bridging the Ableton Extensions SDK and MIDI Remote Scripts. Exposes 97 tools in v0.7.0 over TCP and WebSockets for AI agents and Python scripts to query parameters, drive transport, automate clips, analyze mix audio in non-realtime, and run grouped batch commands. Open-source.',
+      pt: 'Servidor de Model Context Protocol para o Ableton Live 12 que faz a ponte entre o Ableton Extensions SDK e os MIDI Remote Scripts. Expõe 97 ferramentas na v0.7.0, via TCP e WebSockets, para que agentes de IA e scripts em Python consultem parâmetros, controlem o transporte, automatizem clips, analisem o áudio da mixagem fora do tempo real e executem comandos em lote agrupados. Código aberto.',
+    },
     img: '/work/ableton-mcp-server/1.jpg',
     href: 'https://github.com/ntworm/ableton-mcp-server',
   },
@@ -67,8 +94,11 @@ const tools = [
     slug: 'lucy',
     title: 'LUCY',
     year: '2021',
-    role: 'Creator',
-    desc: 'Generative audiovisual automaton. Max + Ableton + Hydra.js. Probabilistic MIDI control with scale maps, real-time section transitions, frequency-mask-aware final mix. Published on Teia as the `lucy` collection.',
+    role: { en: 'Creator', pt: 'Criador' },
+    desc: {
+      en: 'Generative audiovisual automaton. Max + Ableton + Hydra.js. Probabilistic MIDI control with scale maps, real-time section transitions, frequency-mask-aware final mix. Published on Teia as the `lucy` collection.',
+      pt: 'Autômato audiovisual generativo. Max + Ableton + Hydra.js. Controle MIDI probabilístico com mapas de escala, transições de seção em tempo real e uma mixagem final atenta ao mascaramento de frequências. Publicado na Teia como a coleção `lucy`.',
+    },
     img: '/work/lucy/1.webp',
     href: '/work/lucy',
   },
@@ -76,8 +106,11 @@ const tools = [
     slug: 'eletronik-fields',
     title: 'Eletronik Fields',
     year: '2023',
-    role: 'Creator',
-    desc: 'Audiovisual instrument that converts electromagnetic signals to music via a magnetic induction coil. Max 8 patches for sound-to-MIDI mapping, with real-time oscilloscope visuals projected in a dark room.',
+    role: { en: 'Creator', pt: 'Criador' },
+    desc: {
+      en: 'Audiovisual instrument that converts electromagnetic signals to music via a magnetic induction coil. Max 8 patches for sound-to-MIDI mapping, with real-time oscilloscope visuals projected in a dark room.',
+      pt: 'Instrumento audiovisual que converte sinais eletromagnéticos em música por meio de uma bobina de indução magnética. Patches em Max 8 fazem o mapeamento de som para MIDI, com visuais de osciloscópio em tempo real projetados numa sala escura.',
+    },
     img: '/work/eletronik-fields/1.webp',
     href: '/work/eletronik-fields',
   },
@@ -85,12 +118,59 @@ const tools = [
     slug: 'kakofoni-orquestra',
     title: 'Kakofoni Orquestra',
     year: '2022',
-    role: 'Collaborator + Programmer',
-    desc: 'Generative audiovisual on fxhash. Hydra.js visuals by Rangga Purnama Aji, audio and reactivity by me. Inspired by Brian Eno\'s Ambient 1: Music for Airports. Edition #37 acquired by the Madison Museum.',
+    role: { en: 'Collaborator + Programmer', pt: 'Colaborador + programador' },
+    desc: {
+      en: 'Generative audiovisual on fxhash. Hydra.js visuals by Rangga Purnama Aji, audio and reactivity by me. Inspired by Brian Eno\'s Ambient 1: Music for Airports. Edition #37 acquired by the Madison Museum.',
+      pt: 'Audiovisual generativo no fxhash. Visuais em Hydra.js de Rangga Purnama Aji; áudio e reatividade feitos por mim. Inspirado em Ambient 1: Music for Airports, de Brian Eno. A edição #37 foi adquirida pelo Madison Museum.',
+    },
     img: '/work/kakofoni-orquestra/1.jpg',
     href: '/work/kakofoni-orquestra',
   },
 ];
+const tools = TOOLS.map((tool) => ({
+  ...tool,
+  role: tool.role[locale],
+  desc: tool.desc[locale],
+  href: localizePath(tool.href, locale),
+}));
+const repos = GH_REPOS.map((repo) => ({ ...repo, desc: repo.desc[locale] }));
+
+const copy = {
+  en: {
+    eyebrow: 'Code',
+    profileLabel: 'GitHub profile',
+    viewOnGitHub: (login: string) => `View ${login} on GitHub`,
+    avatarAlt: (name: string) => `${name} GitHub avatar`,
+    reposLabel: 'Public repositories',
+    profileCta: 'View full profile on GitHub →',
+    toolsHeading: 'Tools & instruments',
+    toolsLabel: 'Tools and instruments',
+    imagePending: 'image pending',
+    lowerLabel: 'Generative and Gaussian projects',
+    fxhashLabel: 'Generative pieces on fxhash',
+    fxhashHeading: 'Generative pieces',
+    fxhashCta: 'Browse all on fxhash ↗',
+    splatsLabel: 'Gaussian Splatting captures',
+    splatsEyebrow: '2026 · in progress',
+  },
+  pt: {
+    eyebrow: 'Código',
+    profileLabel: 'Perfil no GitHub',
+    viewOnGitHub: (login: string) => `Ver ${login} no GitHub`,
+    avatarAlt: (name: string) => `Avatar de ${name} no GitHub`,
+    reposLabel: 'Repositórios públicos',
+    profileCta: 'Ver o perfil completo no GitHub →',
+    toolsHeading: 'Ferramentas e instrumentos',
+    toolsLabel: 'Ferramentas e instrumentos',
+    imagePending: 'imagem em breve',
+    lowerLabel: 'Projetos generativos e em Gaussian Splatting',
+    fxhashLabel: 'Peças generativas no fxhash',
+    fxhashHeading: 'Peças generativas',
+    fxhashCta: 'Ver todas no fxhash ↗',
+    splatsLabel: 'Capturas em Gaussian Splatting',
+    splatsEyebrow: '2026 · em andamento',
+  },
+}[locale];
 
 // fxhash profile shows "Created (30)" as the count for nt_worm.
 // We don't name individual piece titles here — those need to come from
@@ -114,7 +194,24 @@ const SPLATS = [
     <GaussianBackground splats={[SPLATS[0]]} contained={true} placement="hero-right" cameraMotion={true} particleEffects={true} />
     <div class="wrap code__hero-inner">
       <div class="code__hero-copy">
-        <span class="eyebrow">Code</span>
+        <span class="eyebrow">{copy.eyebrow}</span>
+        {locale === 'pt' ? (
+        <h2
+          class="code__title"
+          data-reveal="typewriter"
+          aria-label="Ferramentas e instrumentos para música e performance audiovisual."
+        >
+          <span class="reveal-seg">Ferramentas </span>
+          <span class="reveal-seg">e </span>
+          <span class="reveal-seg">instrumentos </span>
+          <span class="reveal-seg">para </span>
+          <span class="reveal-seg">música </span>
+          <span class="reveal-seg">e </span>
+          <span class="reveal-seg reveal-amber">performance </span>
+          <span class="reveal-seg">audiovisual.</span>
+          <span class="reveal-caret" aria-hidden="true">_</span>
+        </h2>
+        ) : (
         <h2
           class="code__title"
           data-reveal="typewriter"
@@ -130,6 +227,16 @@ const SPLATS = [
           <span class="reveal-seg reveal-amber">performance.</span>
           <span class="reveal-caret" aria-hidden="true">_</span>
         </h2>
+        )}
+        {locale === 'pt' ? (
+        <p class="code__intro">
+          Projetos pessoais, de código aberto e com código-fonte disponível, que passam por devices para
+          Max4Live, sistemas audiovisuais generativos e instrumentos para tocar ao vivo. Um dos focos
+          centrais é abrir caminho com ferramentas nativas no <strong>Ableton Extensions SDK</strong> oficial
+          (runtime Node.js do Live 12.4+), ampliando o que uma DAW pode fazer no palco e na integração com
+          agentes de IA. Quase tudo o que está aqui roda em tempo real, em algum palco ou estúdio por aí.
+        </p>
+        ) : (
         <p class="code__intro">
           Personal, open-source, and source-available projects spanning Max4Live devices, generative
           audiovisual systems, and live instruments. A core focus is pioneering native tools on the
@@ -137,24 +244,25 @@ const SPLATS = [
           for stage performance and AI agent integration. Most of what's here runs in
           real time on a stage or in a studio somewhere.
         </p>
+        )}
       </div>
     </div>
   </header>
 
   <article class="code wrap" data-section="code">
 
-    <section class="gh-card" aria-label="GitHub profile">
-      <a href={GH.url} class="gh-card__avatar" rel="noopener" aria-label={`View ${GH.login} on GitHub`}>
-        <img src={GH.avatar} alt={`${GH.name} GitHub avatar`} loading="lazy" width="96" height="96" />
+    <section class="gh-card" aria-label={copy.profileLabel}>
+      <a href={GH.url} class="gh-card__avatar" rel="noopener" aria-label={copy.viewOnGitHub(GH.login)}>
+        <img src={GH.avatar} alt={copy.avatarAlt(GH.name)} loading="lazy" width="96" height="96" />
       </a>
       <div class="gh-card__body">
         <div class="gh-card__head">
           <h2 class="gh-card__name">{GH.name}</h2>
           <a href={GH.url} class="gh-card__handle mono" rel="noopener">@{GH.login}</a>
         </div>
-        <p class="gh-card__bio">{GH.bio}</p>
-        <ul class="gh-card__repos" aria-label="Public repositories">
-          {GH_REPOS.map((r) => (
+        <p class="gh-card__bio">{GH.bio[locale]}</p>
+        <ul class="gh-card__repos" aria-label={copy.reposLabel}>
+          {repos.map((r) => (
             <li class="gh-card__repo">
               <a href={r.url} class="gh-card__repo-name" rel="noopener">
                 <span>{r.name}</span>
@@ -163,12 +271,12 @@ const SPLATS = [
             </li>
           ))}
         </ul>
-        <a href={GH.url} class="gh-card__cta" rel="noopener">View full profile on GitHub →</a>
+        <a href={GH.url} class="gh-card__cta" rel="noopener">{copy.profileCta}</a>
       </div>
     </section>
 
-    <section class="tools" aria-label="Tools and instruments">
-      <h2 class="tools__heading">Tools &amp; instruments</h2>
+    <section class="tools" aria-label={copy.toolsLabel}>
+      <h2 class="tools__heading">{copy.toolsHeading}</h2>
       <div class="tools__grid">
         {tools.map((t) => (
           <article class="tool-card">
@@ -177,7 +285,7 @@ const SPLATS = [
                 <img src={t.img} alt="" loading="lazy" width="800" height="450" />
               ) : (
                 <div class="tool-card__placeholder">
-                  <span class="mono">image pending</span>
+                  <span class="mono">{copy.imagePending}</span>
                 </div>
               )}
             </div>
@@ -198,23 +306,41 @@ const SPLATS = [
       </div>
     </section>
 
-    <section class="code__lower-showcase" aria-label="Generative and Gaussian projects">
+    <section class="code__lower-showcase" aria-label={copy.lowerLabel}>
       <GaussianBackground splats={[SPLATS[1]]} contained={true} placement="section-left" cameraMotion={true} particleEffects={true} />
       <div class="code__lower-copy">
-        <section class="fxhash" aria-label="Generative pieces on fxhash">
-          <h2 class="fxhash__heading">Generative pieces</h2>
+        <section class="fxhash" aria-label={copy.fxhashLabel}>
+          <h2 class="fxhash__heading">{copy.fxhashHeading}</h2>
+          {locale === 'pt' ? (
+          <p class="fxhash__intro">
+            <strong>{FXHASH.count} tokens generativos</strong> publicados no fxhash como
+            <span class="mono">{FXHASH.handle}</span>, entre 2021 e 2026. Hydra.js no visual,
+            Web Audio API + OSC na reatividade sonora. Entre os destaques está Kakofoni
+            Orquestra (edição #37, adquirida pelo Madison Museum).
+          </p>
+          ) : (
           <p class="fxhash__intro">
             <strong>{FXHASH.count} generative tokens</strong> published on fxhash as
             <span class="mono">{FXHASH.handle}</span>, between 2021 and 2026. Hydra.js
             for visuals, Web Audio API + OSC for sound reactivity. Highlights include
             Kakofoni Orquestra (edition #37, acquired by the Madison Museum).
           </p>
-          <a href={FXHASH.url} class="fxhash__cta mono" rel="noopener">Browse all on fxhash ↗</a>
+          )}
+          <a href={FXHASH.url} class="fxhash__cta mono" rel="noopener">{copy.fxhashCta}</a>
         </section>
 
-        <section class="splats-card" aria-label="Gaussian Splatting captures">
-          <span class="eyebrow">2026 · in progress</span>
+        <section class="splats-card" aria-label={copy.splatsLabel}>
+          <span class="eyebrow">{copy.splatsEyebrow}</span>
           <h2 class="splats-card__heading">Gaussian Splatting</h2>
+          {locale === 'pt' ? (
+          <p class="splats-card__intro">
+            Capturas de fotogrametria 3D renderizadas no navegador. O pipeline passa pelo
+            Gaussian Splatting TOP do TouchDesigner e chega aqui como um <code>.splat</code> leve
+            para a web, depois de comprimido no
+            <a href="https://playcanvas.com/supersplat/" rel="noopener" target="_blank">PlayCanvas SuperSplat</a>.
+            A segunda captura roda ao lado desta seção como uma cena WebGL ao vivo.
+          </p>
+          ) : (
           <p class="splats-card__intro">
             3D photogrammetry captures rendered in the browser. The pipeline runs
             through TouchDesigner's Gaussian Splatting TOP and lands here as a
@@ -222,6 +348,7 @@ const SPLATS = [
             <a href="https://playcanvas.com/supersplat/" rel="noopener" target="_blank">PlayCanvas SuperSplat</a>.
             The second capture streams beside this section as a live WebGL scene.
           </p>
+          )}
         </section>
       </div>
     </section>

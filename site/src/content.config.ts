@@ -41,4 +41,28 @@ const projects = defineCollection({
   }),
 });
 
-export const collections = { projects };
+// Brazilian Portuguese translations, one file per project with the same
+// slug as its English source. Only the words live here; facts shared by both
+// languages (year, URLs, media, embeds) stay in the English file and are
+// merged by src/i18n/projects.mjs. Link labels are matched by URL, season
+// labels by image, and fxhash piece descriptions by slug.
+const projectsPtBr = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/projects-pt-br' }),
+  schema: z.object({
+    title: z.string().optional(),
+    role: z.string().optional(),
+    country: z.string().optional(),
+    type: z.string().optional(),
+    production: z.string().optional(),
+    awards: z.array(z.string()).optional(),
+    links: z.array(z.object({ url: z.string().url(), label: z.string().min(1) })).optional(),
+    seasons: z.array(z.object({ img: z.string(), label: z.string() })).optional(),
+    interactiveEmbed: z.object({
+      title: z.string().min(1),
+      cta: z.string().min(1),
+    }).optional(),
+    fxhashPieces: z.array(z.object({ slug: z.string(), desc: z.string() })).optional(),
+  }),
+});
+
+export const collections = { projects, projectsPtBr };
