@@ -24,7 +24,7 @@ function walk(dir, extension) {
 function htmlFiles() {
   return walk(distDir, '.html').map((path) => ({
     path,
-    label: relative(distDir, path),
+    label: relative(distDir, path).replaceAll('\\', '/'),
     html: readFileSync(path, 'utf8'),
   }));
 }
@@ -743,7 +743,7 @@ test('Kakofoni case lazy-loads the live fxhash work and foregrounds the museum a
   assert.match(schema, /interactiveEmbed:\s*z\.object/);
   assert.match(template, /data-interactive-launch/);
   assert.match(template, /document\.addEventListener\('astro:page-load'/);
-  assert.match(project, /gateway\.fxhash2\.xyz\/ipfs\/Qmau3NDFiN3UtNscCsv7J7aNV9BEsP8pT7m3YHamap387y/);
+  assert.match(project, /gateway\.pinit\.io\/ipfs\/Qmau3NDFiN3UtNscCsv7J7aNV9BEsP8pT7m3YHamap387y/);
   assert.match(project, /Madison Museum of Art and Technology/);
   assert.match(project, /16 loops/);
   assert.match(project, /89 BPM/);

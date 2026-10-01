@@ -18,7 +18,7 @@ links:
   - url: "https://killedbyapixel.github.io/fxhashArchive/#/artist/tz1du7JyqkpAWrQf7kspXS383wpMxkVWCoqQ"
     label: "nt_worm profile on fxhash archive"
 interactiveEmbed:
-  url: "https://gateway.fxhash2.xyz/ipfs/Qmau3NDFiN3UtNscCsv7J7aNV9BEsP8pT7m3YHamap387y/?cid=ipfs%3A%2F%2FQmau3NDFiN3UtNscCsv7J7aNV9BEsP8pT7m3YHamap387y&fxhash=ooKcyMA3VbfJzYWNWypoqDij5NWsHzW6SYpoCMqwDXzQ8CTJ4fC&fxminter=tz1BwbSPy4QxnJF2SieQSU9tzEgTt3VfTQ8N&fxiteration=1&fxcontext=standalone&fxchain=TEZOS&legacy=false"
+  url: "https://gateway.pinit.io/ipfs/Qmau3NDFiN3UtNscCsv7J7aNV9BEsP8pT7m3YHamap387y/?cid=ipfs%3A%2F%2FQmau3NDFiN3UtNscCsv7J7aNV9BEsP8pT7m3YHamap387y&fxhash=ooKcyMA3VbfJzYWNWypoqDij5NWsHzW6SYpoCMqwDXzQ8CTJ4fC&fxminter=tz1BwbSPy4QxnJF2SieQSU9tzEgTt3VfTQ8N&fxiteration=1&fxcontext=standalone&fxchain=TEZOS&legacy=false"
   title: "KAKOFONI ORQUESTRA — live generative work"
   cta: "Click to enter the work"
 hideGallery: true
