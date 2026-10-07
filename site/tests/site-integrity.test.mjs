@@ -725,7 +725,7 @@ test('primary navigation labels have no individual surface behind them', () => {
   assert.match(source, /\.nav::before\s*\{[^}]*z-index:\s*0;[^}]*linear-gradient/s);
   assert.match(source, /background:\s*linear-gradient\(to bottom,/);
   assert.match(source, /\.nav__inner\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1;/s);
-  assert.match(source, /@media \(max-width: 640px\)[\s\S]*?\.nav__link\s*\{[^}]*min-height:\s*32px;[^}]*font-size:\s*11px;/s);
+  assert.match(source, /@media \(max-width: 640px\)[\s\S]*?\.nav__link\s*\{[^}]*min-height:\s*44px;[^}]*font-size:\s*11px;/s);
 });
 
 test('scroll progress resets safely after Astro page navigation', () => {
@@ -843,9 +843,9 @@ test('each homepage chapter keeps its own hero copy and reveal language', () => 
   const code = readFileSync(codeChapterSourcePath, 'utf8');
 
   assert.match(work, /<h2[^>]*[\s\S]*?data-work-title-reveal/);
-  assert.match(work, /Sound direction,/);
-  assert.match(work, /music production,/);
-  assert.match(work, /creative systems\./);
+  assert.match(work, /Sound, music,/);
+  assert.match(work, /code,/);
+  assert.match(work, /and moving image\./);
 
   assert.match(about, /<h1[^>]*data-reveal="focus"/);
   assert.match(about, /A practice shaped by/);
