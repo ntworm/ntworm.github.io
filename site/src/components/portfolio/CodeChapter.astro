@@ -22,33 +22,21 @@ const GH_REPOS = [
   {
     name: 'rc-surface',
     url: 'https://github.com/ntworm/rc-surface',
-    desc: {
-      en: 'Turn any phone browser into a wireless MIDI + multi-sensor controller for Ableton Live. 12 performance pads, two XY pads (one with physics), knobs & faders, sensor mappings (motion, orientation, audio, vision), in-browser mapping editor. No phone install. Source-available under the PolyForm Noncommercial 1.0.0 license, built on the Ableton Extensions SDK.',
-      pt: 'Transforma o navegador de qualquer celular em um controlador MIDI sem fio, com múltiplos sensores, para o Ableton Live. 12 pads de performance, dois pads XY (um deles com física), knobs e faders, mapeamento de sensores (movimento, orientação, áudio, visão) e editor de mapeamento no próprio navegador. Nada para instalar no celular. Código-fonte disponível sob a licença PolyForm Noncommercial 1.0.0, construído sobre o Ableton Extensions SDK.',
-    },
   },
   {
     name: 'rc-setlist',
     url: 'https://github.com/ntworm/rc-setlist',
-    desc: {
-      en: 'Source-available Ableton Live extension built on the Ableton Extensions SDK that turns Arrangement locators into an operator setlist with synchronized lyrics, tempo and click feedback, and guarded transport controls. Local-first via WebSocket on port 4444. No account, no cloud, no telemetry.',
-      pt: 'Extensão para Ableton Live com código-fonte disponível, construída sobre o Ableton Extensions SDK, que transforma os locators do Arrangement em um setlist para o operador, com letras sincronizadas, indicação de andamento e click e controles de transporte com trava de segurança. Roda na rede local, via WebSocket na porta 4444. Sem conta, sem nuvem, sem telemetria.',
-    },
   },
   {
     name: 'ableton-mcp-server',
     url: 'https://github.com/ntworm/ableton-mcp-server',
-    desc: {
-      en: 'Open Model Context Protocol (MCP) server for Ableton Live 12. 97 tools in v0.7.0 over TCP and WebSockets for AI agents (Claude, Antigravity, Gemini, Codex) and audio developers to query parameters, drive transport, automate clips, analyze mix audio in non-realtime, and run grouped batch commands.',
-      pt: 'Servidor aberto de Model Context Protocol (MCP) para o Ableton Live 12. São 97 ferramentas na v0.7.0, via TCP e WebSockets, para que agentes de IA (Claude, Antigravity, Gemini, Codex) e desenvolvedores de áudio consultem parâmetros, controlem o transporte, automatizem clips, analisem o áudio da mixagem fora do tempo real e executem comandos em lote agrupados.',
-    },
   },
   {
     name: 'Fxhash_Template_HYDRA_with_P5',
     url: 'https://github.com/ntworm/Fxhash_Template_HYDRA_with_P5',
-    desc: {
-      en: 'FXHASH boilerplate (2022) for combining Hydra.js + p5.js in one fxhash-compatible sketch. Personal — paused.',
-      pt: 'Boilerplate para FXHASH (2022) que combina Hydra.js + p5.js em um único sketch compatível com o fxhash. Projeto pessoal — em pausa.',
+    note: {
+      en: '2022 · paused',
+      pt: '2022 · em pausa',
     },
   },
 ];
@@ -60,11 +48,12 @@ const TOOLS = [
     year: '2026',
     role: { en: 'Author', pt: 'Autor' },
     desc: {
-      en: 'Extension for Ableton Live built with the Ableton Extensions SDK (.ablx). Phone browser becomes a wireless MIDI + multi-sensor controller: 12 performance pads, two XY pads (one with physics), knobs & faders, sensor mappings (motion, orientation, audio, vision), in-browser mapping editor. Source-available under the PolyForm Noncommercial 1.0.0 license.',
-      pt: 'Extensão para Ableton Live feita com o Ableton Extensions SDK (.ablx). O navegador do celular vira um controlador MIDI sem fio com múltiplos sensores: 12 pads de performance, dois pads XY (um deles com física), knobs e faders, mapeamento de sensores (movimento, orientação, áudio, visão) e editor de mapeamento no navegador. Código-fonte disponível sob a licença PolyForm Noncommercial 1.0.0.',
+      en: 'An Ableton Live extension that turns a phone browser into a wireless MIDI and sensor controller, with performance pads, XY controls, knobs, faders, and a mapping editor. Source-available under PolyForm Noncommercial 1.0.0.',
+      pt: 'Extensão para Ableton Live que transforma o navegador do celular em controlador MIDI sem fio e de sensores, com pads de performance, controles XY, knobs, faders e editor de mapeamentos. Código-fonte disponível sob PolyForm Noncommercial 1.0.0.',
     },
     img: '/work/rc-surface/1.jpg',
-    href: 'https://github.com/ntworm/rc-surface',
+    href: '/work/rc-surface',
+    source: 'https://github.com/ntworm/rc-surface',
   },
   {
     slug: 'rc-setlist',
@@ -72,11 +61,12 @@ const TOOLS = [
     year: '2026',
     role: { en: 'Author', pt: 'Autor' },
     desc: {
-      en: 'Ableton Live extension built on the Ableton Extensions SDK that turns Arrangement locators into an operator setlist. Synchronized .lrc lyrics, tempo and click feedback, guarded transport, /setlist and /performance views served over WebSocket. Source-available under the PolyForm Noncommercial 1.0.0 license.',
-      pt: 'Extensão para Ableton Live construída sobre o Ableton Extensions SDK que transforma os locators do Arrangement em um setlist para o operador. Letras .lrc sincronizadas, indicação de andamento e click, transporte com trava de segurança e as telas /setlist e /performance servidas via WebSocket. Código-fonte disponível sob a licença PolyForm Noncommercial 1.0.0.',
+      en: 'An Ableton Live extension that turns Arrangement locators into a show setlist, with synchronized lyrics, tempo and click feedback, guarded transport, and operator and stage views on the local network. Source-available under PolyForm Noncommercial 1.0.0.',
+      pt: 'Extensão para Ableton Live que organiza locators do Arrangement em setlist, com letras sincronizadas, andamento e click, transporte protegido e telas para operação e palco na rede local. Código-fonte disponível sob PolyForm Noncommercial 1.0.0.',
     },
     img: '/work/rc-setlist/1.jpg',
-    href: 'https://github.com/ntworm/rc-setlist',
+    href: '/work/rc-setlist',
+    source: 'https://github.com/ntworm/rc-setlist',
   },
   {
     slug: 'ableton-mcp-server',
@@ -88,7 +78,8 @@ const TOOLS = [
       pt: 'Servidor de Model Context Protocol para o Ableton Live 12 que faz a ponte entre o Ableton Extensions SDK e os MIDI Remote Scripts. Expõe 97 ferramentas na v0.7.0, via TCP e WebSockets, para que agentes de IA e scripts em Python consultem parâmetros, controlem o transporte, automatizem clips, analisem o áudio da mixagem fora do tempo real e executem comandos em lote agrupados. Código aberto.',
     },
     img: '/work/ableton-mcp-server/1.jpg',
-    href: 'https://github.com/ntworm/ableton-mcp-server',
+    href: '/work/ableton-mcp-server',
+    source: 'https://github.com/ntworm/ableton-mcp-server',
   },
   {
     slug: 'lucy',
@@ -133,7 +124,7 @@ const tools = TOOLS.map((tool) => ({
   desc: tool.desc[locale],
   href: localizePath(tool.href, locale),
 }));
-const repos = GH_REPOS.map((repo) => ({ ...repo, desc: repo.desc[locale] }));
+const repos = GH_REPOS.map((repo) => ({ ...repo, note: repo.note?.[locale] }));
 
 const copy = {
   en: {
@@ -145,6 +136,11 @@ const copy = {
     profileCta: 'View full profile on GitHub →',
     toolsHeading: 'Tools & instruments',
     toolsLabel: 'Tools and instruments',
+    viewProject: 'View project',
+    sourceCode: 'Source code',
+    projectActions: (title: string) => `${title} links`,
+    contactLead: 'Building something for music or live performance?',
+    contactCta: 'Let’s talk',
     imagePending: 'image pending',
     lowerLabel: 'Generative and Gaussian projects',
     fxhashLabel: 'Generative pieces on fxhash',
@@ -162,6 +158,11 @@ const copy = {
     profileCta: 'Ver o perfil completo no GitHub →',
     toolsHeading: 'Ferramentas e instrumentos',
     toolsLabel: 'Ferramentas e instrumentos',
+    viewProject: 'Ver projeto',
+    sourceCode: 'Código',
+    projectActions: (title: string) => `Links de ${title}`,
+    contactLead: 'Criando algo para música ou performance ao vivo?',
+    contactCta: 'Vamos conversar',
     imagePending: 'imagem em breve',
     lowerLabel: 'Projetos generativos e em Gaussian Splatting',
     fxhashLabel: 'Peças generativas no fxhash',
@@ -199,50 +200,38 @@ const SPLATS = [
         <h2
           class="code__title"
           data-reveal="typewriter"
-          aria-label="Ferramentas e instrumentos para música e performance audiovisual."
+          aria-label="Ferramentas e interfaces musicais."
         >
           <span class="reveal-seg">Ferramentas </span>
           <span class="reveal-seg">e </span>
-          <span class="reveal-seg">instrumentos </span>
-          <span class="reveal-seg">para </span>
-          <span class="reveal-seg">música </span>
-          <span class="reveal-seg">e </span>
-          <span class="reveal-seg reveal-amber">performance </span>
-          <span class="reveal-seg">audiovisual.</span>
+          <span class="reveal-seg">interfaces </span>
+          <span class="reveal-seg reveal-amber">musicais.</span>
           <span class="reveal-caret" aria-hidden="true">_</span>
         </h2>
         ) : (
         <h2
           class="code__title"
           data-reveal="typewriter"
-          aria-label="Tools and instruments for music and audiovisual performance."
+          aria-label="Tools and musical interfaces."
         >
           <span class="reveal-seg">Tools </span>
           <span class="reveal-seg">and </span>
-          <span class="reveal-seg">instruments </span>
-          <span class="reveal-seg">for </span>
-          <span class="reveal-seg">music </span>
-          <span class="reveal-seg">and </span>
-          <span class="reveal-seg">audiovisual </span>
-          <span class="reveal-seg reveal-amber">performance.</span>
+          <span class="reveal-seg">musical </span>
+          <span class="reveal-seg reveal-amber">interfaces.</span>
           <span class="reveal-caret" aria-hidden="true">_</span>
         </h2>
         )}
         {locale === 'pt' ? (
         <p class="code__intro">
-          Projetos pessoais, de código aberto e com código-fonte disponível, que passam por devices para
-          Max4Live, sistemas audiovisuais generativos e instrumentos para tocar ao vivo. Um dos focos
-          centrais é abrir caminho com ferramentas nativas no <strong>Ableton Extensions SDK</strong> oficial
-          (runtime Node.js do Live 12.4+), ampliando o que uma DAW pode fazer no palco e na integração com
-          agentes de IA. Quase tudo o que está aqui roda em tempo real, em algum palco ou estúdio por aí.
+          Do navegador ao Ableton Live: projetos para controlar, organizar e experimentar música
+          e performance audiovisual. Ferramentas com código-fonte disponível, projetos abertos
+          e sistemas generativos, feitos a partir de situações reais de palco e estúdio.
         </p>
         ) : (
         <p class="code__intro">
-          Personal, open-source, and source-available projects spanning Max4Live devices, generative
-          audiovisual systems, and live instruments. A core focus is pioneering native tools on the
-          official <strong>Ableton Extensions SDK</strong> (Live 12.4+ Node.js runtime), expanding DAW capabilities
-          for stage performance and AI agent integration. Most of what's here runs in
-          real time on a stage or in a studio somewhere.
+          From the browser to Ableton Live: projects for controlling, organizing, and exploring
+          music and audiovisual performance. Source-available tools, open-source projects,
+          and generative systems, shaped by real stage and studio situations.
         </p>
         )}
       </div>
@@ -251,35 +240,11 @@ const SPLATS = [
 
   <article class="code wrap" data-section="code">
 
-    <section class="gh-card" aria-label={copy.profileLabel}>
-      <a href={GH.url} class="gh-card__avatar" rel="noopener" aria-label={copy.viewOnGitHub(GH.login)}>
-        <img src={GH.avatar} alt={copy.avatarAlt(GH.name)} loading="lazy" width="96" height="96" />
-      </a>
-      <div class="gh-card__body">
-        <div class="gh-card__head">
-          <h2 class="gh-card__name">{GH.name}</h2>
-          <a href={GH.url} class="gh-card__handle mono" rel="noopener">@{GH.login}</a>
-        </div>
-        <p class="gh-card__bio">{GH.bio[locale]}</p>
-        <ul class="gh-card__repos" aria-label={copy.reposLabel}>
-          {repos.map((r) => (
-            <li class="gh-card__repo">
-              <a href={r.url} class="gh-card__repo-name" rel="noopener">
-                <span>{r.name}</span>
-              </a>
-              <p class="gh-card__repo-desc">{r.desc}</p>
-            </li>
-          ))}
-        </ul>
-        <a href={GH.url} class="gh-card__cta" rel="noopener">{copy.profileCta}</a>
-      </div>
-    </section>
-
     <section class="tools" aria-label={copy.toolsLabel}>
       <h2 class="tools__heading">{copy.toolsHeading}</h2>
       <div class="tools__grid">
         {tools.map((t) => (
-          <article class="tool-card">
+          <article class="tool-card" data-tool={t.slug} data-featured={t.slug.startsWith('rc-') ? 'true' : undefined}>
             <div class="tool-card__media" aria-hidden="true">
               {t.img ? (
                 <img src={t.img} alt="" loading="lazy" width="800" height="450" />
@@ -300,9 +265,44 @@ const SPLATS = [
               </h3>
               <span class="tool-card__role mono">{t.role}</span>
               <p class="tool-card__desc">{t.desc}</p>
+              <div class="tool-card__actions" aria-label={copy.projectActions(t.title)}>
+                <a href={t.href}>{copy.viewProject} <span aria-hidden="true">→</span></a>
+                {t.source && (
+                  <a href={t.source} rel="noopener">{copy.sourceCode} <span aria-hidden="true">↗</span></a>
+                )}
+              </div>
             </div>
           </article>
         ))}
+      </div>
+    </section>
+
+    <p class="code__contact">
+      {copy.contactLead}{' '}
+      <a href={localizePath('/#contact', locale)}>{copy.contactCta} <span aria-hidden="true">→</span></a>
+    </p>
+
+    <section class="gh-card" aria-label={copy.profileLabel}>
+      <a href={GH.url} class="gh-card__avatar" rel="noopener" aria-label={copy.viewOnGitHub(GH.login)}>
+        <img src={GH.avatar} alt={copy.avatarAlt(GH.name)} loading="lazy" width="96" height="96" />
+      </a>
+      <div class="gh-card__body">
+        <div class="gh-card__head">
+          <h2 class="gh-card__name">{GH.name}</h2>
+          <a href={GH.url} class="gh-card__handle mono" rel="noopener">@{GH.login}</a>
+        </div>
+        <p class="gh-card__bio">{GH.bio[locale]}</p>
+        <ul class="gh-card__repos" aria-label={copy.reposLabel}>
+          {repos.map((r) => (
+            <li class="gh-card__repo">
+              <a href={r.url} class="gh-card__repo-name" rel="noopener">
+                <span>{r.name}</span>
+              </a>
+              {r.note && <span class="gh-card__repo-note mono">{r.note}</span>}
+            </li>
+          ))}
+        </ul>
+        <a href={GH.url} class="gh-card__cta" rel="noopener">{copy.profileCta}</a>
       </div>
     </section>
 
@@ -476,13 +476,18 @@ const SPLATS = [
   .gh-card__repos {
     list-style: none;
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: var(--s-3);
     margin-bottom: var(--s-4);
   }
   .gh-card__repo {
-    padding: var(--s-3) 0;
-    border-top: 1px solid var(--muted-graphite);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--s-2);
+    max-width: 100%;
+    padding: var(--s-2) var(--s-3);
+    border: 1px solid var(--muted-graphite);
   }
   .gh-card__repo-name {
     display: flex;
@@ -493,13 +498,12 @@ const SPLATS = [
     font-size: var(--t-mono);
     color: var(--accent-amber);
     border-bottom: 0;
+    overflow-wrap: anywhere;
   }
   .gh-card__repo-name:hover { color: var(--fg-bone); }
-  .gh-card__repo-desc {
-    margin-top: var(--s-1);
-    color: var(--fg-bone);
+  .gh-card__repo-note {
+    color: var(--muted-graphite);
     font-size: var(--t-body-sm);
-    line-height: 1.55;
   }
   .gh-card__cta {
     display: inline-block;
@@ -537,6 +541,7 @@ const SPLATS = [
     transition: border-color var(--d-fast) var(--ease-out);
   }
   .tool-card:hover { border-color: var(--accent-amber); }
+  .tool-card[data-featured="true"] { border-color: var(--accent-amber); }
   .tool-card__media {
     display: flex;
     align-items: center;
@@ -567,6 +572,7 @@ const SPLATS = [
     display: flex;
     flex-direction: column;
     gap: var(--s-2);
+    flex: 1;
   }
   .tool-card__year {
     color: var(--muted-graphite);
@@ -595,6 +601,42 @@ const SPLATS = [
     color: var(--fg-bone);
     line-height: 1.55;
     font-size: var(--t-body-sm);
+    flex: 1;
+  }
+  .tool-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2) var(--s-5);
+    margin-top: var(--s-3);
+  }
+  .tool-card__actions a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-height: 44px;
+    color: var(--accent-amber);
+    font-family: var(--font-mono);
+    font-size: var(--t-body-sm);
+  }
+  .code__contact {
+    position: relative;
+    z-index: 2;
+    margin-bottom: var(--s-8);
+    color: var(--fg-bone);
+  }
+  .code__contact a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    gap: var(--s-2);
+    color: var(--accent-amber);
+  }
+  .tool-card__actions a:focus-visible,
+  .tool-card__name a:focus-visible,
+  .gh-card a:focus-visible,
+  .code__contact a:focus-visible {
+    outline: 2px solid var(--accent-amber);
+    outline-offset: 4px;
   }
   @media (max-width: 720px) {
     .tools__grid { grid-template-columns: 1fr; }

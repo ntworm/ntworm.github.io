@@ -6,9 +6,9 @@ const locale = localeFromPath(Astro.url);
 const t = useTranslations(locale);
 const year = new Date().getFullYear();
 const chapters = [
-  { href: '/#work', label: 'nav.work' },
   { href: '/#about', label: 'nav.about' },
   { href: '/#code', label: 'nav.code' },
+  { href: '/#work', label: 'nav.work' },
   { href: '/#contact', label: 'nav.contact' },
 ];
 ---

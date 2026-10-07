@@ -31,7 +31,8 @@ const workHref = (slug: string) => localizePath(`/work/${slug}`, locale);
 const copy = {
   en: {
     eyebrow: 'About',
-    lead: 'Sound direction, music production, and creative tooling — for cinema, performance, and live instruments. Based in Palmas, Tocantins, Brazil.',
+    lead: 'I direct sound and build musical interfaces, performance tools, and generative systems. Working across cinema and music, from Palmas, Tocantins, Brazil.',
+    toolsCta: 'Explore musical tools',
     portraits: 'Portraits',
     portraitAlt: (index: number, total: number) => `Portrait ${index} of ${total}`,
     threadEyebrow: 'Practice',
@@ -39,7 +40,8 @@ const copy = {
   },
   pt: {
     eyebrow: 'Sobre',
-    lead: 'Direção de som, produção musical e ferramentas criativas — para cinema, performance e instrumentos ao vivo. Com base em Palmas, no Tocantins.',
+    lead: 'Dirijo som e desenvolvo interfaces musicais, ferramentas para performance e sistemas generativos. Entre o cinema e a música, a partir de Palmas, no Tocantins.',
+    toolsCta: 'Explorar ferramentas musicais',
     portraits: 'Retratos',
     portraitAlt: (index: number, total: number) => `Retrato ${index} de ${total}`,
     threadEyebrow: 'Prática',
@@ -113,6 +115,9 @@ const areas = [
         </h1>
       )}
       <p class="portfolio-about__lead">{copy.lead}</p>
+      <a class="portfolio-about__tools-link mono" href={localizePath('/#code', locale)}>
+        {copy.toolsCta} <span aria-hidden="true">↓</span>
+      </a>
     </div>
 
     <div class="portfolio-about__portraits" aria-label={copy.portraits}>
@@ -254,6 +259,22 @@ const areas = [
     margin-top: var(--s-5);
     font-size: var(--t-body);
     max-width: 46ch;
+  }
+
+  .portfolio-about__tools-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-3);
+    min-height: 44px;
+    margin-top: var(--s-4);
+    padding: var(--s-2) 0;
+    color: var(--accent-amber);
+    font-size: var(--t-body-sm);
+  }
+
+  .portfolio-about__tools-link:focus-visible {
+    outline: 2px solid var(--accent-amber);
+    outline-offset: 4px;
   }
 
   .portfolio-about__portraits {

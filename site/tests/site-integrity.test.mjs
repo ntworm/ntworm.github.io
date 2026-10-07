@@ -382,8 +382,8 @@ test('public identity, chapter links, and media documentation match verified sit
     code,
     /Building tools for Ableton Live, real-time systems, and audiovisual work\./,
   );
-  assert.equal((code.match(/97 tools in v0\.7\.0/g) ?? []).length, 2);
-  assert.equal((code.match(/grouped batch commands/g) ?? []).length, 2);
+  assert.equal((code.match(/97 tools in v0\.7\.0/g) ?? []).length, 1);
+  assert.equal((code.match(/grouped batch commands/g) ?? []).length, 1);
   assert.doesNotMatch(code, /atomic batch|with rollback/i);
   assert.match(
     work,
@@ -399,7 +399,7 @@ test('public identity, chapter links, and media documentation match verified sit
   assert.doesNotMatch(rootReadme, /gabrielworm\.github\.io/i);
   assert.match(
     rootReadme,
-    /\[About\]\(https:\/\/ntworm\.github\.io\/#about\)[\s\S]*\[Work\]\(https:\/\/ntworm\.github\.io\/#work\)[\s\S]*\[Code\]\(https:\/\/ntworm\.github\.io\/#code\)[\s\S]*\[Archive\]\(https:\/\/ntworm\.github\.io\/#archive\)[\s\S]*\[Contact\]\(https:\/\/ntworm\.github\.io\/#contact\)/,
+    /\[About\]\(https:\/\/ntworm\.github\.io\/#about\)[\s\S]*\[Code\]\(https:\/\/ntworm\.github\.io\/#code\)[\s\S]*\[Work\]\(https:\/\/ntworm\.github\.io\/#work\)[\s\S]*\[Archive\]\(https:\/\/ntworm\.github\.io\/#archive\)[\s\S]*\[Contact\]\(https:\/\/ntworm\.github\.io\/#contact\)/,
   );
 
   assert.match(mediaReadme, /site\/src\/utils\/project-images\.ts/);

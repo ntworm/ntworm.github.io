@@ -16,7 +16,9 @@ test('primary navigation targets the continuous homepage chapters', () => {
   }
 
   const navOrder = [...nav.matchAll(/href: '\/#([^']+)'/g)].map((match) => match[1]);
-  assert.deepEqual(navOrder, ['about', 'work', 'code', 'contact']);
+  assert.deepEqual(navOrder, ['about', 'code', 'work', 'contact']);
+  const footerOrder = [...footer.matchAll(/href: '\/#([^']+)'/g)].map((match) => match[1]);
+  assert.deepEqual(footerOrder, navOrder);
 
   // Both lists run their chapter links through the locale mapper, so the
   // Portuguese pages keep readers under /pt-br/.

@@ -96,7 +96,7 @@ test('homepage renders five finite chapters once and in order', () => {
   const chapters = [...html.matchAll(/data-portfolio-chapter="(about|work|code|archive|contact)"/g)]
     .map((match) => match[1]);
 
-  assert.deepEqual(chapters, ['about', 'work', 'code', 'archive', 'contact']);
+  assert.deepEqual(chapters, ['about', 'code', 'work', 'archive', 'contact']);
   for (const id of chapters) assert.match(html, new RegExp(`id="${id}"`));
 });
 
@@ -109,7 +109,7 @@ test('continuous homepage reserves its single H1 for About and preserves chapter
   assert.match(work, /<h2[^>]*data-work-title-reveal/);
   assert.doesNotMatch(work, /<h1[^>]*data-work-title-reveal/);
   assert.match(work, /\.portfolio-work__header h2/);
-  assert.match(code, /<h2[^>]*class="code__title"[^>]*data-reveal="typewriter"[^>]*aria-label="Tools and instruments for music and audiovisual performance\."/);
+  assert.match(code, /<h2[^>]*class="code__title"[^>]*data-reveal="typewriter"[^>]*aria-label="Tools and musical interfaces\."/);
   assert.doesNotMatch(code, /<h1[^>]*data-reveal="typewriter"/);
 });
 
@@ -118,7 +118,7 @@ test('public homepage serves the continuous portfolio as the primary experience'
   const chapters = [...html.matchAll(/data-portfolio-chapter="(about|work|code|archive|contact)"/g)]
     .map((match) => match[1]);
 
-  assert.deepEqual(chapters, ['about', 'work', 'code', 'archive', 'contact']);
+  assert.deepEqual(chapters, ['about', 'code', 'work', 'archive', 'contact']);
   assert.match(html, /<title>Sound, Music &amp; Creative Systems &mdash; Gabriel Worm/);
 });
 
@@ -148,7 +148,7 @@ test('homepage Work contains one link per tier entry and no empty href', () => {
 
 test('About portraits remain four static editorial images', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
-  const about = chapterSlice(html, 'about', 'work');
+  const about = chapterSlice(html, 'about', 'code');
   const portraits = [...about.matchAll(/<img\b[^>]*src="(\/portrait\/[^"]+)"[^>]*>/g)];
 
   assert.deepEqual(portraits.map((match) => match[1]), [
@@ -181,7 +181,7 @@ test('About headline and portrait choreography are progressive and motion-safe',
 
 test('About carries the existing manifesto and four practice areas into one editorial thread', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
-  const about = chapterSlice(html, 'about', 'work');
+  const about = chapterSlice(html, 'about', 'code');
 
   assert.match(about, /Three movements\. Four areas\. One thread\./);
   assert.match(about, /I work at the intersection of film sound, music production, and creative tooling\./);
@@ -196,10 +196,10 @@ test('About carries the existing manifesto and four practice areas into one edit
   assert.match(about, /Recent work includes\s+<a[^>]*>O Compositor<\/a>/);
 });
 
-test('Lines and Cells stays anchored to About and scrolls out before Work', () => {
+test('Lines and Cells stays anchored to About and scrolls out before Code', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
-  const about = chapterSlice(html, 'about', 'work');
-  const work = chapterSlice(html, 'work', 'code');
+  const about = chapterSlice(html, 'about', 'code');
+  const work = chapterSlice(html, 'work', 'archive');
   const source = existsSync(hydraBackgroundPath) ? readFileSync(hydraBackgroundPath, 'utf8') : '';
   const sketch = readFileSync(join(process.cwd(), 'public', 'hydra', 'lines-and-cells.mjs'), 'utf8');
   const aboutSource = readFileSync(aboutChapterPath, 'utf8');
@@ -240,7 +240,7 @@ test('Lines and Cells stays anchored to About and scrolls out before Work', () =
 
 test('Work intro pairs the editorial statement with the original project spotlight and practice tags', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
-  const work = chapterSlice(html, 'work', 'code');
+  const work = chapterSlice(html, 'work', 'archive');
   const source = readFileSync(workChapterPath, 'utf8');
 
   assert.match(work, /class="portfolio-work__hero"/);
@@ -268,7 +268,7 @@ test('Work intro pairs the editorial statement with the original project spotlig
 
 test('featured entries alone render summaries and explicit orientation classes', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
-  const work = chapterSlice(html, 'work', 'code');
+  const work = chapterSlice(html, 'work', 'archive');
   const archiveChapter = chapterSlice(html, 'archive', 'contact');
   const featured = workEntries(work, 'featured');
   const more = workEntries(work, 'more');
@@ -314,7 +314,7 @@ test('featured factual highlights live inside the existing summary and turn ambe
 
 test('featured projects reveal a diffused poster backdrop and zoom both image layers on hover', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
-  const work = chapterSlice(html, 'work', 'code');
+  const work = chapterSlice(html, 'work', 'archive');
   const featured = workEntries(work, 'featured');
   const source = readFileSync(workEntryPath, 'utf8');
 
@@ -328,7 +328,7 @@ test('featured projects reveal a diffused poster backdrop and zoom both image la
   assert.match(source, /\.work-entry--featured:hover \.work-entry__media img,[^}]*\{[^}]*transform:\s*scale\(1\.1\);/s);
 });
 
-test('About transitions stay compact from the navigation through Work', () => {
+test('Chapter transitions preserve compact About and Work spacing', () => {
   const aboutSource = readFileSync(aboutChapterPath, 'utf8');
   const workSource = readFileSync(workChapterPath, 'utf8');
 
@@ -384,7 +384,7 @@ test('Work and relocated Archive stack above Code content without masking Gaussi
 
 test('homepage renders the complete Code structure once', () => {
   const homepage = readFileSync(join(distDir, 'index.html'), 'utf8');
-  const code = chapterSlice(homepage, 'code', 'archive');
+  const code = chapterSlice(homepage, 'code', 'work');
 
   assert.deepEqual(codeSignature(code), {
     hero: 1,
@@ -401,6 +401,35 @@ test('homepage renders the complete Code structure once', () => {
   });
   assert.equal((code.match(/<a\b[^>]*class="tool-card__media"/g) ?? []).length, 0);
   assert.equal((code.match(/<div\b[^>]*class="tool-card__media"[^>]*aria-hidden="true"/g) ?? []).length, 6);
+});
+
+test('musical tools offer a direct entry and project-to-source discovery before the GitHub profile', () => {
+  for (const prefix of ['', 'pt-br/']) {
+    const html = readFileSync(join(distDir, prefix, 'index.html'), 'utf8');
+    const about = chapterSlice(html, 'about', 'code');
+    const code = chapterSlice(html, 'code', 'work');
+    const routePrefix = prefix ? '/pt-br' : '';
+    const entry = [...about.matchAll(/<a\b[^>]*class="portfolio-about__tools-link mono"[^>]*>/g)];
+    assert.equal(entry.length, 1, `${prefix || 'en'} has one initial tools entry`);
+    assert.equal(attr(entry[0][0], 'href'), `${routePrefix}/#code`);
+
+    const cards = [...code.matchAll(/<article\b[^>]*class="tool-card"[^>]*>[\s\S]*?<\/article>/g)]
+      .map((match) => match[0]);
+    assert.deepEqual(cards.slice(0, 2).map((card) => attr(card, 'data-tool')), ['rc-surface', 'rc-setlist']);
+    for (const card of cards.slice(0, 2)) {
+      const slug = attr(card, 'data-tool');
+      assert.equal(attr(card, 'data-featured'), 'true');
+      assert.match(card, /PolyForm Noncommercial 1\.0\.0/);
+      const actions = card.match(/<div class="tool-card__actions"[^>]*>[\s\S]*?<\/div>/)?.[0] ?? '';
+      const destinations = [...actions.matchAll(/<a\b[^>]*>/g)].map((match) => attr(match[0], 'href'));
+      assert.deepEqual(destinations, [`${routePrefix}/work/${slug}`, `https://github.com/ntworm/${slug}`]);
+    }
+    assert.ok(code.indexOf('class="tools"') < code.indexOf('class="gh-card"'));
+    assert.doesNotMatch(code, /class="gh-card__repo-desc"/);
+    const contact = code.match(/<p class="code__contact"[^>]*>[\s\S]*?<\/p>/)?.[0] ?? '';
+    assert.equal(attr(contact.match(/<a\b[^>]*>/)?.[0] ?? '', 'href'), `${routePrefix}/#contact`);
+    assert.match(code, prefix ? /2022 · em pausa/ : /2022 · paused/);
+  }
 });
 
 test('homepage owns Code while the legacy Code route redirects to its chapter', () => {

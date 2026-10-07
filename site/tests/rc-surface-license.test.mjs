@@ -28,5 +28,5 @@ test('RC Surface case study identifies the project as source-available', () => {
 test('Code overview distinguishes open-source from source-available work', () => {
   const source = readFileSync(path.join(siteRoot, 'src/components/portfolio/CodeChapter.astro'), 'utf8');
 
-  assert.match(source, /Personal, open-source, and source-available projects/);
+  assert.match(source, /Source-available tools, open-source projects/);
 });
