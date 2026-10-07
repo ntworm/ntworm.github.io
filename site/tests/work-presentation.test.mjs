@@ -8,6 +8,7 @@ import {
   DISCIPLINE_BY_ID,
   FEATURED_WORK_IDS,
   MORE_WORK_IDS,
+  OVERVIEW_WORK_IDS,
   buildWorkPresentation,
 } from '../src/data/work-presentation.mjs';
 
@@ -226,6 +227,41 @@ test('every project card has the complete editorial metadata pattern', () => {
     assert.ok(project.data.year, `${project.id} is missing a year`);
     assert.ok(project.data.type, `${project.id} is missing a type`);
     assert.ok(project.data.production, `${project.id} is missing a production/context`);
+  }
+});
+
+test('opening panel alternates music, cinema, tools and generative projects in both languages', () => {
+  const expectedIds = [
+    'ep-rinoceronte', 'o-compositor', 'rc-surface', 'kakofoni-orquestra',
+    'em-agosto-chove', 'this-feminine-side', 'rc-setlist', 'lucy',
+  ];
+  assert.deepEqual(OVERVIEW_WORK_IDS, expectedIds);
+  assert.ok(Object.isFrozen(OVERVIEW_WORK_IDS));
+  for (const locale of ['en', 'pt']) {
+    const presentation = buildWorkPresentation(readProjects(), { locale });
+    assert.deepEqual(presentation.overview.map(({ id }) => id), expectedIds);
+    assert.equal(new Set(presentation.overview.map(({ id }) => DISCIPLINE_BY_ID[id])).size, 4);
+    assert.ok(Object.isFrozen(presentation.overview));
+    assert.equal(presentation.archive.length, 26);
+  }
+});
+
+test('audiovisual chapter keeps sound and music work while tools and generative cases remain in the catalogue', () => {
+  const expectedFeatured = [
+    'o-compositor', 'o-clube', 'ep-rinoceronte', 'this-feminine-side',
+    'em-agosto-chove', 'unveiling-new-futures', 'arvore-seca', 'el-tono-del-mar',
+    'ai-am', 'trisal', 'unconscious-vision',
+  ];
+  for (const locale of ['en', 'pt']) {
+    const presentation = buildWorkPresentation(readProjects(), { locale });
+    assert.deepEqual(presentation.audiovisual.featured.map(({ id }) => id), expectedFeatured);
+    assert.deepEqual(presentation.audiovisual.more.map(({ id }) => id), ['a-quermesse', 'ticha-penicheiro']);
+    assert.ok(Object.isFrozen(presentation.audiovisual));
+    assert.ok(Object.isFrozen(presentation.audiovisual.featured));
+    assert.ok(Object.isFrozen(presentation.audiovisual.more));
+    for (const id of ['lucy', 'kakofoni-orquestra', 'rc-surface', 'rc-setlist', 'ableton-mcp-server', 'eletronik-fields', 'fxhash']) {
+      assert.ok(presentation.archive.some((project) => project.id === id), `${id} stays accessible`);
+    }
   }
 });
 

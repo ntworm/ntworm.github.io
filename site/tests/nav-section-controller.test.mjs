@@ -147,6 +147,25 @@ test('bindSectionNavigation shares one observer, marks location, and disconnects
   assert.equal(fixture.observers[0].disconnected, true);
 });
 
+test('general project panel is observed and announced for English and Portuguese chapter links', () => {
+  for (const prefix of ['', '/pt-br']) {
+    const fixture = createDocument();
+    const projectLink = createLink('projects');
+    const readAttribute = projectLink.getAttribute;
+    projectLink.getAttribute = (name) => name === 'href' ? `${prefix}/#projects` : readAttribute(name);
+    fixture.links.splice(1, 0, projectLink);
+    fixture.rectangles.set('about', { top: -600, bottom: -20 });
+    fixture.hosts.set('projects', { id: 'projects', getBoundingClientRect: () => ({ top: 80, bottom: 890 }) });
+    const cleanup = bindSectionNavigation(fixture.document);
+    fixture.runNextFrame();
+    assert.equal(projectLink.getAttribute('aria-current'), 'location');
+    assert.equal(projectLink.classList.contains('is-active'), true);
+    assert.equal(fixture.links[0].getAttribute('aria-current'), null);
+    assert.equal(selectCurrentSection([], 'projects'), 'projects');
+    cleanup();
+  }
+});
+
 test('scroll updates a visible chapter start with one coalesced animation frame and cleans up', () => {
   const fixture = createDocument();
   const cleanup = bindSectionNavigation(fixture.document);

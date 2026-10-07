@@ -1,4 +1,4 @@
-const SECTION_IDS = Object.freeze(['about', 'work', 'code', 'contact']);
+const SECTION_IDS = Object.freeze(['about', 'projects', 'code', 'work', 'contact']);
 const STICKY_NAVIGATION_LINE = 80;
 const controllers = new WeakMap();
 const lifecycleDocuments = new WeakSet();
@@ -39,7 +39,7 @@ export function selectCurrentSection(entries, previous = 'about') {
 
 function sectionForLink(link) {
   const href = link.getAttribute('href');
-  const id = href?.match(/#(about|work|code|contact)$/)?.[1];
+  const id = href?.match(/#(about|projects|code|work|contact)$/)?.[1];
   return isSectionId(id) ? id : null;
 }
 
@@ -74,7 +74,7 @@ export function bindSectionNavigation(documentRef = document) {
   const Observer = documentRef.defaultView?.IntersectionObserver ?? globalThis.IntersectionObserver;
   const view = documentRef.defaultView ?? globalThis;
 
-  // Case-study routes intentionally keep their server-rendered Work `page`
+  // Case-study routes intentionally keep their server-rendered Projects `page`
   // state; there are no continuous-document hosts to observe there.
   if (hosts.length === 0 || typeof Observer !== 'function') return () => {};
 

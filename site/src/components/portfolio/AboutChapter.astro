@@ -4,6 +4,9 @@ import { join } from 'node:path';
 import HydraBackground from '../HydraBackground.astro';
 import { localeFromPath, localizePath } from '../../i18n/locales.mjs';
 
+interface Props { part?: 'hero' | 'practice'; }
+const { part = 'hero' } = Astro.props;
+
 const PORTRAIT_DIR = join(process.cwd(), 'public', 'portrait');
 const IMG_EXTS = /\.(jpe?g|png|webp|avif|gif)$/i;
 
@@ -31,8 +34,8 @@ const workHref = (slug: string) => localizePath(`/work/${slug}`, locale);
 const copy = {
   en: {
     eyebrow: 'About',
-    lead: 'I direct sound and build musical interfaces, performance tools, and generative systems. Working across cinema and music, from Palmas, Tocantins, Brazil.',
-    toolsCta: 'Explore musical tools',
+    lead: 'Sound direction, music production, and creative systems — across cinema, live performance, and generative art. Based in Palmas, Tocantins, Brazil.',
+    projectsCta: 'Explore selected projects',
     portraits: 'Portraits',
     portraitAlt: (index: number, total: number) => `Portrait ${index} of ${total}`,
     threadEyebrow: 'Practice',
@@ -40,8 +43,8 @@ const copy = {
   },
   pt: {
     eyebrow: 'Sobre',
-    lead: 'Dirijo som e desenvolvo interfaces musicais, ferramentas para performance e sistemas generativos. Entre o cinema e a música, a partir de Palmas, no Tocantins.',
-    toolsCta: 'Explorar ferramentas musicais',
+    lead: 'Direção de som, produção musical e sistemas criativos — entre cinema, performance ao vivo e arte generativa. A partir de Palmas, no Tocantins.',
+    projectsCta: 'Explorar projetos selecionados',
     portraits: 'Retratos',
     portraitAlt: (index: number, total: number) => `Retrato ${index} de ${total}`,
     threadEyebrow: 'Prática',
@@ -84,7 +87,8 @@ const areas = [
 ];
 ---
 
-<section id="about" class="portfolio-about wrap" data-portfolio-chapter="about">
+<section id={part === 'hero' ? 'about' : 'practice'} class="portfolio-about wrap" data-portfolio-chapter={part === 'hero' ? 'about' : 'practice'}>
+  {part === 'hero' && (<>
   <HydraBackground />
   <div class="portfolio-about__hero">
     <div class="portfolio-about__copy">
@@ -115,8 +119,8 @@ const areas = [
         </h1>
       )}
       <p class="portfolio-about__lead">{copy.lead}</p>
-      <a class="portfolio-about__tools-link mono" href={localizePath('/#code', locale)}>
-        {copy.toolsCta} <span aria-hidden="true">↓</span>
+      <a class="portfolio-about__projects-link mono" href={localizePath('/#projects', locale)}>
+        {copy.projectsCta} <span aria-hidden="true">↓</span>
       </a>
     </div>
 
@@ -133,7 +137,8 @@ const areas = [
     </div>
   </div>
 
-  <section class="portfolio-about__thread" aria-labelledby="about-thread-title">
+  </>)}
+  {part === 'practice' && (<section class="portfolio-about__thread" aria-labelledby="about-thread-title">
     <header class="portfolio-about__thread-heading">
       <span class="eyebrow">{copy.threadEyebrow}</span>
       <h2 id="about-thread-title">{copy.threadTitle}</h2>
@@ -211,7 +216,7 @@ const areas = [
         </article>
       ))}
     </div>
-  </section>
+  </section>)}
 </section>
 
 <style>
@@ -261,7 +266,7 @@ const areas = [
     max-width: 46ch;
   }
 
-  .portfolio-about__tools-link {
+  .portfolio-about__projects-link {
     display: inline-flex;
     align-items: center;
     gap: var(--s-3);
@@ -272,7 +277,7 @@ const areas = [
     font-size: var(--t-body-sm);
   }
 
-  .portfolio-about__tools-link:focus-visible {
+  .portfolio-about__projects-link:focus-visible {
     outline: 2px solid var(--accent-amber);
     outline-offset: 4px;
   }

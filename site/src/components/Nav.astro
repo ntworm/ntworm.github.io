@@ -8,13 +8,14 @@ const pathname = unlocalizePath(Astro.url.pathname);
 const languagePaths = alternatePaths(Astro.url.pathname);
 const links = [
   { href: '/#about', label: 'nav.about' },
+  { href: '/#projects', label: 'nav.projects' },
   { href: '/#code', label: 'nav.code' },
   { href: '/#work', label: 'nav.work' },
   { href: '/#contact', label: 'nav.contact' },
 ];
 
 function isActive(href: string): boolean {
-  return href === '/#work' && pathname.startsWith('/work/');
+  return href === '/#projects' && pathname.startsWith('/work/');
 }
 ---
 <header class="nav">
@@ -168,21 +169,26 @@ function isActive(href: string): boolean {
   .nav__link.is-active { border-bottom: 1px solid var(--accent-amber); }
 
   @media (max-width: 640px) {
-    .nav { height: 56px; }
-    .nav__list { gap: var(--s-3); }
+    .nav { height: auto; }
+    .nav__inner {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--s-1);
+      padding-top: var(--s-2);
+      padding-bottom: var(--s-2);
+    }
+    .nav__list { justify-content: space-between; gap: var(--s-2); }
     .nav__link {
       display: inline-flex;
       align-items: center;
-      min-height: 32px;
+      min-height: 44px;
       font-size: 11px;
       letter-spacing: 0.08em;
     }
-    /* The switch tucks under the monogram so the chapter links keep the row;
-       Portuguese labels are longer than English ones. */
+    /* A separate brand row leaves all chapter links visible on small screens. */
     .nav__brand {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0;
+      justify-content: space-between;
+      align-items: center;
     }
     .nav__logo { line-height: 1; }
     .nav__lang-link {
@@ -193,6 +199,7 @@ function isActive(href: string): boolean {
       letter-spacing: 0.1em;
     }
     .nav__lang li + li::before { font-size: 10px; margin: 0 0.4em; }
+    :global([data-portfolio-chapter]), :global(#generative) { scroll-margin-top: 112px; }
   }
 
   @media (max-width: 359px) {

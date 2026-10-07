@@ -4,8 +4,7 @@ import { basename, join } from 'node:path';
 import test from 'node:test';
 
 import {
-  FEATURED_WORK_IDS,
-  MORE_WORK_IDS,
+  OVERVIEW_WORK_IDS,
   buildWorkPresentation,
 } from '../src/data/work-presentation.mjs';
 
@@ -91,13 +90,41 @@ function builtCaseDocuments() {
     });
 }
 
-test('homepage renders five finite chapters once and in order', () => {
+test('homepage renders seven finite chapters once and in order', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
-  const chapters = [...html.matchAll(/data-portfolio-chapter="(about|work|code|archive|contact)"/g)]
+  const chapters = [...html.matchAll(/data-portfolio-chapter="(about|projects|code|work|archive|practice|contact)"/g)]
     .map((match) => match[1]);
 
-  assert.deepEqual(chapters, ['about', 'code', 'work', 'archive', 'contact']);
+  assert.deepEqual(chapters, ['about', 'projects', 'code', 'work', 'archive', 'practice', 'contact']);
   for (const id of chapters) assert.match(html, new RegExp(`id="${id}"`));
+});
+
+test('mixed project panel immediately follows the opening and offers every case without waiting for animation', () => {
+  for (const prefix of ['', 'pt-br/']) {
+    const html = readFileSync(join(distDir, prefix, 'index.html'), 'utf8');
+    const about = chapterSlice(html, 'about', 'projects');
+    const panel = chapterSlice(html, 'projects', 'code');
+    const work = chapterSlice(html, 'work', 'archive');
+    const practice = chapterSlice(html, 'practice', 'contact');
+    const path = prefix ? '/pt-br' : '';
+    const links = [...panel.matchAll(/<a\b[^>]*data-overview-project="[^"]+"[^>]*>/g)].map(([tag]) => tag);
+    assert.deepEqual(links.map((tag) => attr(tag, 'data-overview-project')), OVERVIEW_WORK_IDS);
+    for (const link of links) {
+      assert.equal(attr(link, 'href'), `${path}/work/${attr(link, 'data-overview-project')}`);
+      assert.doesNotMatch(link, /\binert\b|aria-hidden="true"|tabindex="-1"/);
+    }
+    const slides = [...panel.matchAll(/<a\b[^>]*data-spotlight-slide[^>]*>/g)].map(([tag]) => tag);
+    assert.deepEqual(slides.map((tag) => attr(tag, 'data-spotlight-project')), OVERVIEW_WORK_IDS);
+    assert.equal(attr(slides[0], 'aria-hidden'), 'false');
+    assert.ok(slides.slice(1).every((tag) => attr(tag, 'aria-hidden') === 'true' && /\binert\b/.test(tag)));
+    assert.doesNotMatch(work, /data-spotlight|data-overview-project/);
+    assert.doesNotMatch(about, /class="portfolio-about__thread"/);
+    assert.match(practice, /class="portfolio-about__thread"/);
+    assert.match(panel, prefix ? /Som, música, código e imagem\./ : /Sound, music, code, and moving image\./);
+    assert.match(panel, new RegExp(`href="${path}/#code"`));
+    assert.match(panel, new RegExp(`href="${path}/#generative"`));
+    assert.match(html, /id="generative"/);
+  }
 });
 
 test('continuous homepage reserves its single H1 for About and preserves chapter headline styles', () => {
@@ -115,10 +142,10 @@ test('continuous homepage reserves its single H1 for About and preserves chapter
 
 test('public homepage serves the continuous portfolio as the primary experience', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
-  const chapters = [...html.matchAll(/data-portfolio-chapter="(about|work|code|archive|contact)"/g)]
+  const chapters = [...html.matchAll(/data-portfolio-chapter="(about|projects|code|work|archive|practice|contact)"/g)]
     .map((match) => match[1]);
 
-  assert.deepEqual(chapters, ['about', 'code', 'work', 'archive', 'contact']);
+  assert.deepEqual(chapters, ['about', 'projects', 'code', 'work', 'archive', 'practice', 'contact']);
   assert.match(html, /<title>Sound, Music &amp; Creative Systems &mdash; Gabriel Worm/);
 });
 
@@ -126,8 +153,8 @@ test('homepage renders the approved Work tiers', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
   const ids = (tier) => workTags(html, tier).map((tag) => attr(tag, 'data-work-id'));
 
-  assert.deepEqual(ids('featured'), FEATURED_WORK_IDS);
-  assert.deepEqual(ids('more'), MORE_WORK_IDS);
+  assert.deepEqual(ids('featured'), buildWorkPresentation(loadProjects()).audiovisual.featured.map((project) => project.id));
+  assert.deepEqual(ids('more'), buildWorkPresentation(loadProjects()).audiovisual.more.map((project) => project.id));
   assert.deepEqual(
     ids('archive'),
     buildWorkPresentation(loadProjects()).archive.map((project) => project.id),
@@ -137,8 +164,8 @@ test('homepage renders the approved Work tiers', () => {
 test('homepage Work contains one link per tier entry and no empty href', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
 
-  assert.equal(workTags(html, 'featured').length, 13);
-  assert.equal(workTags(html, 'more').length, 5);
+  assert.equal(workTags(html, 'featured').length, 11);
+  assert.equal(workTags(html, 'more').length, 2);
   assert.equal(workTags(html, 'archive').length, 26);
   assert.ok(
     [...workTags(html, 'featured'), ...workTags(html, 'more'), ...workTags(html, 'archive')]
@@ -148,7 +175,7 @@ test('homepage Work contains one link per tier entry and no empty href', () => {
 
 test('About portraits remain four static editorial images', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
-  const about = chapterSlice(html, 'about', 'code');
+  const about = chapterSlice(html, 'about', 'projects');
   const portraits = [...about.matchAll(/<img\b[^>]*src="(\/portrait\/[^"]+)"[^>]*>/g)];
 
   assert.deepEqual(portraits.map((match) => match[1]), [
@@ -181,7 +208,7 @@ test('About headline and portrait choreography are progressive and motion-safe',
 
 test('About carries the existing manifesto and four practice areas into one editorial thread', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
-  const about = chapterSlice(html, 'about', 'code');
+  const about = chapterSlice(html, 'practice', 'contact');
 
   assert.match(about, /Three movements\. Four areas\. One thread\./);
   assert.match(about, /I work at the intersection of film sound, music production, and creative tooling\./);
@@ -196,9 +223,9 @@ test('About carries the existing manifesto and four practice areas into one edit
   assert.match(about, /Recent work includes\s+<a[^>]*>O Compositor<\/a>/);
 });
 
-test('Lines and Cells stays anchored to About and scrolls out before Code', () => {
+test('Lines and Cells stays anchored to About and scrolls out before the general project panel', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
-  const about = chapterSlice(html, 'about', 'code');
+  const about = chapterSlice(html, 'about', 'projects');
   const work = chapterSlice(html, 'work', 'archive');
   const source = existsSync(hydraBackgroundPath) ? readFileSync(hydraBackgroundPath, 'utf8') : '';
   const sketch = readFileSync(join(process.cwd(), 'public', 'hydra', 'lines-and-cells.mjs'), 'utf8');
@@ -238,18 +265,19 @@ test('Lines and Cells stays anchored to About and scrolls out before Code', () =
   assert.match(aboutSource, /\.portfolio-about__thread\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1;/s);
 });
 
-test('Work intro pairs the editorial statement with the original project spotlight and practice tags', () => {
+test('general project panel pairs the editorial statement with a mixed spotlight and area links', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
-  const work = chapterSlice(html, 'work', 'archive');
+  const work = chapterSlice(html, 'projects', 'code');
+  const audiovisual = chapterSlice(html, 'work', 'archive');
   const source = readFileSync(workChapterPath, 'utf8');
 
   assert.match(work, /class="portfolio-work__hero"/);
-  assert.equal((work.match(/class="work-spotlight-cell"/g) ?? []).length, 7);
+  assert.equal((work.match(/class="work-spotlight-cell"/g) ?? []).length, 8);
   assert.match(work, /aria-label="Practice areas"/);
-  assert.match(work, /Film Audio/);
-  assert.match(work, /Music Production/);
-  assert.match(work, /Creative Coding/);
-  assert.match(work, /Live \/ Experimental/);
+  assert.match(work, /Film &amp; television/);
+  assert.match(work, /Music &amp; live sound/);
+  assert.match(work, /Musical interfaces/);
+  assert.match(work, /Generative art/);
   assert.match(source, /createSpotlightController/);
   assert.match(source, /motionQuery\.addEventListener\('change', syncReducedMotion\)/);
   assert.match(source, /controller\.setPaused\('reduced-motion', event\.matches\)/);
@@ -257,10 +285,10 @@ test('Work intro pairs the editorial statement with the original project spotlig
   assert.match(source, /\.work-spotlight-cell\.is-active/);
   assert.doesNotMatch(source, /@keyframes work-spotlight-cycle/);
   assert.match(source, /@media \(prefers-reduced-motion: reduce\)/);
-  assert.match(work, /class="portfolio-work__runway"/);
-  assert.match(work, /class="portfolio-work__runway-count mono"[^>]*>01—13<\/span>/);
-  assert.match(work, /class="portfolio-work__runway-rule"/);
-  assert.match(work, /<h2 id="selected-work-title"[^>]*>Defining Projects\.<\/h2>/);
+  assert.match(audiovisual, /class="portfolio-work__runway"/);
+  assert.match(audiovisual, /class="portfolio-work__runway-count mono"[^>]*>01—11<\/span>/);
+  assert.match(audiovisual, /class="portfolio-work__runway-rule"/);
+  assert.match(audiovisual, /<h2 id="selected-work-title"[^>]*>Sound for film, music, and the stage\.<\/h2>/);
   assert.match(work, /data-work-title-reveal/);
   assert.match(readFileSync(workChapterPath, 'utf8'), /IntersectionObserver/);
   assert.match(readFileSync(workChapterPath, 'utf8'), /animation:\s*work-line-in\s+760ms/);
@@ -269,7 +297,7 @@ test('Work intro pairs the editorial statement with the original project spotlig
 test('featured entries alone render summaries and explicit orientation classes', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
   const work = chapterSlice(html, 'work', 'archive');
-  const archiveChapter = chapterSlice(html, 'archive', 'contact');
+  const archiveChapter = chapterSlice(html, 'archive', 'practice');
   const featured = workEntries(work, 'featured');
   const more = workEntries(work, 'more');
   const archive = workEntries(archiveChapter, 'archive');
@@ -279,7 +307,7 @@ test('featured entries alone render summaries and explicit orientation classes',
     attr(tag, 'data-media-layout'),
   ]));
 
-  assert.equal(featured.length, 13);
+  assert.equal(featured.length, 11);
   assert.ok(featured.every((entry) => (entry.match(/class="work-entry__summary"/g) ?? []).length === 1));
   assert.ok(featured.every((entry) => (entry.match(/class="work-entry__summary-highlight"/g) ?? []).length === 1));
   assert.ok([...more, ...archive].every((entry) => !entry.includes('work-entry__summary')));
@@ -292,12 +320,10 @@ test('featured entries alone render summaries and explicit orientation classes',
     'ep-rinoceronte': 'portrait',
     trisal: 'portrait',
     'el-tono-del-mar': 'landscape',
-    'kakofoni-orquestra': 'portrait',
     'em-agosto-chove': 'landscape',
     'ai-am': 'portrait',
     'unconscious-vision': 'portrait',
     'arvore-seca': 'portrait',
-    lucy: 'portrait',
   });
   assert.match(featuredTags[0], /\bis-lead\b/);
   assert.ok(featuredTags.slice(1).every((tag) => !/\bis-lead\b/.test(tag)));
@@ -318,7 +344,7 @@ test('featured projects reveal a diffused poster backdrop and zoom both image la
   const featured = workEntries(work, 'featured');
   const source = readFileSync(workEntryPath, 'utf8');
 
-  assert.equal(featured.length, 13);
+  assert.equal(featured.length, 11);
   assert.ok(featured.every((entry) => (entry.match(/class="work-entry__backdrop"/g) ?? []).length === 1));
   assert.match(source, /\.work-entry--featured\s*\{[^}]*overflow:\s*visible;/s);
   assert.match(source, /\.work-entry--featured \.work-entry__backdrop\s*\{[^}]*position:\s*absolute;[^}]*top:\s*0;[^}]*bottom:\s*0;[^}]*left:\s*50%;[^}]*width:\s*100vw;[^}]*transform:\s*translateX\(-50%\);[^}]*opacity:\s*0\.3;[^}]*mask-image:[^}]*linear-gradient\(90deg, transparent 0%, #000 4%, #000 96%, transparent 100%\)/s);
@@ -403,15 +429,15 @@ test('homepage renders the complete Code structure once', () => {
   assert.equal((code.match(/<div\b[^>]*class="tool-card__media"[^>]*aria-hidden="true"/g) ?? []).length, 6);
 });
 
-test('musical tools offer a direct entry and project-to-source discovery before the GitHub profile', () => {
+test('opening leads to the general panel and musical tools keep project-to-source discovery', () => {
   for (const prefix of ['', 'pt-br/']) {
     const html = readFileSync(join(distDir, prefix, 'index.html'), 'utf8');
-    const about = chapterSlice(html, 'about', 'code');
+    const about = chapterSlice(html, 'about', 'projects');
     const code = chapterSlice(html, 'code', 'work');
     const routePrefix = prefix ? '/pt-br' : '';
-    const entry = [...about.matchAll(/<a\b[^>]*class="portfolio-about__tools-link mono"[^>]*>/g)];
-    assert.equal(entry.length, 1, `${prefix || 'en'} has one initial tools entry`);
-    assert.equal(attr(entry[0][0], 'href'), `${routePrefix}/#code`);
+    const entry = [...about.matchAll(/<a\b[^>]*class="portfolio-about__projects-link mono"[^>]*>/g)];
+    assert.equal(entry.length, 1, `${prefix || 'en'} has one initial project entry`);
+    assert.equal(attr(entry[0][0], 'href'), `${routePrefix}/#projects`);
 
     const cards = [...code.matchAll(/<article\b[^>]*class="tool-card"[^>]*>[\s\S]*?<\/article>/g)]
       .map((match) => match[0]);

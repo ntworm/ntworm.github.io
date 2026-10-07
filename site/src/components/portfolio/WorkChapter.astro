@@ -4,61 +4,67 @@ import dimensionsData from '../../data/asset-dimensions.json';
 import { localeFromPath, localizePath } from '../../i18n/locales.mjs';
 
 interface Props {
+  mode?: 'overview' | 'detail';
   presentation: {
     featured: Parameters<typeof WorkEntry>[0]['project'][];
     more: Parameters<typeof WorkEntry>[0]['project'][];
+    overview: Parameters<typeof WorkEntry>[0]['project'][];
+    audiovisual: {
+      featured: Parameters<typeof WorkEntry>[0]['project'][];
+      more: Parameters<typeof WorkEntry>[0]['project'][];
+    };
   };
 }
 
-const { presentation } = Astro.props;
+const { presentation, mode = 'detail' } = Astro.props;
+const isOverview = mode === 'overview';
+const { featured, more } = presentation.audiovisual;
 const locale = localeFromPath(Astro.url);
 const copy = {
   en: {
-    eyebrow: 'Work',
-    title: 'Sound direction, music production, and creative systems.',
-    titleLines: ['Sound direction,', 'music production,', 'and creative systems.'],
+    eyebrow: 'Selected projects',
+    title: 'Sound, music, code, and moving image.',
+    titleLines: ['Sound, music,', 'code,', 'and moving image.'],
     intro: 'Selected work across cinema, television, music, generative art, performance, and tools.',
     practiceLabel: 'Practice areas',
-    practice: ['Film Audio', 'Music Production', 'Creative Coding', 'Live / Experimental'],
+    practice: [
+      { label: 'Film & television', href: '/#work' },
+      { label: 'Music & live sound', href: '/#work' },
+      { label: 'Musical interfaces', href: '/#code' },
+      { label: 'Generative art', href: '/#generative' },
+    ],
     spotlightLabel: 'Project spotlight',
     spotlightFallbackRole: 'Work',
-    selectedEyebrow: 'Selected Work',
-    selectedTitle: 'Defining Projects.',
-    moreEyebrow: 'More Work',
-    moreTitle: 'Further work across the practice.',
+    selectedEyebrow: 'Sound & audiovisual',
+    selectedTitle: 'Sound for film, music, and the stage.',
+    moreEyebrow: 'More audiovisual work',
+    moreTitle: 'Further work in film and television.',
+    projectLinksLabel: 'Explore the selected projects',
   },
   pt: {
-    eyebrow: 'Trabalhos',
-    title: 'Direção de som, produção musical e sistemas criativos.',
-    titleLines: ['Direção de som,', 'produção musical', 'e sistemas criativos.'],
+    eyebrow: 'Projetos selecionados',
+    title: 'Som, música, código e imagem.',
+    titleLines: ['Som, música,', 'código', 'e imagem.'],
     intro: 'Uma seleção de trabalhos entre cinema, televisão, música, arte generativa, performance e ferramentas.',
     practiceLabel: 'Áreas de atuação',
-    practice: ['Som para cinema', 'Produção musical', 'Programação criativa', 'Ao vivo / Experimental'],
+    practice: [
+      { label: 'Cinema e televisão', href: '/#work' },
+      { label: 'Música e som ao vivo', href: '/#work' },
+      { label: 'Interfaces musicais', href: '/#code' },
+      { label: 'Arte generativa', href: '/#generative' },
+    ],
     spotlightLabel: 'Projetos em destaque',
     spotlightFallbackRole: 'Trabalho',
-    selectedEyebrow: 'Trabalhos selecionados',
-    selectedTitle: 'Projetos que me definem.',
-    moreEyebrow: 'Mais trabalhos',
-    moreTitle: 'Outros caminhos da mesma prática.',
+    selectedEyebrow: 'Som e audiovisual',
+    selectedTitle: 'Som para cinema, música e palco.',
+    moreEyebrow: 'Mais trabalhos audiovisuais',
+    moreTitle: 'Outros trabalhos em cinema e televisão.',
+    projectLinksLabel: 'Explorar os projetos selecionados',
   },
 }[locale];
 
-const spotlightIds = [
-  'a-quermesse',
-  'trisal',
-  'ticha-penicheiro',
-  'o-clube',
-  'o-compositor',
-  'eletronik-fields',
-  'rc-surface',
-];
-const workById = new Map(
-  [...presentation.featured, ...presentation.more].map((project) => [project.id, project]),
-);
-const spotlightProjects = spotlightIds
-  .map((id) => workById.get(id))
-  .filter((project) => project?.media.cover);
-const firstFeaturedCoverIndex = presentation.featured.findIndex((project) => project.media.cover);
+const spotlightProjects = presentation.overview.filter((project) => project.media.cover);
+const firstFeaturedCoverIndex = featured.findIndex((project) => project.media.cover);
 const dimensionsByProject = dimensionsData as Record<string, Array<{ file: string; w: number; h: number }>>;
 
 function coverDimensions(project: (typeof spotlightProjects)[number]) {
@@ -67,8 +73,8 @@ function coverDimensions(project: (typeof spotlightProjects)[number]) {
 }
 ---
 
-<section id="work" class="portfolio-work wrap" data-portfolio-chapter="work">
-  <header class="portfolio-work__header">
+<section id={isOverview ? 'projects' : 'work'} class="portfolio-work wrap" data-portfolio-chapter={isOverview ? 'projects' : 'work'}>
+  {isOverview && (<header class="portfolio-work__header">
     <div class="portfolio-work__hero">
       <div class="portfolio-work__hero-copy">
         <span class="eyebrow">{copy.eyebrow}</span>
@@ -83,7 +89,7 @@ function coverDimensions(project: (typeof spotlightProjects)[number]) {
         </h2>
         <p>{copy.intro}</p>
         <ul class="portfolio-work__practice" aria-label={copy.practiceLabel}>
-          {copy.practice.map((area) => <li>{area}</li>)}
+          {copy.practice.map((area) => <li><a href={localizePath(area.href, locale)}>{area.label}</a></li>)}
         </ul>
       </div>
 
@@ -101,6 +107,7 @@ function coverDimensions(project: (typeof spotlightProjects)[number]) {
             inert={index === 0 ? undefined : true}
             tabindex={index === 0 ? 0 : -1}
             data-spotlight-slide
+            data-spotlight-project={project.id}
             aria-label={`${project.data.title} — ${project.data.role ?? copy.spotlightFallbackRole} (${project.data.year})`}
           >
             <img
@@ -114,23 +121,32 @@ function coverDimensions(project: (typeof spotlightProjects)[number]) {
             />
             <span class="work-spotlight-caption">
               <strong>{project.data.title}</strong>
-              <span class="mono">{project.data.role} · {project.data.year}</span>
+              <span class="mono">{project.presentation.discipline} · {project.data.year}</span>
             </span>
           </a>
         ))}
       </div>
     </div>
-  </header>
+    <nav class="portfolio-work__project-links" aria-label={copy.projectLinksLabel}>
+      {presentation.overview.map((project) => (
+        <a href={localizePath(`/work/${project.id}`, locale)} data-overview-project={project.id}>
+          <span class="mono">{project.presentation.discipline}</span>
+          <strong>{project.data.title}</strong>
+        </a>
+      ))}
+    </nav>
+  </header>)}
 
+  {!isOverview && (<>
   <section class="portfolio-work__selected" aria-labelledby="selected-work-title">
     <div class="portfolio-work__runway">
       <span class="eyebrow">{copy.selectedEyebrow}</span>
-      <span class="portfolio-work__runway-count mono">01—13</span>
+      <span class="portfolio-work__runway-count mono">01—{String(featured.length).padStart(2, '0')}</span>
       <span class="portfolio-work__runway-rule" aria-hidden="true"></span>
     </div>
     <h2 id="selected-work-title">{copy.selectedTitle}</h2>
     <div class="portfolio-work__featured">
-      {presentation.featured.map((project, index) => (
+      {featured.map((project, index) => (
         <WorkEntry
           project={project}
           tier="featured"
@@ -145,11 +161,12 @@ function coverDimensions(project: (typeof spotlightProjects)[number]) {
     <span class="eyebrow">{copy.moreEyebrow}</span>
     <h2 id="more-work-title">{copy.moreTitle}</h2>
     <div class="portfolio-work__more-grid">
-      {presentation.more.map((project, index) => (
+      {more.map((project, index) => (
         <WorkEntry project={project} tier="more" index={index} />
       ))}
     </div>
   </section>
+  </>)}
 
 </section>
 
@@ -345,13 +362,58 @@ function coverDimensions(project: (typeof spotlightProjects)[number]) {
     list-style: none;
   }
 
-  .portfolio-work__practice li {
+  .portfolio-work__practice a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     padding: var(--s-1) var(--s-3);
     border: 1px solid var(--muted-graphite);
     border-radius: 2px;
     color: var(--fg-bone);
     font-family: var(--font-mono);
     font-size: var(--t-mono);
+  }
+
+  .portfolio-work__project-links {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--s-3);
+    margin-top: var(--s-6);
+  }
+
+  .portfolio-work__project-links a {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--s-2);
+    min-width: 0;
+    min-height: 96px;
+    padding: var(--s-3);
+    border: 1px solid var(--muted-graphite);
+    color: var(--fg-bone);
+    overflow-wrap: anywhere;
+  }
+
+  .portfolio-work__project-links .mono {
+    font-size: var(--t-eyebrow);
+    color: var(--accent-amber);
+    text-transform: uppercase;
+  }
+
+  .portfolio-work__project-links strong {
+    font-size: var(--t-body-sm);
+    line-height: 1.3;
+    font-weight: 500;
+  }
+
+  .portfolio-work__project-links a:hover,
+  .portfolio-work__practice a:hover { border-color: var(--accent-amber); }
+
+  .portfolio-work__project-links a:focus-visible,
+  .portfolio-work__practice a:focus-visible,
+  .work-spotlight-cell:focus-visible {
+    outline: 2px solid var(--accent-amber);
+    outline-offset: 4px;
   }
 
   .portfolio-work__spotlight {
@@ -458,6 +520,7 @@ function coverDimensions(project: (typeof spotlightProjects)[number]) {
   }
 
   @media (max-width: 980px) {
+    .portfolio-work__project-links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .portfolio-work__hero { grid-template-columns: 1fr; }
     .portfolio-work__spotlight {
       width: min(100%, 560px);

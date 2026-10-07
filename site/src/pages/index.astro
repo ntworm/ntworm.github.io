@@ -39,8 +39,10 @@ const structuredData = {
   structuredData={structuredData}
 >
   <AboutChapter />
+  <WorkChapter presentation={work} mode="overview" />
   <CodeChapter />
   <WorkChapter presentation={work} />
   <WorkArchive projects={work.archive} />
+  <AboutChapter part="practice" />
   <ContactChapter />
 </Layout>

@@ -1,3 +1,16 @@
+// The opening panel alternates disciplines rather than introducing a single
+// specialty. Detailed chapters reuse the same projects and case routes.
+export const OVERVIEW_WORK_IDS = Object.freeze([
+  'ep-rinoceronte',
+  'o-compositor',
+  'rc-surface',
+  'kakofoni-orquestra',
+  'em-agosto-chove',
+  'this-feminine-side',
+  'rc-setlist',
+  'lucy',
+]);
+
 export const FEATURED_WORK_IDS = Object.freeze([
   'o-compositor',
   'o-clube',
@@ -185,7 +198,7 @@ export const DISCIPLINE_BY_ID = Object.freeze({
   'soundwalking-lisboa': 'sound art',
 });
 
-const REQUIRED_WORK_IDS = [...FEATURED_WORK_IDS, ...MORE_WORK_IDS];
+const REQUIRED_WORK_IDS = [...new Set([...OVERVIEW_WORK_IDS, ...FEATURED_WORK_IDS, ...MORE_WORK_IDS])];
 
 function latestYear(year) {
   const years = String(year).match(/\d{4}/g)?.map(Number) ?? [];
@@ -250,9 +263,18 @@ export function buildWorkPresentation(projects, { locale = 'en' } = {}) {
     )),
   );
 
+  const featured = Object.freeze(FEATURED_WORK_IDS.map((id) => decoratedById.get(id)));
+  const more = Object.freeze(MORE_WORK_IDS.map((id) => decoratedById.get(id)));
+  const isAudiovisual = (project) => !['tools', 'generative'].includes(DISCIPLINE_BY_ID[project.id]);
+
   return Object.freeze({
-    featured: Object.freeze(FEATURED_WORK_IDS.map((id) => decoratedById.get(id))),
-    more: Object.freeze(MORE_WORK_IDS.map((id) => decoratedById.get(id))),
+    overview: Object.freeze(OVERVIEW_WORK_IDS.map((id) => decoratedById.get(id))),
+    featured,
+    more,
+    audiovisual: Object.freeze({
+      featured: Object.freeze(featured.filter(isAudiovisual)),
+      more: Object.freeze(more.filter(isAudiovisual)),
+    }),
     archive,
   });
 }

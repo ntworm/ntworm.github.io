@@ -91,8 +91,8 @@ test('the interface dictionary is complete in both languages', () => {
   for (const [key, value] of Object.entries(UI.pt)) {
     assert.ok(value.trim(), `pt ${key} is empty`);
   }
-  assert.equal(useTranslations('pt')('nav.work'), 'Trabalhos');
-  assert.equal(useTranslations('xx')('nav.work'), 'Work');
+  assert.equal(useTranslations('pt')('nav.work'), 'Audiovisual');
+  assert.equal(useTranslations('xx')('nav.work'), 'Audiovisual');
 });
 
 test('every project has a Brazilian Portuguese translation and nothing else', () => {
@@ -193,7 +193,7 @@ test('Portuguese featured copy covers every featured card and keeps its highligh
 test('the Portuguese homepage mirrors the English chapters, tiers and headings', () => {
   const english = readFileSync(join(distDir, 'index.html'), 'utf8');
   const html = readFileSync(join(distDir, 'pt-br', 'index.html'), 'utf8');
-  const chapters = [...html.matchAll(/data-portfolio-chapter="(about|work|code|archive|contact)"/g)].map((match) => match[1]);
+  const chapters = [...html.matchAll(/data-portfolio-chapter="(about|projects|code|work|archive|practice|contact)"/g)].map((match) => match[1]);
   const tierIds = (source, tier) => [...source.matchAll(/<a\b[^>]*data-work-tier="([^"]+)"[^>]*>/g)]
     .filter((match) => match[1] === tier)
     .map((match) => attr(match[0], 'data-work-id'));
@@ -201,10 +201,10 @@ test('the Portuguese homepage mirrors the English chapters, tiers and headings',
   assert.match(html, /<html lang="pt-BR"/);
   assert.match(english, /<html lang="en"/);
   assert.match(html, /<title>Som, Música e Sistemas Criativos &mdash; Gabriel Worm/);
-  assert.deepEqual(chapters, ['about', 'code', 'work', 'archive', 'contact']);
+  assert.deepEqual(chapters, ['about', 'projects', 'code', 'work', 'archive', 'practice', 'contact']);
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
   assert.match(html, /class="reveal-seg reveal-amber"[^>]*>escuta,<\/span>/);
-  assert.match(html, /<h2 id="selected-work-title"[^>]*>Projetos que me definem\.<\/h2>/);
+  assert.match(html, /<h2 id="selected-work-title"[^>]*>Som para cinema, música e palco\.<\/h2>/);
   for (const tier of ['featured', 'more']) {
     assert.deepEqual(tierIds(html, tier), tierIds(english, tier), `${tier} tier matches English`);
   }

@@ -10,13 +10,13 @@ test('primary navigation targets the continuous homepage chapters', () => {
   const nav = source('components', 'Nav.astro');
   const footer = source('components', 'Footer.astro');
 
-  for (const chapter of ['about', 'work', 'code', 'contact']) {
+  for (const chapter of ['about', 'projects', 'code', 'work', 'contact']) {
     assert.match(nav, new RegExp(`href: '/#${chapter}'`));
     assert.match(footer, new RegExp(`href: '/#${chapter}'`));
   }
 
   const navOrder = [...nav.matchAll(/href: '\/#([^']+)'/g)].map((match) => match[1]);
-  assert.deepEqual(navOrder, ['about', 'code', 'work', 'contact']);
+  assert.deepEqual(navOrder, ['about', 'projects', 'code', 'work', 'contact']);
   const footerOrder = [...footer.matchAll(/href: '\/#([^']+)'/g)].map((match) => match[1]);
   assert.deepEqual(footerOrder, navOrder);
 

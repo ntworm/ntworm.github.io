@@ -399,7 +399,7 @@ test('public identity, chapter links, and media documentation match verified sit
   assert.doesNotMatch(rootReadme, /gabrielworm\.github\.io/i);
   assert.match(
     rootReadme,
-    /\[About\]\(https:\/\/ntworm\.github\.io\/#about\)[\s\S]*\[Code\]\(https:\/\/ntworm\.github\.io\/#code\)[\s\S]*\[Work\]\(https:\/\/ntworm\.github\.io\/#work\)[\s\S]*\[Archive\]\(https:\/\/ntworm\.github\.io\/#archive\)[\s\S]*\[Contact\]\(https:\/\/ntworm\.github\.io\/#contact\)/,
+    /\[About\]\(https:\/\/ntworm\.github\.io\/#about\)[\s\S]*\[Projects\]\(https:\/\/ntworm\.github\.io\/#projects\)[\s\S]*\[Code\]\(https:\/\/ntworm\.github\.io\/#code\)[\s\S]*\[Audiovisual\]\(https:\/\/ntworm\.github\.io\/#work\)[\s\S]*\[Archive\]\(https:\/\/ntworm\.github\.io\/#archive\)[\s\S]*\[Contact\]\(https:\/\/ntworm\.github\.io\/#contact\)/,
   );
 
   assert.match(mediaReadme, /site\/src\/utils\/project-images\.ts/);
