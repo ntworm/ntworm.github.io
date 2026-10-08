@@ -1,7 +1,6 @@
 ---
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import HydraBackground from '../HydraBackground.astro';
 import { localeFromPath, localizePath } from '../../i18n/locales.mjs';
 
 interface Props { part?: 'hero' | 'practice'; }
@@ -89,7 +88,6 @@ const areas = [
 
 <section id={part === 'hero' ? 'about' : 'practice'} class="portfolio-about wrap" data-portfolio-chapter={part === 'hero' ? 'about' : 'practice'}>
   {part === 'hero' && (<>
-  <HydraBackground />
   <div class="portfolio-about__hero">
     <div class="portfolio-about__copy">
       <span class="eyebrow">{copy.eyebrow}</span>

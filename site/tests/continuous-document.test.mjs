@@ -95,23 +95,32 @@ test('homepage renders seven finite chapters once and in order', () => {
   const chapters = [...html.matchAll(/data-portfolio-chapter="(about|projects|code|work|archive|practice|contact)"/g)]
     .map((match) => match[1]);
 
-  assert.deepEqual(chapters, ['about', 'projects', 'code', 'work', 'archive', 'practice', 'contact']);
+  assert.deepEqual(chapters, ['about', 'practice', 'projects', 'code', 'work', 'archive', 'contact']);
   for (const id of chapters) assert.match(html, new RegExp(`id="${id}"`));
 });
 
-test('mixed project panel immediately follows the opening and offers every case without waiting for animation', () => {
+test('mixed project panel follows the opening and practice and offers every case without waiting for animation', () => {
   for (const prefix of ['', 'pt-br/']) {
     const html = readFileSync(join(distDir, prefix, 'index.html'), 'utf8');
-    const about = chapterSlice(html, 'about', 'projects');
+    const about = chapterSlice(html, 'about', 'practice');
     const panel = chapterSlice(html, 'projects', 'code');
     const work = chapterSlice(html, 'work', 'archive');
-    const practice = chapterSlice(html, 'practice', 'contact');
+    const practice = chapterSlice(html, 'practice', 'projects');
     const path = prefix ? '/pt-br' : '';
     const links = [...panel.matchAll(/<a\b[^>]*data-overview-project="[^"]+"[^>]*>/g)].map(([tag]) => tag);
     assert.deepEqual(links.map((tag) => attr(tag, 'data-overview-project')), OVERVIEW_WORK_IDS);
     for (const link of links) {
       assert.equal(attr(link, 'href'), `${path}/work/${attr(link, 'data-overview-project')}`);
       assert.doesNotMatch(link, /\binert\b|aria-hidden="true"|tabindex="-1"/);
+    }
+    const cards = [...panel.matchAll(/<a\b[^>]*data-overview-project="([^"]+)"[^>]*>[\s\S]*?<\/a>/g)];
+    for (const [card, id] of cards) {
+      const image = card.match(/<img\b[^>]*>/)?.[0];
+      assert.ok(image, `${id}: existing cover appears on the card`);
+      assert.ok(attr(image, 'src').startsWith(`/work/${id}/`), `${id}: cover belongs to the linked project`);
+      assert.equal(attr(image, 'alt'), '', `${id}: cover is decorative`);
+      assert.equal(attr(image, 'loading'), 'lazy');
+      assert.ok(existsSync(join(process.cwd(), 'public', attr(image, 'src'))), `${id}: cover exists`);
     }
     const slides = [...panel.matchAll(/<a\b[^>]*data-spotlight-slide[^>]*>/g)].map(([tag]) => tag);
     assert.deepEqual(slides.map((tag) => attr(tag, 'data-spotlight-project')), OVERVIEW_WORK_IDS);
@@ -145,7 +154,7 @@ test('public homepage serves the continuous portfolio as the primary experience'
   const chapters = [...html.matchAll(/data-portfolio-chapter="(about|projects|code|work|archive|practice|contact)"/g)]
     .map((match) => match[1]);
 
-  assert.deepEqual(chapters, ['about', 'projects', 'code', 'work', 'archive', 'practice', 'contact']);
+  assert.deepEqual(chapters, ['about', 'practice', 'projects', 'code', 'work', 'archive', 'contact']);
   assert.match(html, /<title>Sound, Music &amp; Creative Systems &mdash; Gabriel Worm/);
 });
 
@@ -208,7 +217,7 @@ test('About headline and portrait choreography are progressive and motion-safe',
 
 test('About carries the existing manifesto and four practice areas into one editorial thread', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
-  const about = chapterSlice(html, 'practice', 'contact');
+  const about = chapterSlice(html, 'practice', 'projects');
 
   assert.match(about, /Three movements\. Four areas\. One thread\./);
   assert.match(about, /I work at the intersection of film sound, music production, and creative tooling\./);
@@ -223,19 +232,27 @@ test('About carries the existing manifesto and four practice areas into one edit
   assert.match(about, /Recent work includes\s+<a[^>]*>O Compositor<\/a>/);
 });
 
-test('Lines and Cells stays anchored to About and scrolls out before the general project panel', () => {
+test('one Lines and Cells surface spans the opening and project panel and dissolves before Code', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
-  const about = chapterSlice(html, 'about', 'projects');
+  const openingStart = html.indexOf('data-portfolio-opening');
+  const codeStart = html.indexOf('data-portfolio-chapter="code"');
+  const opening = html.slice(openingStart, codeStart);
   const work = chapterSlice(html, 'work', 'archive');
   const source = existsSync(hydraBackgroundPath) ? readFileSync(hydraBackgroundPath, 'utf8') : '';
   const sketch = readFileSync(join(process.cwd(), 'public', 'hydra', 'lines-and-cells.mjs'), 'utf8');
   const aboutSource = readFileSync(aboutChapterPath, 'utf8');
   const homepage = readFileSync(homepagePath, 'utf8');
   const layout = readFileSync(layoutPath, 'utf8');
+  const openingSource = readFileSync(join(process.cwd(), 'src', 'components', 'portfolio', 'PortfolioOpening.astro'), 'utf8');
 
-  assert.match(about, /class="portfolio-about__live-bg"/);
-  assert.ok(about.indexOf('class="portfolio-about__live-bg"') < about.indexOf('class="portfolio-about__hero"'));
-  assert.match(html, /class="portfolio-about__live-stage"/);
+  assert.ok(openingStart >= 0 && codeStart > openingStart);
+  assert.equal((html.match(/data-hydra-src=/g) ?? []).length, 1);
+  assert.match(opening, /class="portfolio-opening__live-bg"/);
+  assert.ok(opening.indexOf('class="portfolio-opening__live-bg"') < opening.indexOf('class="portfolio-about__hero"'));
+  assert.match(opening, /data-portfolio-chapter="practice"/);
+  assert.match(opening, /data-portfolio-chapter="projects"/);
+  assert.match(opening, /<\/section>\s*<\/div>\s*<div class="code-chapter" id="code"[^>]*$/);
+  assert.match(html, /class="portfolio-opening__live-stage"/);
   assert.match(html, /title="Lines and Cells live generative background"/);
   assert.match(html, /width="640"/);
   assert.match(html, /height="360"/);
@@ -244,18 +261,22 @@ test('Lines and Cells stays anchored to About and scrolls out before the general
   assert.doesNotMatch(html, /lines-and-cells\.html\?fxhash/);
   assert.match(html, /loading="lazy"/);
   assert.match(html, /sandbox="allow-scripts allow-same-origin"/);
-  assert.doesNotMatch(source, /portfolio-about__live-bg-fallback|lines-and-cells\.webp/);
-  assert.doesNotMatch(work, /portfolio-(?:about|work)__live-bg|Lines and Cells live generative background/);
+  assert.doesNotMatch(source, /portfolio-opening__live-bg-fallback|lines-and-cells\.webp/);
+  assert.doesNotMatch(work, /portfolio-(?:opening|work)__live-bg|Lines and Cells live generative background/);
   assert.doesNotMatch(homepage, /HydraBackground/);
   assert.doesNotMatch(layout, /<slot name="backdrop"/);
-  assert.match(aboutSource, /import HydraBackground from '\.\.\/HydraBackground\.astro';/);
-  assert.match(aboutSource, /<HydraBackground\s*\/>/);
-  assert.match(source, /\.portfolio-about__live-bg\s*\{[^}]*position:\s*absolute;[^}]*top:\s*-?[\d.]+vh;[^}]*bottom:\s*0;[^}]*left:\s*50%;[^}]*width:\s*100vw;[^}]*transform:\s*translateX\(-50%\);[^}]*z-index:\s*0;[^}]*pointer-events:\s*none;[^}]*overflow:\s*hidden;/s);
+  assert.doesNotMatch(aboutSource, /HydraBackground/);
+  assert.match(openingSource, /import HydraBackground from '\.\.\/HydraBackground\.astro';/);
+  assert.match(openingSource, /<HydraBackground\s*\/>/);
+  for (const page of [homepage, readFileSync(join(process.cwd(), 'src', 'pages', 'pt-br', 'index.astro'), 'utf8')]) {
+    assert.match(page, /<PortfolioOpening>\s*<AboutChapter\s*\/>\s*<AboutChapter part="practice"\s*\/>\s*<WorkChapter presentation=\{work\} mode="overview"\s*\/>\s*<\/PortfolioOpening>\s*<CodeChapter\s*\/>/s);
+  }
+  assert.match(source, /\.portfolio-opening__live-bg\s*\{[^}]*position:\s*absolute;[^}]*top:\s*-?[\d.]+vh;[^}]*bottom:\s*0;[^}]*left:\s*50%;[^}]*width:\s*100vw;[^}]*transform:\s*translateX\(-50%\);[^}]*z-index:\s*0;[^}]*pointer-events:\s*none;[^}]*overflow:\s*hidden;/s);
   assert.doesNotMatch(source, /position:\s*fixed/);
   assert.doesNotMatch(source, /getBoundingClientRect\(\)/);
-  assert.match(source, /\.portfolio-about__live-stage\s*\{[^}]*position:\s*relative;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*overflow:\s*hidden;/s);
-  assert.match(source, /linear-gradient\(180deg,\s*#000 0%,\s*#000 86%,\s*rgba\(0, 0, 0, 0\.72\) 90%,\s*transparent 100%\)/s);
-  assert.match(source, /\.portfolio-about__live-bg iframe\s*\{[^}]*inset:\s*0;[^}]*width:\s*100%;[^}]*height:\s*100%;/s);
+  assert.match(source, /\.portfolio-opening__live-stage\s*\{[^}]*position:\s*relative;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*overflow:\s*hidden;/s);
+  assert.match(source, /linear-gradient\(180deg, #000 0%, #000 calc\(100% - clamp\(180px, 32vh, 360px\)\), transparent 100%\)/);
+  assert.match(source, /\.portfolio-opening__live-bg iframe\s*\{[^}]*inset:\s*0;[^}]*width:\s*100%;[^}]*height:\s*100%;/s);
   assert.doesNotMatch(source, /--hydra-scale-[xy]|ResizeObserver|scale\(var\(--hydra-scale/);
   assert.match(source, /prefers-reduced-motion:\s*reduce/);
   assert.match(sketch, /new Hydra\(\{[\s\S]*canvas,[\s\S]*autoLoop:\s*false[\s\S]*\}\)/);
@@ -297,7 +318,7 @@ test('general project panel pairs the editorial statement with a mixed spotlight
 test('featured entries alone render summaries and explicit orientation classes', () => {
   const html = readFileSync(join(distDir, 'index.html'), 'utf8');
   const work = chapterSlice(html, 'work', 'archive');
-  const archiveChapter = chapterSlice(html, 'archive', 'practice');
+  const archiveChapter = chapterSlice(html, 'archive', 'contact');
   const featured = workEntries(work, 'featured');
   const more = workEntries(work, 'more');
   const archive = workEntries(archiveChapter, 'archive');

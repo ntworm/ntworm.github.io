@@ -201,7 +201,7 @@ test('the Portuguese homepage mirrors the English chapters, tiers and headings',
   assert.match(html, /<html lang="pt-BR"/);
   assert.match(english, /<html lang="en"/);
   assert.match(html, /<title>Som, Música e Sistemas Criativos &mdash; Gabriel Worm/);
-  assert.deepEqual(chapters, ['about', 'projects', 'code', 'work', 'archive', 'practice', 'contact']);
+  assert.deepEqual(chapters, ['about', 'practice', 'projects', 'code', 'work', 'archive', 'contact']);
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
   assert.match(html, /class="reveal-seg reveal-amber"[^>]*>escuta,<\/span>/);
   assert.match(html, /<h2 id="selected-work-title"[^>]*>Som para cinema, música e palco\.<\/h2>/);

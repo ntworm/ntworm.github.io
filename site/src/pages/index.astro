@@ -5,6 +5,7 @@ import CodeChapter from '../components/portfolio/CodeChapter.astro';
 import ContactChapter from '../components/portfolio/ContactChapter.astro';
 import WorkChapter from '../components/portfolio/WorkChapter.astro';
 import WorkArchive from '../components/portfolio/WorkArchive.astro';
+import PortfolioOpening from '../components/portfolio/PortfolioOpening.astro';
 import { buildWorkPresentation } from '../data/work-presentation.mjs';
 import Layout from '../layouts/Layout.astro';
 import { getProjectMedia } from '../utils/project-images';
@@ -38,11 +39,13 @@ const structuredData = {
   canonicalUrl={canonicalUrl}
   structuredData={structuredData}
 >
-  <AboutChapter />
-  <WorkChapter presentation={work} mode="overview" />
+  <PortfolioOpening>
+    <AboutChapter />
+    <AboutChapter part="practice" />
+    <WorkChapter presentation={work} mode="overview" />
+  </PortfolioOpening>
   <CodeChapter />
   <WorkChapter presentation={work} />
   <WorkArchive projects={work.archive} />
-  <AboutChapter part="practice" />
   <ContactChapter />
 </Layout>

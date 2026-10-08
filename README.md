@@ -8,6 +8,6 @@ Palmas, Tocantins — Brazil
 
 ---
 
-**Continuous portfolio** · [About](https://ntworm.github.io/#about) · [Projects](https://ntworm.github.io/#projects) · [Code](https://ntworm.github.io/#code) · [Audiovisual](https://ntworm.github.io/#work) · [Archive](https://ntworm.github.io/#archive) · [Practice](https://ntworm.github.io/#practice) · [Contact](https://ntworm.github.io/#contact)
+**Continuous portfolio** · [About](https://ntworm.github.io/#about) · [Practice](https://ntworm.github.io/#practice) · [Projects](https://ntworm.github.io/#projects) · [Code](https://ntworm.github.io/#code) · [Audiovisual](https://ntworm.github.io/#work) · [Archive](https://ntworm.github.io/#archive) · [Contact](https://ntworm.github.io/#contact)
 
 — © 2026 Gabriel Worm

@@ -7,8 +7,8 @@ const frameTitle = localeFromPath(Astro.url) === 'pt'
   : 'Lines and Cells live generative background';
 ---
 
-<div class="portfolio-about__live-bg" aria-hidden="true">
-  <div class="portfolio-about__live-stage">
+<div class="portfolio-opening__live-bg" aria-hidden="true">
+  <div class="portfolio-opening__live-stage">
     <iframe
       src="about:blank"
       data-hydra-src={linesAndCellsUrl}
@@ -24,7 +24,7 @@ const frameTitle = localeFromPath(Astro.url) === 'pt'
 </div>
 
 <style>
-  .portfolio-about__live-bg {
+  .portfolio-opening__live-bg {
     position: absolute;
     top: -18vh;
     bottom: 0;
@@ -39,22 +39,22 @@ const frameTitle = localeFromPath(Astro.url) === 'pt'
     background: transparent;
     -webkit-mask-image:
       linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.24) 5%, rgba(0, 0, 0, 0.86) 14%, #000 25%, #000 75%, rgba(0, 0, 0, 0.78) 89%, transparent 100%),
-      linear-gradient(180deg, #000 0%, #000 86%, rgba(0, 0, 0, 0.72) 90%, transparent 100%);
+      linear-gradient(180deg, #000 0%, #000 calc(100% - clamp(180px, 32vh, 360px)), transparent 100%);
     -webkit-mask-composite: source-in;
     mask-image:
       linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.24) 5%, rgba(0, 0, 0, 0.86) 14%, #000 25%, #000 75%, rgba(0, 0, 0, 0.78) 89%, transparent 100%),
-      linear-gradient(180deg, #000 0%, #000 86%, rgba(0, 0, 0, 0.72) 90%, transparent 100%);
+      linear-gradient(180deg, #000 0%, #000 calc(100% - clamp(180px, 32vh, 360px)), transparent 100%);
     mask-composite: intersect;
   }
 
-  .portfolio-about__live-stage {
+  .portfolio-opening__live-stage {
     position: relative;
     width: 100%;
     height: 100%;
     overflow: hidden;
   }
 
-  .portfolio-about__live-bg::after {
+  .portfolio-opening__live-bg::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -64,7 +64,7 @@ const frameTitle = localeFromPath(Astro.url) === 'pt'
       linear-gradient(180deg, rgba(18, 18, 19, 0.22), transparent 20%, transparent 80%, rgba(18, 18, 19, 0.44));
   }
 
-  .portfolio-about__live-bg iframe {
+  .portfolio-opening__live-bg iframe {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -77,11 +77,11 @@ const frameTitle = localeFromPath(Astro.url) === 'pt'
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .portfolio-about__live-bg iframe { display: none; }
+    .portfolio-opening__live-bg iframe { display: none; }
   }
 
   @media (max-width: 760px) {
-    .portfolio-about__live-bg {
+    .portfolio-opening__live-bg {
       top: -12vh;
       bottom: 0;
       width: 100vw;
@@ -101,8 +101,8 @@ const frameTitle = localeFromPath(Astro.url) === 'pt'
     const liveWindow = window as HydraSurfaceWindow;
     liveWindow.__portfolioHydraSurfaceCleanup?.();
 
-    const background = document.querySelector<HTMLElement>('.portfolio-about__live-bg');
-    const stage = background?.querySelector<HTMLElement>('.portfolio-about__live-stage');
+    const background = document.querySelector<HTMLElement>('.portfolio-opening__live-bg');
+    const stage = background?.querySelector<HTMLElement>('.portfolio-opening__live-stage');
     const iframe = stage?.querySelector<HTMLIFrameElement>('iframe');
     if (!background || !stage || !iframe) return;
 

@@ -1,0 +1,18 @@
+---
+import HydraBackground from '../HydraBackground.astro';
+---
+
+<div class="portfolio-opening" data-portfolio-opening>
+  <HydraBackground />
+  <slot />
+</div>
+
+<style>
+  /* One live surface follows the opening and the mixed project panel.
+     Its lower mask dissolves behind the cards into Code's Gaussian scene. */
+  .portfolio-opening {
+    position: relative;
+    z-index: 1;
+    isolation: isolate;
+  }
+</style>
