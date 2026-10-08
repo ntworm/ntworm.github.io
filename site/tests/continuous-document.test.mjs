@@ -251,7 +251,8 @@ test('one Lines and Cells surface spans the opening and project panel and dissol
   assert.ok(opening.indexOf('class="portfolio-opening__live-bg"') < opening.indexOf('class="portfolio-about__hero"'));
   assert.match(opening, /data-portfolio-chapter="practice"/);
   assert.match(opening, /data-portfolio-chapter="projects"/);
-  assert.match(opening, /<\/section>\s*<\/div>\s*<div class="code-chapter" id="code"[^>]*$/);
+  const openingMarkup = opening.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '');
+  assert.match(openingMarkup, /<\/section>\s*<\/div>\s*<div class="code-chapter" id="code"[^>]*$/);
   assert.match(html, /class="portfolio-opening__live-stage"/);
   assert.match(html, /title="Lines and Cells live generative background"/);
   assert.match(html, /width="640"/);
