@@ -499,7 +499,8 @@ test('Gaussian runtime exposes an idempotent pausable and disposable controller'
   assert.match(source, /setActive\(active\) \{ frameLoop\.setActive\(active\); \}/);
   assert.match(source, /if \(disposed\) return;[^]*disposed = true;[^]*frameLoop\.dispose\(\);[^]*renderer\.dispose\(\);[^]*renderer\.canvas\.remove\(\);/);
   assert.match(source, /stage\.dataset\.gsDisposed === '1'/);
-  assert.match(source, /return window\.__gsBgStart\(src, bg, options\);/);
+  assert.match(source, /const runtime = await window\.__gsBgStart\(src, bg, options\);/);
+  assert.match(source, /if \(!supportsGaussianWebGL\(bg\) \|\| !bg\.isConnected \|\| bg\.dataset\.gsDisposed === '1'\) \{\s*runtime\?\.dispose\(\);\s*return null;/);
   assert.doesNotMatch(source, /runtime\?\.setActive\(true\);/);
   assert.doesNotMatch(source, /requestAnimationFrame\(frame\)/);
 });
@@ -528,7 +529,7 @@ test('constrained devices defer Gaussian loading and obsolete PLY viewer assets 
   const legacyViewerPath = join(process.cwd(), 'src', 'components', 'GaussianViewer.astro');
   const legacyPlyPath = join(process.cwd(), 'public', 'work', 'code', 'splats', 'carro', 'carro.compressed.ply');
 
-  assert.match(gaussianSource, /import \{ shouldDelayHeavyMedia, shouldLoadHeavyMediaForIntent \} from '\.\.\/scripts\/heavy-media-policy\.mjs';/);
+  assert.match(gaussianSource, /import \{ shouldDelayHeavyMedia, shouldLoadHeavyMediaForIntent, shouldUseGaussianWebGL \} from '\.\.\/scripts\/heavy-media-policy\.mjs';/);
   assert.match(
     gaussianSource,
     /shouldDelayHeavyMedia\(\{\s*saveData: navigator\.connection\?\.saveData,\s*deviceMemory: navigator\.deviceMemory,\s*\}\)/s,
@@ -914,7 +915,7 @@ test('the Gaussian mount wires previews, the cross-fade guard, and a resize re-c
   assert.match(component, /const timeoutId = window\.setTimeout\(finish, 1200\);/);
   assert.match(component, /canvas\.addEventListener\('transitionend', finish\);/);
   assert.match(component, /window\.addEventListener\('resize', handleViewportResize, \{ passive: true \}\)/);
-  assert.match(component, /controller\.setViewportSupported\(window\.innerWidth >= breakpoint\)/);
+  assert.match(component, /controller\.setViewportSupported\(supportsGaussianWebGL\(controller\.bg\)\)/);
   assert.match(component, /void lod\.start\(\);/);
 });
 

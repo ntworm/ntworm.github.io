@@ -68,7 +68,7 @@ import { createGaussianAutopilot, damp, gaussianFocusPoint, gaussianFocusProximi
 import { createPausableFrameLoop } from '../scripts/gaussian-frame-loop.mjs';
 import { createGaussianLodController } from '../scripts/gaussian-lod-controller.mjs';
 import { calculateParticleBounds, createGaussianLightAutopilot, createGaussianParticleAutopilot, createGaussianParticleUniformController, createGaussianWorldTransition, gaussianParticleProfile, installGaussianParticleShaderPatch } from '../scripts/gaussian-particle-effects.mjs';
-import { shouldDelayHeavyMedia, shouldLoadHeavyMediaForIntent } from '../scripts/heavy-media-policy.mjs';
+import { shouldDelayHeavyMedia, shouldLoadHeavyMediaForIntent, shouldUseGaussianWebGL } from '../scripts/heavy-media-policy.mjs';
 
 type SplatEntry = { src: string; preview: string; poster: string; label: string };
 
@@ -484,14 +484,18 @@ async function mountGaussianBackground(
     cameraState?: GaussianCameraState | null;
   },
 ): Promise<GaussianRuntimeController | null> {
-  const breakpoint = parseInt(bg.dataset.mobileBreakpoint || '768', 10);
-  if (window.innerWidth < breakpoint) return null;
+  if (!supportsGaussianWebGL(bg)) return null;
   if (!bg.querySelector<HTMLCanvasElement>('.gs-bg__canvas')) return null;
 
   await loadSplatEngine();
-  if (!bg.isConnected || bg.dataset.gsDisposed === '1') return null;
+  if (!supportsGaussianWebGL(bg) || !bg.isConnected || bg.dataset.gsDisposed === '1') return null;
   if (!src || !window.__gsBgStart) return null;
-  return window.__gsBgStart(src, bg, options);
+  const runtime = await window.__gsBgStart(src, bg, options);
+  if (!supportsGaussianWebGL(bg) || !bg.isConnected || bg.dataset.gsDisposed === '1') {
+    runtime?.dispose();
+    return null;
+  }
+  return runtime;
 }
 
 type GaussianMountController = {
@@ -509,6 +513,17 @@ type GaussianMountController = {
 };
 
 const gaussianControllers = new Set<GaussianMountController>();
+const gaussianPointerQuery = window.matchMedia('(pointer: coarse)');
+const gaussianHoverQuery = window.matchMedia('(hover: none)');
+
+function supportsGaussianWebGL(bg: HTMLElement): boolean {
+  return shouldUseGaussianWebGL({
+    viewportWidth: window.innerWidth,
+    mobileBreakpoint: parseInt(bg.dataset.mobileBreakpoint || '768', 10),
+    coarsePointer: gaussianPointerQuery.matches,
+    hoverNone: gaussianHoverQuery.matches,
+  });
+}
 
 function createGaussianMountController(bg: HTMLElement): GaussianMountController | null {
   const pick = pickRandomSplat(bg);
@@ -528,13 +543,12 @@ function createGaussianMountController(bg: HTMLElement): GaussianMountController
   }
 
   const host = bg.closest('.code__hero, .code__lower-showcase') ?? bg.parentElement ?? bg;
-  const breakpoint = parseInt(bg.dataset.mobileBreakpoint || '768', 10);
   let insideActiveZone = false;
   let loadObserver: IntersectionObserver | null = null;
   let activityObserver: IntersectionObserver | null = null;
 
   const lod = createGaussianLodController({
-    supported: () => window.innerWidth >= breakpoint,
+    supported: () => supportsGaussianWebGL(bg),
     mountPreview: () => mountGaussianBackground(bg, pick.preview, {
       canvasClass: 'gs-bg__preview-canvas',
       particleEffects: false,
@@ -685,8 +699,7 @@ function handleViewportResize(): void {
   window.clearTimeout(viewportResizeTimer);
   viewportResizeTimer = window.setTimeout(() => {
     gaussianControllers.forEach((controller) => {
-      const breakpoint = parseInt(controller.bg.dataset.mobileBreakpoint || '768', 10);
-      controller.setViewportSupported(window.innerWidth >= breakpoint);
+      controller.setViewportSupported(supportsGaussianWebGL(controller.bg));
     });
   }, 200);
 }
@@ -706,6 +719,8 @@ if (document.readyState === 'loading') {
 document.addEventListener('click', handleCodeNavigation);
 document.addEventListener('visibilitychange', refreshGaussianVisibility);
 window.addEventListener('resize', handleViewportResize, { passive: true });
+gaussianPointerQuery.addEventListener('change', handleViewportResize);
+gaussianHoverQuery.addEventListener('change', handleViewportResize);
 document.addEventListener('astro:page-load', attachAll);
 document.addEventListener('astro:before-swap', cleanupGaussianBackgrounds);
 </script>
@@ -986,6 +1001,31 @@ document.addEventListener('astro:before-swap', cleanupGaussianBackgrounds);
     .gs-bg__veil {
       background: linear-gradient(90deg, rgba(11, 11, 12, 0.92), rgba(11, 11, 12, 0.62));
     }
+  }
+
+  /* Phones keep the same scenes as a static image. No live blur, oversized
+     texture or opacity animation is needed to fill and soften the section. */
+  .gs-bg[data-contained="1"][data-gs-state="poster-only"] {
+    top: -10vh;
+    bottom: -10vh;
+  }
+
+  .gs-bg[data-gs-state="poster-only"]::before {
+    inset: 0;
+    filter: none;
+    transform: none;
+    transition: none;
+    opacity: 0.42;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .gs-bg[data-gs-state="poster-only"] .gs-bg__veil {
+    background: linear-gradient(90deg, rgba(11, 11, 12, 0.86), rgba(11, 11, 12, 0.36));
+  }
+
+  .gs-bg[data-placement="section-left"][data-gs-state="poster-only"] .gs-bg__veil {
+    background: linear-gradient(270deg, rgba(11, 11, 12, 0.86), rgba(11, 11, 12, 0.36));
   }
 
   @media (prefers-reduced-motion: reduce) {

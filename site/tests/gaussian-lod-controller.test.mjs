@@ -163,6 +163,28 @@ test('narrowing disposes both runtimes and returns to poster-only', async () => 
   assert.ok(full.calls.includes('disposed'));
 });
 
+for (const phase of ['preview', 'full']) {
+  test(`a pending ${phase} cannot mount after the viewport becomes unsupported`, async () => {
+    let supported = true;
+    let resolveMount;
+    const lateRuntime = fakeRuntime(phase);
+    const pendingMount = new Promise((resolve) => { resolveMount = resolve; });
+    const { controller } = harness({
+      supported: () => supported,
+      ...(phase === 'preview' ? { mountPreview: () => pendingMount } : { mountFull: () => pendingMount }),
+    });
+    if (phase === 'full') await controller.start();
+    const pending = phase === 'preview' ? controller.start() : controller.requestFull();
+    supported = false;
+    await controller.setViewportSupported(false);
+    resolveMount(lateRuntime);
+    await pending;
+    assert.equal(controller.getState(), 'poster-only');
+    assert.deepEqual(controller.getRuntimes(), { preview: null, full: null });
+    assert.deepEqual(lateRuntime.calls, ['disposed']);
+  });
+}
+
 test('forwards activity to every live runtime and survives disposal', async () => {
   const { controller, preview, full } = harness();
   await controller.start();

@@ -37,8 +37,9 @@ export function createGaussianLodController({
     if (disposed || previewRuntime || state === 'live') return;
     try {
       const runtime = await mountPreview();
-      if (disposed) {
+      if (disposed || !supported()) {
         runtime?.dispose();
+        if (!disposed) setState('poster-only');
         return;
       }
       if (!runtime) {
@@ -92,8 +93,9 @@ export function createGaussianLodController({
       setState('loading');
       fullPromise = attemptFull(true)
         .then((runtime) => {
-          if (disposed) {
+          if (disposed || !supported()) {
             runtime?.dispose();
+            if (!disposed) setState('poster-only');
             return;
           }
           if (!runtime) {

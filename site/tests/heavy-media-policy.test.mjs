@@ -1,7 +1,23 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { shouldDelayHeavyMedia, shouldLoadHeavyMediaForIntent } from '../src/scripts/heavy-media-policy.mjs';
+import { shouldDelayHeavyMedia, shouldLoadHeavyMediaForIntent, shouldUseGaussianWebGL } from '../src/scripts/heavy-media-policy.mjs';
+
+test('Gaussian WebGL stays off on phones in portrait, landscape and desktop viewport mode', () => {
+  assert.equal(shouldUseGaussianWebGL({ viewportWidth: 390 }), false);
+  assert.equal(shouldUseGaussianWebGL({ viewportWidth: 844, coarsePointer: true, hoverNone: true }), false);
+  assert.equal(shouldUseGaussianWebGL({ viewportWidth: 980, coarsePointer: true, hoverNone: true }), false);
+  assert.equal(shouldUseGaussianWebGL({ viewportWidth: 1024, coarsePointer: true }), false);
+  assert.equal(shouldUseGaussianWebGL({ viewportWidth: 1024, hoverNone: true }), false);
+});
+
+test('Gaussian WebGL retains the desktop breakpoint and custom thresholds', () => {
+  assert.equal(shouldUseGaussianWebGL({ viewportWidth: 767 }), false);
+  assert.equal(shouldUseGaussianWebGL({ viewportWidth: 768 }), true);
+  assert.equal(shouldUseGaussianWebGL({ viewportWidth: 1440 }), true);
+  assert.equal(shouldUseGaussianWebGL({ viewportWidth: 900, mobileBreakpoint: 1024 }), false);
+  assert.equal(shouldUseGaussianWebGL({}), false);
+});
 
 test('delays heavy media only for explicit data saving or constrained finite memory', () => {
   assert.equal(shouldDelayHeavyMedia({ saveData: true, deviceMemory: 4 }), true);
