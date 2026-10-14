@@ -92,6 +92,22 @@
       "ar": "1115/635"
     }
   ],
+  "conservatorio-orchestra-binaural": [
+    {
+      "file": "1.jpg",
+      "w": 1278,
+      "h": 719,
+      "type": "image",
+      "ar": "1278/719"
+    },
+    {
+      "file": "2.jpg",
+      "w": 1278,
+      "h": 719,
+      "type": "image",
+      "ar": "1278/719"
+    }
+  ],
   "el-tono-del-mar": [
     {
       "file": "2.jpg",
@@ -301,6 +317,66 @@
       "ar": "720/720"
     }
   ],
+  "lusofona-av-performance": [
+    {
+      "file": "1.jpg",
+      "w": 1080,
+      "h": 1920,
+      "type": "image",
+      "ar": "1080/1920"
+    },
+    {
+      "file": "2.jpg",
+      "w": 1080,
+      "h": 1920,
+      "type": "image",
+      "ar": "1080/1920"
+    },
+    {
+      "file": "3.jpg",
+      "w": 1080,
+      "h": 1920,
+      "type": "image",
+      "ar": "1080/1920"
+    },
+    {
+      "file": "4.jpg",
+      "w": 1080,
+      "h": 1920,
+      "type": "image",
+      "ar": "1080/1920"
+    },
+    {
+      "file": "5.jpg",
+      "w": 848,
+      "h": 480,
+      "type": "image",
+      "ar": "848/480"
+    }
+  ],
+  "noise-machine": [
+    {
+      "file": "1.jpg",
+      "w": 1278,
+      "h": 576,
+      "type": "image",
+      "ar": "1278/576"
+    },
+    {
+      "file": "2.jpg",
+      "w": 1278,
+      "h": 576,
+      "type": "image",
+      "ar": "1278/576"
+    },
+    {
+      "file": "3.jpg",
+      "w": 1278,
+      "h": 576,
+      "type": "image",
+      "ar": "1278/576"
+    }
+  ],
   "o-clube": [
     {
       "file": "1.jpg",
@@ -375,29 +451,6 @@
       "ar": "1280/664"
     }
   ],
-  "performance-with-adriana-sa": [
-    {
-      "file": "1.jpg",
-      "w": 1278,
-      "h": 576,
-      "type": "image",
-      "ar": "1278/576"
-    },
-    {
-      "file": "2.jpg",
-      "w": 1278,
-      "h": 576,
-      "type": "image",
-      "ar": "1278/576"
-    },
-    {
-      "file": "3.jpg",
-      "w": 1278,
-      "h": 576,
-      "type": "image",
-      "ar": "1278/576"
-    }
-  ],
   "rc-setlist": [
     {
       "file": "1.jpg",
@@ -453,43 +506,6 @@
       "ar": "1600/900"
     }
   ],
-  "student-orchestra-recordings": [
-    {
-      "file": "1.jpg",
-      "w": 1278,
-      "h": 719,
-      "type": "image",
-      "ar": "1278/719"
-    },
-    {
-      "file": "2.jpg",
-      "w": 1278,
-      "h": 719,
-      "type": "image",
-      "ar": "1278/719"
-    },
-    {
-      "file": "3.jpg",
-      "w": 1278,
-      "h": 576,
-      "type": "image",
-      "ar": "1278/576"
-    },
-    {
-      "file": "4.jpg",
-      "w": 1278,
-      "h": 576,
-      "type": "image",
-      "ar": "1278/576"
-    },
-    {
-      "file": "5.jpg",
-      "w": 1278,
-      "h": 576,
-      "type": "image",
-      "ar": "1278/576"
-    }
-  ],
   "this-feminine-side": [
     {
       "file": "1.jpg",
@@ -533,43 +549,6 @@
       "h": 720,
       "type": "image",
       "ar": "1280/720"
-    }
-  ],
-  "welcome-week-installation": [
-    {
-      "file": "1.jpg",
-      "w": 1080,
-      "h": 1920,
-      "type": "image",
-      "ar": "1080/1920"
-    },
-    {
-      "file": "2.jpg",
-      "w": 1080,
-      "h": 1920,
-      "type": "image",
-      "ar": "1080/1920"
-    },
-    {
-      "file": "3.jpg",
-      "w": 1080,
-      "h": 1920,
-      "type": "image",
-      "ar": "1080/1920"
-    },
-    {
-      "file": "4.jpg",
-      "w": 1080,
-      "h": 1920,
-      "type": "image",
-      "ar": "1080/1920"
-    },
-    {
-      "file": "5.jpg",
-      "w": 848,
-      "h": 480,
-      "type": "image",
-      "ar": "848/480"
     }
   ]
 }

@@ -1,14 +1,14 @@
 ---
-title: "Instalação da Semana de Acolhimento"
+title: "Performance audiovisual na Lusófona"
 role: "Sistema CCTV + Hydra, montagem de som e vídeo"
 country: "Lisboa, Portugal"
-type: "Instalação audiovisual"
-production: "Semana de acolhimento da Universidade Lusófona"
+type: "Performance audiovisual ao vivo"
+production: "Universidade Lusófona"
 ---
 
-## Instalação da Semana de Acolhimento
+## Performance audiovisual na Lusófona
 
-Instalação audiovisual para a semana de acolhimento da Universidade Lusófona, em Lisboa, em 2023. Ficou montada numa das salas principais da universidade, aberta o dia inteiro para os novos alunos. Trabalhei também na edição de 2024.
+Performance aberta ao público na Universidade Lusófona, em Lisboa, em 2023, feita com captação em tempo real, câmeras, sintetizador modular e projeção.
 
 ## A entrada visual
 
@@ -18,5 +18,5 @@ A imagem parte de um sistema de câmeras CCTV que montei na sala. O sinal é pro
 
 - **Imagem:** câmeras CCTV, processadas no <a class="entity-link" href="https://hydra.ojack.xyz" target="_blank" rel="noopener noreferrer">Hydra</a>.
 - **Som:** captação em tempo real, processada num sintetizador modular.
-- **Instrumento:** a noise machine construída para a <a class="entity-link" href="/pt-br/work/performance-with-adriana-sa">performance de 2023 com Adriana Sá</a>.
+- **Instrumento:** a <a class="entity-link" href="/pt-br/work/noise-machine">noise machine</a> construída por um grupo de alunos em 2023.
 - **Saída:** projeção nas telas e nas cortinas, com as caixas de som e os projetores que montei na sala.

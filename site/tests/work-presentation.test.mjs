@@ -132,7 +132,7 @@ const disciplineGroups = {
     'errant-space-podcast-117',
     'invasao-do-pequi',
   ],
-  production: ['arvore-seca', 'student-orchestra-recordings'],
+  production: ['arvore-seca', 'conservatorio-orchestra-binaural'],
   generative: [
     'eletronik-fields',
     'fxhash',
@@ -140,7 +140,7 @@ const disciplineGroups = {
     'lucy',
   ],
   tools: ['rc-surface', 'rc-setlist', 'ableton-mcp-server'],
-  'sound art': ['soundwalking-lisboa', 'performance-with-adriana-sa', 'welcome-week-installation'],
+  'sound art': ['soundwalking-lisboa', 'noise-machine', 'lusofona-av-performance'],
 };
 
 const expectedDisciplineById = Object.fromEntries(
@@ -339,14 +339,14 @@ test('sorts the archive by latest year descending and title ascending, undated w
     'ai-am',
     'bed-time',
     'caio',
+    'conservatorio-orchestra-binaural',
     'futuro-realizado',
     'invasao-do-pequi',
     'o-compositor',
-    'student-orchestra-recordings',
     'unconscious-vision',
+    'lusofona-av-performance',
     'el-tono-del-mar',
-    'performance-with-adriana-sa',
-    'welcome-week-installation',
+    'noise-machine',
     'eletronik-fields',
     'kakofoni-orquestra',
     'soundwalking-lisboa',

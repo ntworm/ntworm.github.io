@@ -184,7 +184,7 @@ export const DISCIPLINE_BY_ID = Object.freeze({
   'unconscious-vision': 'cinema',
   'unveiling-new-futures': 'cinema',
   'arvore-seca': 'production',
-  'student-orchestra-recordings': 'production',
+  'conservatorio-orchestra-binaural': 'production',
   'bem-ali-sessions': 'music',
   'em-agosto-chove': 'music',
   'ep-rinoceronte': 'music',
@@ -198,8 +198,8 @@ export const DISCIPLINE_BY_ID = Object.freeze({
   'rc-setlist': 'tools',
   'ableton-mcp-server': 'tools',
   'soundwalking-lisboa': 'sound art',
-  'performance-with-adriana-sa': 'sound art',
-  'welcome-week-installation': 'sound art',
+  'noise-machine': 'sound art',
+  'lusofona-av-performance': 'sound art',
 });
 
 const REQUIRED_WORK_IDS = [...new Set([...OVERVIEW_WORK_IDS, ...FEATURED_WORK_IDS, ...MORE_WORK_IDS])];

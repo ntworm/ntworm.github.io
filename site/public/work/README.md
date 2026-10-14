@@ -45,16 +45,16 @@ All 30 project cases currently have an image cover. The table reflects the exact
 | lucy | 1.webp | — | 2.webp, 3.webp, 4.webp |
 | o-clube | 1.jpg | — | 2.jpg |
 | o-compositor | 1.jpg | trailer.mp4 | 2.jpg–7.jpg |
-| performance-with-adriana-sa | 1.jpg | — | 2.jpg, 3.jpg |
+| noise-machine | 1.jpg | — | 2.jpg, 3.jpg |
 | rc-setlist | 1.jpg | — | 2.jpg–5.jpg |
 | rc-surface | 1.jpg | — | — |
 | soundwalking-lisboa | 1.jpg | — | — |
-| student-orchestra-recordings | 1.jpg | — | 2.jpg–5.jpg |
+| conservatorio-orchestra-binaural | 1.jpg | — | 2.jpg |
 | this-feminine-side | 1.jpg | — | — |
 | ticha-penicheiro | 1.jpg | — | — |
 | trisal | 1.jpg | — | — |
 | unconscious-vision | 1.jpg | — | — |
 | unveiling-new-futures | 1.jpg | — | — |
-| welcome-week-installation | 1.jpg | — | 2.jpg–5.jpg |
+| lusofona-av-performance | 1.jpg | — | 2.jpg–5.jpg |
 
 `site/public/work/code/` contains supporting Gaussian posters and splat captures for the Code chapter; it is not a project case folder.

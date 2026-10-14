@@ -1,16 +1,16 @@
 ---
-title: "Welcome Week Installation"
+title: "Audiovisual Performance at Lusófona"
 year: 2023
 role: "CCTV + Hydra System, AV Setup"
 country: "Lisbon, Portugal"
-type: "Audiovisual installation"
-production: "Universidade Lusófona welcome week"
-tags: ["installation", "hydra", "cctv", "modular", "audiovisual", "real-time"]
+type: "Live audiovisual performance"
+production: "Universidade Lusófona"
+tags: ["performance", "hydra", "cctv", "modular", "audiovisual", "real-time"]
 ---
 
-## Welcome Week Installation
+## Audiovisual Performance at Lusófona
 
-An audiovisual installation for the welcome week of Universidade Lusófona, in Lisbon, in 2023. It ran in one of the university's main rooms and stayed open all day to new students. I also worked on the 2024 edition.
+A performance open to the public at Universidade Lusófona, in Lisbon, in 2023, built on live capture, cameras, a modular synthesizer and projection.
 
 ## The visual input
 
@@ -20,5 +20,5 @@ The image starts from a CCTV camera system that I set up in the room. Its signal
 
 - **Image:** CCTV cameras, processed in <a class="entity-link" href="https://hydra.ojack.xyz" target="_blank" rel="noopener noreferrer">Hydra</a>.
 - **Sound:** live capture, processed on a modular synthesizer.
-- **Instrument:** the noise machine built for the <a class="entity-link" href="/work/performance-with-adriana-sa">2023 performance with Adriana Sá</a>.
+- **Instrument:** the <a class="entity-link" href="/work/noise-machine">noise machine</a> built by a student group in 2023.
 - **Output:** projection on screens and curtains, through the speakers and projectors I set up in the room.
