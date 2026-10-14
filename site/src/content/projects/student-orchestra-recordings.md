@@ -5,6 +5,7 @@ role: "Live Sound, Recording + Production"
 country: "Lisbon and Almada, Portugal"
 type: "Live sound + Dolby Atmos recording"
 production: "Escola Artística de Música do Conservatório Nacional"
+youtubeId: "sZZ9gYp5vtc"
 tags: ["live-sound", "recording", "dolby-atmos", "binaural", "orchestral", "lisbon"]
 ---
 
@@ -14,7 +15,7 @@ Live sound, recording and production for the orchestra of the Escola Artística 
 
 ## Dolby Atmos at the Picadeiro Real
 
-On 19 January 2024 I recorded the orchestra's concert at the Picadeiro Real live, with the microphones placed for Atmos, and mixed it in Dolby Atmos. The mix was also delivered in binaural, and the project was prepared for screening in a cinema.
+On 19 January 2024 I recorded the orchestra's concert at the Picadeiro Real live, with the microphones placed for Atmos, and mixed it in Dolby Atmos. The mix was also delivered in binaural, and the project was prepared for screening in a cinema. The video above is the binaural version: listen with headphones.
 
 ## Almada
 

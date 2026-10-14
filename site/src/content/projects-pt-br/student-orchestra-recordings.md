@@ -12,7 +12,7 @@ Som ao vivo, gravação e produção para a orquestra da Escola Artística de M�
 
 ## Dolby Atmos no Picadeiro Real
 
-Em 19 de janeiro de 2024, gravei ao vivo o concerto da orquestra no Picadeiro Real, com os microfones posicionados para Atmos, e fiz a mixagem em Dolby Atmos. A mixagem foi entregue também em binaural, e o projeto foi preparado para exibição numa sala de cinema.
+Em 19 de janeiro de 2024, gravei ao vivo o concerto da orquestra no Picadeiro Real, com os microfones posicionados para Atmos, e fiz a mixagem em Dolby Atmos. A mixagem foi entregue também em binaural, e o projeto foi preparado para exibição numa sala de cinema. O vídeo acima é a versão binaural: ouça com fones.
 
 ## Almada
 
