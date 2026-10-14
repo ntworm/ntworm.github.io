@@ -1,13 +1,13 @@
 ---
 role: "Criador"
-country: "Na web"
+country: "Lisboa, Portugal"
 type: "Audiovisual generativo"
-production: "Projeto independente"
+production: "Disciplina de Artes Sónicas com Adriana Sá, Universidade Lusófona"
 ---
 
 ## Eletronik Fields
 
-Sistema audiovisual que converte campos eletromagnéticos em MIDI, música e visuais em tempo real. Ferramentas: bobina de indução magnética, gravador de áudio, Max, Ableton Live e Hydra.js.
+Sistema audiovisual que converte campos eletromagnéticos em MIDI, música e visuais em tempo real. Ferramentas: bobina de indução magnética, gravador de áudio, Max, Ableton Live e Hydra.js. Fiz o trabalho em 2022 na disciplina de Artes Sónicas da Universidade Lusófona, em Lisboa, com a professora Adriana Sá.
 
 ## Cadeia de sinal
 
@@ -22,4 +22,4 @@ Antes de montar a instalação, percorri as ruas com a bobina e o gravador, capt
 
 ## Instalação
 
-A instalação foi montada numa sala escura da Universidade Lusófona, onde eu trabalhava. Os equipamentos identificados na pesquisa de campo — carregadores, celulares, lâmpadas, nobreaks — ficaram dispostos sobre uma mesa, e a bobina ficou livre para o público usar. Ao aproximar a bobina de um equipamento, o sinal captado muda, e o sistema converte essa variação em som e em visuais projetados em tempo real. A projeção fica de frente para quem está com a bobina, então o resultado de cada movimento é imediato. Os visitantes também podiam testar a bobina nos próprios celulares e nas luzes da sala.
+A instalação foi montada numa sala escura da Universidade Lusófona, como parte da disciplina. Os equipamentos identificados na pesquisa de campo — carregadores, celulares, lâmpadas, nobreaks — ficaram dispostos sobre uma mesa, e a bobina ficou livre para o público usar. Ao aproximar a bobina de um equipamento, o sinal captado muda, e o sistema converte essa variação em som e em visuais projetados em tempo real. A projeção fica de frente para quem está com a bobina, então o resultado de cada movimento é imediato. Os visitantes também podiam testar a bobina nos próprios celulares e nas luzes da sala.

@@ -69,9 +69,16 @@ test('built homepage and case studies expose parseable canonical discovery metad
   });
   const cases = casesIn('');
   const ptCases = casesIn('pt-br/');
-  assert.equal(cases.length, 26);
-  assert.equal(ptCases.length, 26);
+  assert.equal(cases.length, 30);
+  assert.equal(ptCases.length, 30);
   const caseCanonicals = new Set();
+  const projectsSourceDir = join(process.cwd(), 'src', 'content', 'projects');
+  const frontmatterOf = (file) => readFileSync(join(projectsSourceDir, file), 'utf8')
+    .match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? '';
+  const undatedCaseIds = new Set(readdirSync(projectsSourceDir)
+    .filter((file) => file.endsWith('.md') && !/^year:/m.test(frontmatterOf(file)))
+    .map((file) => file.slice(0, -3)));
+  assert.deepEqual([...undatedCaseIds], ['errant-space-podcast-117']);
   for (const document of [...cases, ...ptCases]) {
     const work = structuredData(document.html).find((data) => data['@type'] === 'CreativeWork');
     assert.ok(work, document.label + ': CreativeWork metadata missing');
@@ -79,7 +86,12 @@ test('built homepage and case studies expose parseable canonical discovery metad
     assert.equal(work.url, canonicalFrom(document.html), document.label + ': JSON-LD URL differs from canonical');
     assert.match(work.url, /\/work\/[^/]+\/$/, document.label + ': case canonical lacks trailing slash');
     assert.equal(typeof work.creditText, 'string', document.label + ': CreativeWork needs creditText');
-    assert.equal(typeof work.temporalCoverage, 'string', document.label + ': CreativeWork needs temporalCoverage');
+    const caseId = document.label.split('/').at(-2);
+    if (undatedCaseIds.has(caseId)) {
+      assert.equal('temporalCoverage' in work, false, document.label + ': undated case must not invent temporalCoverage');
+    } else {
+      assert.equal(typeof work.temporalCoverage, 'string', document.label + ': CreativeWork needs temporalCoverage');
+    }
     assert.equal('role' in work, false, document.label + ': JSON-LD must not use role');
     assert.equal('dateCreated' in work, false, document.label + ': JSON-LD must not use dateCreated');
     caseCanonicals.add(work.url);

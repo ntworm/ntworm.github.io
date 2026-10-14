@@ -7,7 +7,7 @@ type: "BA short film"
 production: "Universidade Lusófona"
 awards:
   - "MOTELX 2025 winner - Best Portuguese Horror Short"
-  - "Prémio Curtas 2026 nominee - Best Composition (Melhor Composição)"
+  - "Prémio Curtas 2026 nominee - Best Soundtrack (Melhor Banda Sonora)"
 links:
   - url: "https://www.imdb.com/title/tt33566998/"
     label: "IMDB"
@@ -26,4 +26,4 @@ An 18-minute horror short directed by Afonso Lucas and Rodrigo Motty and produce
 
 As Sound Director, I owned every sound-related decision from concept to final mix: on-set recording, composition and recording of orchestral musicians, sound editing, and sound design. The cello composition becomes part of the drama itself, binding musical performance to the film’s increasingly violent teacher-student relationship.
 
-The film was selected for <a class="entity-link" href="https://lsf.ulusofona.pt/filmes/425-o-compositor" target="_blank" rel="noopener noreferrer">FESTin 2025</a> and won <a class="entity-link" href="https://www.motelx.org/noticias/motelx-2025-os-vencedores-da-19-a-edicao" target="_blank" rel="noopener noreferrer">Best Portuguese Horror Short at MOTELX 2025</a>. Its original score was nominated for Best Composition (Melhor Composição) at <a class="entity-link" href="https://www.imdb.com/pt/event/ev0074294/2026/1/" target="_blank" rel="noopener noreferrer">Prémio Curtas 2026</a>.
+The film was selected for <a class="entity-link" href="https://lsf.ulusofona.pt/filmes/425-o-compositor" target="_blank" rel="noopener noreferrer">FESTin 2025</a> and won <a class="entity-link" href="https://www.motelx.org/noticias/motelx-2025-os-vencedores-da-19-a-edicao" target="_blank" rel="noopener noreferrer">Best Portuguese Horror Short at MOTELX 2025</a>. The soundtrack, by Afonso Pinto and me, was nominated for Best Soundtrack (Melhor Banda Sonora) at <a class="entity-link" href="https://www.imdb.com/pt/event/ev0074294/2026/1/" target="_blank" rel="noopener noreferrer">Prémio Curtas 2026</a>.

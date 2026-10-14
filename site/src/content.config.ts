@@ -5,7 +5,9 @@ const projects = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
   schema: z.object({
     title: z.string(),
-    year: z.union([z.number(), z.string()]),
+    // Optional only for work whose date is not confirmed (e.g. a podcast
+    // episode whose page shows no date); every other case carries a year.
+    year: z.union([z.number(), z.string()]).optional(),
     role: z.string().optional(),
     country: z.string().optional(),
     type: z.string().optional(),

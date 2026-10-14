@@ -50,7 +50,8 @@ function loadProjects() {
         id: basename(file, '.md'),
         data: {
           title: frontmatterScalar(source, 'title'),
-          year: frontmatterScalar(source, 'year'),
+          // Undated work (no confirmed year) has no year key at all.
+          year: /^year:/m.test(source) ? frontmatterScalar(source, 'year') : undefined,
         },
       };
     });
@@ -175,7 +176,7 @@ test('homepage Work contains one link per tier entry and no empty href', () => {
 
   assert.equal(workTags(html, 'featured').length, 11);
   assert.equal(workTags(html, 'more').length, 2);
-  assert.equal(workTags(html, 'archive').length, 26);
+  assert.equal(workTags(html, 'archive').length, 30);
   assert.ok(
     [...workTags(html, 'featured'), ...workTags(html, 'more'), ...workTags(html, 'archive')]
       .every((tag) => /^\/work\/[a-z0-9-]+$/.test(attr(tag, 'href') ?? '')),
@@ -496,7 +497,7 @@ test('built case studies preserve accessible media fallbacks across optional cas
   const galleries = cases.filter(({ html }) => html.includes('class="case__gallery '));
   const interactive = cases.filter(({ html }) => /<figure\b[^>]*\bdata-interactive-host\b/.test(html));
 
-  assert.equal(cases.length, 26);
+  assert.equal(cases.length, 30);
   assert.ok(trailers.length > 0, 'expected at least one case with a trailer');
   assert.ok(trailers.length < cases.length, 'expected cases without trailers');
   assert.ok(galleries.length > 0, 'expected at least one case with a gallery');

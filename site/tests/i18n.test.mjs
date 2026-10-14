@@ -253,7 +253,9 @@ test('Portuguese case studies render translated prose, labels and links', () => 
     assert.equal(work?.url, canonical, id);
     assert.equal(work?.inLanguage, 'pt-BR', id);
     assert.match(html, /<span class="eyebrow case__act"[^>]*>ATO \d{2}<\/span>/, id);
-    assert.match(html, /<dt[^>]*>Ano<\/dt>/, id);
+    const dated = hasKey(frontmatter(readFileSync(join(projectsDir, `${id}.md`), 'utf8')), 'year');
+    if (dated) assert.match(html, /<dt[^>]*>Ano<\/dt>/, id);
+    else assert.doesNotMatch(html, /<dt[^>]*>Ano<\/dt>/, `${id}: undated work shows no year row`);
 
     const internal = [...html.matchAll(/<a\b[^>]*href="(\/[^"]*)"[^>]*>/g)]
       .filter((match) => !/\bdata-lang-switch\b/.test(match[0]))

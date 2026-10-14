@@ -88,7 +88,7 @@ test('legacy redirects provide an immediate, index-safe fallback', () => {
   assert.match(component, /buildCanonical/);
 });
 
-test('sitemap build output contains exactly the indexable homepage and 26 case URLs in each language', () => {
+test('sitemap build output contains exactly the indexable homepage and 30 case URLs in each language', () => {
   const sitemapPath = join(root, 'dist', 'sitemap.xml');
   assert.ok(existsSync(sitemapPath), 'sitemap.xml was emitted by the build');
   const sitemap = readFileSync(sitemapPath, 'utf8');
@@ -100,8 +100,8 @@ test('sitemap build output contains exactly the indexable homepage and 26 case U
     const caseUrls = localized.filter((url) => url.includes('/work/'));
     assert.equal(localized.includes(`https://ntworm.github.io${prefix}/work/`), false, label);
     assert.equal(localized.includes(`https://ntworm.github.io${prefix}/`), true, label);
-    assert.equal(localized.length, 27, label);
-    assert.equal(caseUrls.length, 26, label);
+    assert.equal(localized.length, 31, label);
+    assert.equal(caseUrls.length, 30, label);
     assert.ok(caseUrls.every((url) => new RegExp(`^https://ntworm\\.github\\.io${prefix}/work/[^/]+/$`).test(url)), label);
   }
   assert.deepEqual(

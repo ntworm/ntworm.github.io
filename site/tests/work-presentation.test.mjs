@@ -42,7 +42,7 @@ const expectedFeaturedPresentation = {
   'o-compositor': {
     mediaLayout: 'portrait',
     highlight: 'won Best Portuguese Horror Short at MOTELX 2025',
-    summary: 'As Sound Director, I carried the film from on-set recording through orchestral composition and recording, editing, sound design, and final mix. The 18-minute horror short follows a renowned cellist-composer who imprisons his student and turns the student’s suffering into material for a new composition. The film screened at FESTin and won Best Portuguese Horror Short at MOTELX 2025; its score was nominated for Best Composition at Prémio Curtas 2026.',
+    summary: 'As Sound Director, I carried the film from on-set recording through orchestral composition and recording, editing, sound design, and final mix. The 18-minute horror short follows a renowned cellist-composer who imprisons his student and turns the student’s suffering into material for a new composition. The film screened at FESTin and won Best Portuguese Horror Short at MOTELX 2025; its soundtrack was nominated for Best Soundtrack at Prémio Curtas 2026.',
   },
   'unveiling-new-futures': {
     mediaLayout: 'landscape',
@@ -106,6 +106,9 @@ const expectedFeaturedPresentation = {
   },
 };
 
+// Work whose date is not confirmed by its source stays undated on purpose.
+const UNDATED_WORK_IDS = new Set(['errant-space-podcast-117']);
+
 const disciplineGroups = {
   cinema: [
     'a-quermesse',
@@ -126,9 +129,10 @@ const disciplineGroups = {
     'bem-ali-sessions',
     'em-agosto-chove',
     'ep-rinoceronte',
+    'errant-space-podcast-117',
     'invasao-do-pequi',
   ],
-  production: ['arvore-seca'],
+  production: ['arvore-seca', 'student-orchestra-recordings'],
   generative: [
     'eletronik-fields',
     'fxhash',
@@ -136,7 +140,7 @@ const disciplineGroups = {
     'lucy',
   ],
   tools: ['rc-surface', 'rc-setlist', 'ableton-mcp-server'],
-  'sound art': ['soundwalking-lisboa'],
+  'sound art': ['soundwalking-lisboa', 'performance-with-adriana-sa', 'welcome-week-installation'],
 };
 
 const expectedDisciplineById = Object.fromEntries(
@@ -170,7 +174,9 @@ function readProjects() {
         id: basename(file, '.md'),
         data: {
           title: frontmatterValue(source, 'title'),
-          year: frontmatterValue(source, 'year'),
+          year: UNDATED_WORK_IDS.has(basename(file, '.md'))
+            ? optionalFrontmatterValue(source, 'year')
+            : frontmatterValue(source, 'year'),
           role: optionalFrontmatterValue(source, 'role'),
           type: optionalFrontmatterValue(source, 'type'),
           production: optionalFrontmatterValue(source, 'production'),
@@ -187,20 +193,20 @@ test('exports the exact frozen tiers and discipline map', () => {
   const tierIds = [...FEATURED_WORK_IDS, ...MORE_WORK_IDS];
   assert.equal(tierIds.length, 18);
   assert.equal(new Set(tierIds).size, 18);
-  assert.equal(Object.keys(DISCIPLINE_BY_ID).length, 26);
+  assert.equal(Object.keys(DISCIPLINE_BY_ID).length, 30);
   assert.ok(Object.isFrozen(FEATURED_WORK_IDS));
   assert.ok(Object.isFrozen(MORE_WORK_IDS));
   assert.ok(Object.isFrozen(DISCIPLINE_BY_ID));
 });
 
-test('builds a frozen presentation of all 26 real projects', () => {
+test('builds a frozen presentation of all 30 real projects', () => {
   const projects = readProjects();
   const presentation = buildWorkPresentation(projects);
 
-  assert.equal(projects.length, 26);
+  assert.equal(projects.length, 30);
   assert.deepEqual(presentation.featured.map(({ id }) => id), expectedFeaturedIds);
   assert.deepEqual(presentation.more.map(({ id }) => id), expectedMoreIds);
-  assert.equal(presentation.archive.length, 26);
+  assert.equal(presentation.archive.length, 30);
   assert.deepEqual(
     Object.fromEntries(presentation.archive.map(({ id, presentation: metadata }) => [id, metadata.discipline])),
     expectedDisciplineById,
@@ -224,7 +230,11 @@ test('every project card has the complete editorial metadata pattern', () => {
     assert.ok(project.data.title, `${project.id} is missing a title`);
     assert.ok(project.presentation.discipline, `${project.id} is missing a genre`);
     assert.ok(project.data.role, `${project.id} is missing a role`);
-    assert.ok(project.data.year, `${project.id} is missing a year`);
+    if (UNDATED_WORK_IDS.has(project.id)) {
+      assert.equal(project.data.year, undefined, `${project.id} has no confirmed date`);
+    } else {
+      assert.ok(project.data.year, `${project.id} is missing a year`);
+    }
     assert.ok(project.data.type, `${project.id} is missing a type`);
     assert.ok(project.data.production, `${project.id} is missing a production/context`);
   }
@@ -242,7 +252,7 @@ test('opening panel alternates music, cinema, tools and generative projects in b
     assert.deepEqual(presentation.overview.map(({ id }) => id), expectedIds);
     assert.equal(new Set(presentation.overview.map(({ id }) => DISCIPLINE_BY_ID[id])).size, 4);
     assert.ok(Object.isFrozen(presentation.overview));
-    assert.equal(presentation.archive.length, 26);
+    assert.equal(presentation.archive.length, 30);
   }
 });
 
@@ -311,7 +321,7 @@ test('decorates exactly thirteen featured projects with approved summaries and m
   )));
 });
 
-test('sorts the archive by latest year descending and title ascending', () => {
+test('sorts the archive by latest year descending and title ascending, undated work last', () => {
   const archiveIds = buildWorkPresentation(readProjects()).archive.map(({ id }) => id);
 
   assert.deepEqual(archiveIds, [
@@ -332,8 +342,11 @@ test('sorts the archive by latest year descending and title ascending', () => {
     'futuro-realizado',
     'invasao-do-pequi',
     'o-compositor',
+    'student-orchestra-recordings',
     'unconscious-vision',
     'el-tono-del-mar',
+    'performance-with-adriana-sa',
+    'welcome-week-installation',
     'eletronik-fields',
     'kakofoni-orquestra',
     'soundwalking-lisboa',
@@ -341,6 +354,7 @@ test('sorts the archive by latest year descending and title ascending', () => {
     'bem-ali-sessions',
     'em-agosto-chove',
     'lucy',
+    'errant-space-podcast-117',
   ]);
 });
 

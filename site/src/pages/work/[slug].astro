@@ -39,6 +39,8 @@ const { Content } = await render(entry);
 const data = entry.data;
 const year = data.year ?? '';
 const role = data.role ?? '';
+// An undated case (no confirmed year) shows only its role.
+const tagline = [role, year].filter((part) => part !== '').join(' · ');
 const country = data.country ?? '';
 const type = data.type ?? '';
 const production = data.production ?? '';
@@ -90,7 +92,7 @@ const structuredData = {
   '@type': 'CreativeWork',
   name: data.title,
   creditText: role,
-  temporalCoverage: String(year),
+  temporalCoverage: year === '' ? undefined : String(year),
   image: media.cover ? buildCanonical(Astro.site?.origin ?? Astro.url.origin, media.cover) : undefined,
   url: canonicalUrl,
   description,
@@ -101,12 +103,12 @@ function mediaStyle(dim?: { ar: string }) {
   return dim ? `aspect-ratio:${dim.ar};` : '';
 }
 ---
-<Layout title={data.title} description={description || `${data.title} — ${role} (${year})`} image={media.cover} type="article" canonicalUrl={canonicalUrl} structuredData={structuredData}>
+<Layout title={data.title} description={description || (year === '' ? `${data.title} — ${role}` : `${data.title} — ${role} (${year})`)} image={media.cover} type="article" canonicalUrl={canonicalUrl} structuredData={structuredData}>
   <article class="case wrap">
     <header class="case__header">
       <span class="eyebrow case__act">{act}</span>
       <h1 class="case__title">{data.title}</h1>
-      <p class="case__tagline">{role} · {year}</p>
+      <p class="case__tagline">{tagline}</p>
     </header>
 
     {media.trailer && (

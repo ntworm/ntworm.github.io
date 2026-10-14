@@ -39,7 +39,7 @@ export const FEATURED_PRESENTATION_BY_ID = Object.freeze({
   'o-compositor': Object.freeze({
     mediaLayout: 'portrait',
     highlight: 'won Best Portuguese Horror Short at MOTELX 2025',
-    summary: 'As Sound Director, I carried the film from on-set recording through orchestral composition and recording, editing, sound design, and final mix. The 18-minute horror short follows a renowned cellist-composer who imprisons his student and turns the student’s suffering into material for a new composition. The film screened at FESTin and won Best Portuguese Horror Short at MOTELX 2025; its score was nominated for Best Composition at Prémio Curtas 2026.',
+    summary: 'As Sound Director, I carried the film from on-set recording through orchestral composition and recording, editing, sound design, and final mix. The 18-minute horror short follows a renowned cellist-composer who imprisons his student and turns the student’s suffering into material for a new composition. The film screened at FESTin and won Best Portuguese Horror Short at MOTELX 2025; its soundtrack was nominated for Best Soundtrack at Prémio Curtas 2026.',
   }),
   'unveiling-new-futures': Object.freeze({
     mediaLayout: 'landscape',
@@ -108,7 +108,7 @@ export const FEATURED_PRESENTATION_BY_ID = Object.freeze({
 export const FEATURED_COPY_PT_BY_ID = Object.freeze({
   'o-compositor': Object.freeze({
     highlight: 'venceu o prêmio de Melhor Curta de Terror Portuguesa no MOTELX 2025',
-    summary: 'Como diretor de som, conduzi o filme do som direto no set até a mixagem final, passando pela composição e gravação com músicos de orquestra, pela edição e pelo desenho de som. O curta de terror de 18 minutos acompanha um violoncelista e compositor renomado que aprisiona o próprio aluno e transforma o sofrimento dele em matéria-prima para uma nova composição. O filme passou pelo FESTin e venceu o prêmio de Melhor Curta de Terror Portuguesa no MOTELX 2025; a trilha original foi indicada a Melhor Composição no Prémio Curtas 2026.',
+    summary: 'Como diretor de som, conduzi o filme do som direto no set até a mixagem final, passando pela composição e gravação com músicos de orquestra, pela edição e pelo desenho de som. O curta de terror de 18 minutos acompanha um violoncelista e compositor renomado que aprisiona o próprio aluno e transforma o sofrimento dele em matéria-prima para uma nova composição. O filme passou pelo FESTin e venceu o prêmio de Melhor Curta de Terror Portuguesa no MOTELX 2025; a trilha sonora foi indicada a Melhor Banda Sonora no Prémio Curtas 2026.',
   }),
   'unveiling-new-futures': Object.freeze({
     highlight: 'campanha internacional de 2025 da Universidade Lusófona',
@@ -184,9 +184,11 @@ export const DISCIPLINE_BY_ID = Object.freeze({
   'unconscious-vision': 'cinema',
   'unveiling-new-futures': 'cinema',
   'arvore-seca': 'production',
+  'student-orchestra-recordings': 'production',
   'bem-ali-sessions': 'music',
   'em-agosto-chove': 'music',
   'ep-rinoceronte': 'music',
+  'errant-space-podcast-117': 'music',
   'invasao-do-pequi': 'music',
   'eletronik-fields': 'generative',
   fxhash: 'generative',
@@ -196,13 +198,23 @@ export const DISCIPLINE_BY_ID = Object.freeze({
   'rc-setlist': 'tools',
   'ableton-mcp-server': 'tools',
   'soundwalking-lisboa': 'sound art',
+  'performance-with-adriana-sa': 'sound art',
+  'welcome-week-installation': 'sound art',
 });
 
 const REQUIRED_WORK_IDS = [...new Set([...OVERVIEW_WORK_IDS, ...FEATURED_WORK_IDS, ...MORE_WORK_IDS])];
 
+// Undated work (no confirmed year) sorts after every dated entry.
 function latestYear(year) {
-  const years = String(year).match(/\d{4}/g)?.map(Number) ?? [];
-  return Math.max(...years);
+  const years = String(year ?? '').match(/\d{4}/g)?.map(Number) ?? [];
+  return years.length > 0 ? Math.max(...years) : -Infinity;
+}
+
+function compareLatestYearDescending(left, right) {
+  const leftYear = latestYear(left);
+  const rightYear = latestYear(right);
+  if (leftYear === rightYear) return 0;
+  return rightYear > leftYear ? 1 : -1;
 }
 
 /**
@@ -257,7 +269,7 @@ export function buildWorkPresentation(projects, { locale = 'en' } = {}) {
 
   const archive = Object.freeze(
     [...decoratedById.values()].sort((left, right) => (
-      latestYear(right.data.year) - latestYear(left.data.year)
+      compareLatestYearDescending(left.data.year, right.data.year)
       || left.data.title.localeCompare(right.data.title, 'en')
       || left.id.localeCompare(right.id, 'en')
     )),

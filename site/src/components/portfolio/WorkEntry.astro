@@ -8,7 +8,7 @@ interface Props {
     id: string;
     data: {
       title: string;
-      year: string | number;
+      year?: string | number;
       role?: string;
       type?: string;
       production?: string;
@@ -93,7 +93,7 @@ const summaryParts = summary && highlight && highlightIndex >= 0
     <span class="work-entry__discipline mono">{project.presentation.discipline}</span>
     <h3 class="work-entry__title">{project.data.title}</h3>
     <p class="work-entry__role mono">
-      {project.data.role && <span>{project.data.role} · </span>}{project.data.year}
+      {project.data.role && <span>{project.data.role}{project.data.year !== undefined && ' · '}</span>}{project.data.year}
     </p>
     {tier === 'featured' && summary && (
       <p class="work-entry__summary">

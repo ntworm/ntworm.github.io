@@ -1,10 +1,10 @@
 ---
 title: "Eletronik Fields"
-year: 2023
+year: 2022
 role: "Creator"
-country: "Web-based"
+country: "Lisbon, Portugal"
 type: "Generative audiovisual"
-production: "Independent project"
+production: "Sonic Arts course (Artes Sónicas) with Adriana Sá, Universidade Lusófona"
 youtubeId: "-LA7Wil530s"
 links:
   - url: "https://youtu.be/-LA7Wil530s"
@@ -16,7 +16,7 @@ tags: ["generative", "code", "audiovisual", "hydra"]
 
 ## Eletronik Fields
 
-An audiovisual system that converts electromagnetic fields into MIDI, music and real-time visuals. Tools: magnetic induction coil, audio recorder, Max, Ableton Live and Hydra.js.
+An audiovisual system that converts electromagnetic fields into MIDI, music and real-time visuals. Tools: magnetic induction coil, audio recorder, Max, Ableton Live and Hydra.js. I made it in 2022 in the Sonic Arts course (Artes Sónicas) at Universidade Lusófona, in Lisbon, taught by Adriana Sá.
 
 ## Signal chain
 
@@ -31,4 +31,4 @@ Before building the installation, I walked the streets with the coil and the rec
 
 ## Installation
 
-The installation was set up in a dark room at Universidade Lusófona, where I worked. The equipment identified in the field research — chargers, phones, lights, UPS units — was arranged on a table, and the coil was left free for visitors to use. Bringing the coil close to a device changes the captured signal, and the system turns that change into sound and projected visuals in real time. The projection faces the person holding the coil, so the result of each movement is immediate. Visitors could also test the coil on their own phones and on the room's lights.
+The installation was set up in a dark room at Universidade Lusófona, as part of the course. The equipment identified in the field research — chargers, phones, lights, UPS units — was arranged on a table, and the coil was left free for visitors to use. Bringing the coil close to a device changes the captured signal, and the system turns that change into sound and projected visuals in real time. The projection faces the person holding the coil, so the result of each movement is immediate. Visitors could also test the coil on their own phones and on the room's lights.

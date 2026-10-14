@@ -20,9 +20,9 @@ Public case-study media lives in one folder per project slug under `site/public/
 
 Use numbered image filenames when presentation order matters. Image and video dimensions are recorded by `site/scripts/asset-dimensions.mjs` in `site/src/data/asset-dimensions.json`.
 
-## Asset state (2026-09-30)
+## Asset state (2026-10-14)
 
-All 26 project cases currently have an image cover. The table reflects the exact output of the discovery rules above; `—` means no dedicated trailer or gallery item.
+All 30 project cases currently have an image cover. The table reflects the exact output of the discovery rules above; `—` means no dedicated trailer or gallery item.
 
 | Project | Cover | Trailer | Gallery |
 |---|---|---|---|
@@ -37,6 +37,7 @@ All 26 project cases currently have an image cover. The table reflects the exact
 | el-tono-del-mar | 2.jpg | trailer1.mp4 | 3.jpg, trailer2.mp4, trailermain.mp4 |
 | em-agosto-chove | 1.png | — | 2.webp |
 | ep-rinoceronte | 1.jpg | — | 2.jpg |
+| errant-space-podcast-117 | 1.jpg | — | — |
 | futuro-realizado | 1.jpg | — | — |
 | fxhash | 1.webp | — | 2.webp, 3.webp, 4.webp |
 | invasao-do-pequi | 1.jpg | — | — |
@@ -44,13 +45,16 @@ All 26 project cases currently have an image cover. The table reflects the exact
 | lucy | 1.webp | — | 2.webp, 3.webp, 4.webp |
 | o-clube | 1.jpg | — | 2.jpg |
 | o-compositor | 1.jpg | trailer.mp4 | 2.jpg–7.jpg |
+| performance-with-adriana-sa | 1.jpg | — | 2.jpg, 3.jpg |
 | rc-setlist | 1.jpg | — | 2.jpg–5.jpg |
 | rc-surface | 1.jpg | — | — |
 | soundwalking-lisboa | 1.jpg | — | — |
+| student-orchestra-recordings | 1.jpg | — | 2.jpg–5.jpg |
 | this-feminine-side | 1.jpg | — | — |
 | ticha-penicheiro | 1.jpg | — | — |
 | trisal | 1.jpg | — | — |
 | unconscious-vision | 1.jpg | — | — |
 | unveiling-new-futures | 1.jpg | — | — |
+| welcome-week-installation | 1.jpg | — | 2.jpg–5.jpg |
 
 `site/public/work/code/` contains supporting Gaussian posters and splat captures for the Code chapter; it is not a project case folder.

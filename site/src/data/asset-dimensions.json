@@ -198,6 +198,15 @@
       "ar": "1440/1920"
     }
   ],
+  "errant-space-podcast-117": [
+    {
+      "file": "1.jpg",
+      "w": 1380,
+      "h": 560,
+      "type": "image",
+      "ar": "1380/560"
+    }
+  ],
   "futuro-realizado": [
     {
       "file": "1.jpg",
@@ -366,6 +375,29 @@
       "ar": "1280/664"
     }
   ],
+  "performance-with-adriana-sa": [
+    {
+      "file": "1.jpg",
+      "w": 1278,
+      "h": 576,
+      "type": "image",
+      "ar": "1278/576"
+    },
+    {
+      "file": "2.jpg",
+      "w": 1278,
+      "h": 576,
+      "type": "image",
+      "ar": "1278/576"
+    },
+    {
+      "file": "3.jpg",
+      "w": 1278,
+      "h": 576,
+      "type": "image",
+      "ar": "1278/576"
+    }
+  ],
   "rc-setlist": [
     {
       "file": "1.jpg",
@@ -421,6 +453,43 @@
       "ar": "1600/900"
     }
   ],
+  "student-orchestra-recordings": [
+    {
+      "file": "1.jpg",
+      "w": 1278,
+      "h": 719,
+      "type": "image",
+      "ar": "1278/719"
+    },
+    {
+      "file": "2.jpg",
+      "w": 1278,
+      "h": 719,
+      "type": "image",
+      "ar": "1278/719"
+    },
+    {
+      "file": "3.jpg",
+      "w": 1278,
+      "h": 576,
+      "type": "image",
+      "ar": "1278/576"
+    },
+    {
+      "file": "4.jpg",
+      "w": 1278,
+      "h": 576,
+      "type": "image",
+      "ar": "1278/576"
+    },
+    {
+      "file": "5.jpg",
+      "w": 1278,
+      "h": 576,
+      "type": "image",
+      "ar": "1278/576"
+    }
+  ],
   "this-feminine-side": [
     {
       "file": "1.jpg",
@@ -464,6 +533,43 @@
       "h": 720,
       "type": "image",
       "ar": "1280/720"
+    }
+  ],
+  "welcome-week-installation": [
+    {
+      "file": "1.jpg",
+      "w": 1080,
+      "h": 1920,
+      "type": "image",
+      "ar": "1080/1920"
+    },
+    {
+      "file": "2.jpg",
+      "w": 1080,
+      "h": 1920,
+      "type": "image",
+      "ar": "1080/1920"
+    },
+    {
+      "file": "3.jpg",
+      "w": 1080,
+      "h": 1920,
+      "type": "image",
+      "ar": "1080/1920"
+    },
+    {
+      "file": "4.jpg",
+      "w": 1080,
+      "h": 1920,
+      "type": "image",
+      "ar": "1080/1920"
+    },
+    {
+      "file": "5.jpg",
+      "w": 848,
+      "h": 480,
+      "type": "image",
+      "ar": "848/480"
     }
   ]
 }
