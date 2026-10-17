@@ -418,6 +418,12 @@ float particleHash(float value) {
   let next = source.replace(mainMarker, `${declarations}void main () {`);
   next = next.replace(cameraMarker, `vec3 particleLocalPos = uintBitsToFloat(cen.xyz);
   vec4 cam = viewTransform * vec4(particleLocalPos, 1);
+  vec4 rawPos2d = projection * cam;
+  float earlyClip = 1.35 * rawPos2d.w;
+  if (rawPos2d.z < -rawPos2d.w || rawPos2d.z > rawPos2d.w || rawPos2d.x < -earlyClip || rawPos2d.x > earlyClip || rawPos2d.y < -earlyClip || rawPos2d.y > earlyClip) {
+    gl_Position = vec4(0.0, 0.0, 2.0, 1.0);
+    return;
+  }
   vec3 particleSpan = max(uParticleBoundsMax - uParticleBoundsMin, vec3(0.0001));
   vec3 particleNormalized = ((particleLocalPos - uParticleBoundsMin) / particleSpan) * 2.0 - 1.0;
   float particleSeed = particleHash(float(index) + 19.17);
@@ -531,6 +537,10 @@ float particleHash(float value) {
   float particleHiddenErode = (1.0 - particleCoreVisible) * (1.0 - particleOuterVisible);
   float particleOuterNearErode = (1.0 - particleCoreVisible) * particleNearErode * (1.0 - uParticleWorldReveal);
   float particleErode = max(particleHiddenErode, particleOuterNearErode);
+  if (particleErode >= 0.999 && particleWorldDust <= 0.001) {
+    gl_Position = vec4(0.0, 0.0, 2.0, 1.0);
+    return;
+  }
   float particleErodeEdge = smoothstep(0.08, 0.88, particleErode) * (1.0 - particleErode * 0.62);
   float particleDustEdge = max(particleErodeEdge, particleWorldDust * (0.5 + particleSeed * 0.5));
   vec3 particleDrift = normalize(vec3(
