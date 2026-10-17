@@ -793,8 +793,8 @@ document.addEventListener('astro:before-swap', cleanupGaussianBackgrounds);
     margin-left: 0;
     transform: translateX(-50%);
     background: transparent;
-    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 72%, transparent 100%);
-    mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 72%, transparent 100%);
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, transparent 4%, rgba(0, 0, 0, 0.4) 16%, #000 32%, #000 68%, rgba(0, 0, 0, 0.4) 84%, transparent 96%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0%, transparent 4%, rgba(0, 0, 0, 0.4) 16%, #000 32%, #000 68%, rgba(0, 0, 0, 0.4) 84%, transparent 96%, transparent 100%);
   }
 
   /* The first scene trails farther into the GitHub profile before dissolving. */
@@ -908,18 +908,20 @@ document.addEventListener('astro:before-swap', cleanupGaussianBackgrounds);
     -webkit-mask-image: radial-gradient(
       ellipse 82% 98% at 50% 48%,
       #000 0%,
-      #000 45%,
-      rgba(0, 0, 0, 0.9) 66%,
-      rgba(0, 0, 0, 0.34) 90%,
-      transparent 100%
+      #000 35%,
+      rgba(0, 0, 0, 0.85) 55%,
+      rgba(0, 0, 0, 0.35) 75%,
+      rgba(0, 0, 0, 0.08) 88%,
+      transparent 96%
     );
     mask-image: radial-gradient(
       ellipse 82% 98% at 50% 48%,
       #000 0%,
-      #000 45%,
-      rgba(0, 0, 0, 0.9) 66%,
-      rgba(0, 0, 0, 0.34) 90%,
-      transparent 100%
+      #000 35%,
+      rgba(0, 0, 0, 0.85) 55%,
+      rgba(0, 0, 0, 0.35) 75%,
+      rgba(0, 0, 0, 0.08) 88%,
+      transparent 96%
     );
   }
 
@@ -933,18 +935,20 @@ document.addEventListener('astro:before-swap', cleanupGaussianBackgrounds);
     -webkit-mask-image: radial-gradient(
       ellipse 82% 98% at 50% 48%,
       #000 0%,
-      #000 45%,
-      rgba(0, 0, 0, 0.9) 66%,
-      rgba(0, 0, 0, 0.34) 90%,
-      transparent 100%
+      #000 35%,
+      rgba(0, 0, 0, 0.85) 55%,
+      rgba(0, 0, 0, 0.35) 75%,
+      rgba(0, 0, 0, 0.08) 88%,
+      transparent 96%
     );
     mask-image: radial-gradient(
       ellipse 82% 98% at 50% 48%,
       #000 0%,
-      #000 45%,
-      rgba(0, 0, 0, 0.9) 66%,
-      rgba(0, 0, 0, 0.34) 90%,
-      transparent 100%
+      #000 35%,
+      rgba(0, 0, 0, 0.85) 55%,
+      rgba(0, 0, 0, 0.35) 75%,
+      rgba(0, 0, 0, 0.08) 88%,
+      transparent 96%
     );
   }
 
