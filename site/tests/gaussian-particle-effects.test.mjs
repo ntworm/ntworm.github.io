@@ -111,6 +111,31 @@ test('car red blackout breathes from near-dark to expanded illumination', () => 
   );
 });
 
+test('car lighting maintains frame-to-frame continuity without sudden jumps', () => {
+  const car = createGaussianLightAutopilot(4223, 'section-left');
+  let previous = car.sample(0.016);
+  let maxIntensityJump = 0;
+  let maxRadiusJump = 0;
+
+  for (let index = 0; index < 6_000; index += 1) {
+    const current = car.sample(0.016);
+    const intensityDiff = Math.abs(current.lightIntensity - previous.lightIntensity);
+    const radiusDiff = Math.abs(current.lightRadius - previous.lightRadius);
+    if (intensityDiff > maxIntensityJump) maxIntensityJump = intensityDiff;
+    if (radiusDiff > maxRadiusJump) maxRadiusJump = radiusDiff;
+    previous = current;
+  }
+
+  assert.ok(
+    maxIntensityJump < 0.05,
+    `car light intensity should transition smoothly across frames, max jump was ${maxIntensityJump}`,
+  );
+  assert.ok(
+    maxRadiusJump < 0.05,
+    `car light radius should transition smoothly across frames, max jump was ${maxRadiusJump}`,
+  );
+});
+
 test('world transition builds slowly and reverses without jumping', () => {
   assert.equal(typeof createGaussianWorldTransition, 'function');
   const transition = createGaussianWorldTransition({

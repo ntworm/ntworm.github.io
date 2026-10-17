@@ -72,6 +72,7 @@ export function createGaussianLightAutopilot(seed = 1, placement = 'hero-right')
   };
   let current = { ...from, lightCenter: [...from.lightCenter], tintA: [...from.tintA], tintB: [...from.tintB] };
   let target = current;
+  let redBreathEnvelope = 0;
 
   const chooseTarget = () => {
     duration = 6 + random() * 10;
@@ -141,12 +142,26 @@ export function createGaussianLightAutopilot(seed = 1, placement = 'hero-right')
       let lightIntensity = current.lightIntensity;
       let lightRadius = current.lightRadius;
       let energyPulse = clamp(wave * current.pulseAmount, 0, 1);
+
+      let targetEnvelope = 0;
       if (placement === 'section-left' && paletteName === 'red-blue' && current.ambient < 0.22) {
+        const ambientFade = ease(clamp((0.22 - current.ambient) / 0.06, 0, 1));
+        const episodeFade = ease(clamp(elapsed / 1.4, 0, 1)) * ease(clamp((duration - elapsed) / 1.6, 0, 1));
+        targetEnvelope = ambientFade * episodeFade;
+      }
+      const blendRate = 1 - Math.exp(-5.0 * delta);
+      redBreathEnvelope += (targetEnvelope - redBreathEnvelope) * blendRate;
+
+      if (redBreathEnvelope > 0.001) {
         const redBreath = Math.pow(0.5 + 0.5 * Math.sin(time * 1.35 + seed * 0.021), 1.45);
         const redExpansion = ease(redBreath);
-        lightIntensity = mixValue(0.012, Math.max(current.lightIntensity, 1.68), redBreath);
-        lightRadius = mixValue(0.18, Math.min(1.18, Math.max(current.lightRadius, 0.98)), redExpansion);
-        energyPulse = clamp(energyPulse * (0.18 + redBreath * 0.82), 0, 0.72);
+        const breathIntensity = mixValue(0.012, Math.max(current.lightIntensity, 1.68), redBreath);
+        const breathRadius = mixValue(0.18, Math.min(1.18, Math.max(current.lightRadius, 0.98)), redExpansion);
+        const breathPulse = clamp(energyPulse * (0.18 + redBreath * 0.82), 0, 0.72);
+
+        lightIntensity = mixValue(current.lightIntensity, breathIntensity, redBreathEnvelope);
+        lightRadius = mixValue(current.lightRadius, breathRadius, redBreathEnvelope);
+        energyPulse = mixValue(energyPulse, breathPulse, redBreathEnvelope);
       }
       return {
         ...current,
