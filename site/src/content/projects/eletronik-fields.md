@@ -1,6 +1,6 @@
 ---
 title: "Eletronik Fields"
-year: 2022
+year: 2023
 role: "Creator"
 country: "Lisbon, Portugal"
 type: "Generative audiovisual"
@@ -16,7 +16,7 @@ tags: ["generative", "code", "audiovisual", "hydra"]
 
 ## Eletronik Fields
 
-An audiovisual performance system that turns the electromagnetic fields of everyday powered objects into MIDI notes, sound and real-time visuals. A magnetic induction coil picks up the fields; a performance patch I developed in Max analyzes the signal, synthesizes sound and sends MIDI notes to instruments in Ableton Live. Custom audio descriptors provide data to modulate visuals in Hydra.js via WebSocket. I built it in 2022, during my undergraduate studies at Universidade Lusófona in Lisbon, in the Sonic Arts course (Artes Sónicas), mentored by professor Adriana Sá.
+An audiovisual performance system that turns the electromagnetic fields of everyday powered objects into MIDI notes, sound and real-time visuals. A magnetic induction coil picks up the fields; a performance patch I developed in Max analyzes the signal, synthesizes sound and sends MIDI notes to instruments in Ableton Live. Custom audio descriptors provide data to modulate visuals in Hydra.js via WebSocket. I built it in 2023, during my undergraduate studies at Universidade Lusófona in Lisbon, in the Sonic Arts course (Artes Sónicas), mentored by professor Adriana Sá.
 
 ## Signal chain
 

@@ -7,7 +7,7 @@ production: "Disciplina de Artes Sónicas com Adriana Sá, Universidade Lusófon
 
 ## Eletronik Fields
 
-Sistema audiovisual de performance que transforma os campos eletromagnéticos de aparelhos e objetos sobre uma mesa em notas MIDI, som e visuais em tempo real. Uma bobina de indução magnética capta os campos; um patch de performance que desenvolvi no Max analisa o sinal, realiza síntese sonora e envia notas MIDI para instrumentos no Ableton Live. Descritores de áudio próprios fornecem dados para modular as imagens no Hydra.js, via WebSocket. Fiz o trabalho em 2022, durante a graduação na Universidade Lusófona, em Lisboa, na disciplina de Artes Sónicas, com a professora Adriana Sá.
+Sistema audiovisual de performance que transforma os campos eletromagnéticos de aparelhos e objetos sobre uma mesa em notas MIDI, som e visuais em tempo real. Uma bobina de indução magnética capta os campos; um patch de performance que desenvolvi no Max analisa o sinal, realiza síntese sonora e envia notas MIDI para instrumentos no Ableton Live. Descritores de áudio próprios fornecem dados para modular as imagens no Hydra.js, via WebSocket. Fiz o trabalho em 2023, durante a graduação na Universidade Lusófona, em Lisboa, na disciplina de Artes Sónicas, com a professora Adriana Sá.
 
 ## Cadeia de sinal
 
