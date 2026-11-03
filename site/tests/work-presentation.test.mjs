@@ -277,17 +277,37 @@ test('audiovisual chapter keeps sound and music work while tools and generative 
 
 test('project case copy keeps the verified Ableton, MOTELX, and Spotify facts', () => {
   const ableton = readFileSync(new URL('../src/content/projects/ableton-mcp-server.md', import.meta.url), 'utf8');
+  const abletonPt = readFileSync(new URL('../src/content/projects-pt-br/ableton-mcp-server.md', import.meta.url), 'utf8');
   const compositor = readFileSync(new URL('../src/content/projects/o-compositor.md', import.meta.url), 'utf8');
   const arvoreSeca = readFileSync(new URL('../src/content/projects/arvore-seca.md', import.meta.url), 'utf8');
   const motelxWinnersUrl = 'https://www.motelx.org/noticias/motelx-2025-os-vencedores-da-19-a-edicao';
 
-  assert.match(ableton, /97 tools in v0\.7\.0/);
+  assert.match(ableton, /Exposes 97 tools over TCP and WebSockets/);
+  assert.match(ableton, /Depending on the operations, undoing a batch may take multiple steps\./);
   assert.match(
     ableton,
-    /one grouped undo step; successful earlier commands persist if a later command fails/,
+    /If a command fails, changes from earlier successful commands remain, with no automatic rollback\./,
+  );
+  assert.match(
+    ableton,
+    /On Windows, the MCP server runs natively on the same computer as Live and communicates locally over loopback\./,
   );
   assert.doesNotMatch(ableton, /65 tools/);
   assert.doesNotMatch(ableton, /atomic batch|with rollback/i);
+  assert.doesNotMatch(ableton, /97 tools in v0\.7\.0|one grouped undo step/);
+
+  assert.match(abletonPt, /Expõe 97 ferramentas, via TCP e WebSockets/);
+  assert.match(abletonPt, /Dependendo das operações, desfazer um lote pode exigir vários passos\./);
+  assert.match(
+    abletonPt,
+    /Se um comando falhar, as alterações dos comandos anteriores bem-sucedidos permanecem, sem reversão automática\./,
+  );
+  assert.match(
+    abletonPt,
+    /No Windows, o servidor MCP roda nativamente no mesmo computador que o Live e se comunica localmente por loopback\./,
+  );
+  assert.doesNotMatch(abletonPt, /65 ferramentas/);
+  assert.doesNotMatch(abletonPt, /um único passo|uma única etapa/);
   assert.equal(compositor.split(motelxWinnersUrl).length - 1, 2);
   assert.doesNotMatch(compositor, /conhece-os-candidatos-ao-premio-motelx/);
   assert.doesNotMatch(arvoreSeca, /Spotify URL has not yet been discovered/i);

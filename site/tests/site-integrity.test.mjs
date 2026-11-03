@@ -394,8 +394,9 @@ test('public identity, chapter links, and media documentation match verified sit
     code,
     /Building tools for Ableton Live, real-time systems, and audiovisual work\./,
   );
-  assert.equal((code.match(/97 tools in v0\.7\.0/g) ?? []).length, 1);
-  assert.equal((code.match(/grouped batch commands/g) ?? []).length, 1);
+  assert.equal((code.match(/Exposes 97 tools over TCP and WebSockets/g) ?? []).length, 1);
+  assert.equal((code.match(/and run batch commands/g) ?? []).length, 1);
+  assert.doesNotMatch(code, /97 tools in v0\.7\.0|grouped batch commands/);
   assert.doesNotMatch(code, /atomic batch|with rollback/i);
   assert.match(
     work,
