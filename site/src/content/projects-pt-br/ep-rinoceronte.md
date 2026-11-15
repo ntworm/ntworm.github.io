@@ -11,7 +11,7 @@ links:
 
 ## EP Rinoceronte
 
-EP de seis faixas de <a class="entity-link" href="https://luzocairo.bandcamp.com/" target="_blank" rel="noopener noreferrer">Luzo Cairo</a>. Conduzi toda a cadeia de produção: apoio à composição, gravação, mixagem, masterização, vídeo, distribuição e a transmissão ao vivo. Lançado no Bandcamp e no Spotify em 2025.
+EP de seis faixas de <a class="entity-link" href="https://luzocairo.bandcamp.com/" target="_blank" rel="noopener noreferrer">Luzo Cairo</a>. Conduzi toda a cadeia de produção: apoio à composição, gravação, mixagem, masterização, vídeo, distribuição e a transmissão ao vivo. Lançado no Bandcamp e no Spotify em dezembro de 2025.
 
 O financiamento veio da Política Nacional Aldir Blanc / PAAR 2024 — o mesmo fomento cultural federal que pôs o projeto em movimento durante o meu último ano em Lisboa. A estrutura do edital faz diferença: ele cobre todo o arco, da composição ao lançamento, e é isso que torna possível um projeto como este sem depender de capital privado.
 

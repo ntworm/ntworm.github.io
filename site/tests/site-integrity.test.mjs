@@ -69,8 +69,8 @@ test('built homepage and case studies expose parseable canonical discovery metad
   });
   const cases = casesIn('');
   const ptCases = casesIn('pt-br/');
-  assert.equal(cases.length, 30);
-  assert.equal(ptCases.length, 30);
+  assert.equal(cases.length, 35);
+  assert.equal(ptCases.length, 35);
   const caseCanonicals = new Set();
   const projectsSourceDir = join(process.cwd(), 'src', 'content', 'projects');
   const frontmatterOf = (file) => readFileSync(join(projectsSourceDir, file), 'utf8')

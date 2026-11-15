@@ -67,7 +67,7 @@ const expectedFeaturedPresentation = {
   trisal: {
     mediaLayout: 'portrait',
     highlight: 'premiered at CineSesc Araguaína on 10 June 2026',
-    summary: 'Led sound direction on “Isso de novo não tem nada!”, episode 2 of Artpalco’s Tocantins-made comedy about contemporary relationships. Produced with Grupo Tukan, it premiered at CineSesc Araguaína on 10 June 2026.',
+    summary: 'Directed, recorded, and post-produced all the sound of “Isso de novo não tem nada!”, episode 2 of Artpalco’s Tocantins-made comedy about contemporary relationships. Produced with Grupo Tukan, it premiered at CineSesc Araguaína on 10 June 2026.',
   },
   'el-tono-del-mar': {
     mediaLayout: 'landscape',
@@ -112,6 +112,7 @@ const UNDATED_WORK_IDS = new Set(['errant-space-podcast-117']);
 const disciplineGroups = {
   cinema: [
     'a-quermesse',
+    'aguas-passadas',
     'ai-am',
     'bed-time',
     'caio',
@@ -122,6 +123,7 @@ const disciplineGroups = {
     'this-feminine-side',
     'ticha-penicheiro',
     'trisal',
+    'um-certo-joao-silvino',
     'unconscious-vision',
     'unveiling-new-futures',
   ],
@@ -139,8 +141,9 @@ const disciplineGroups = {
     'kakofoni-orquestra',
     'lucy',
   ],
-  tools: ['rc-surface', 'rc-setlist', 'ableton-mcp-server'],
+  tools: ['rc-surface', 'rc-setlist', 'ableton-mcp-server', 'phaseslip', 'aafton'],
   'sound art': ['soundwalking-lisboa', 'noise-machine', 'lusofona-av-performance'],
+  performance: ['sopru'],
 };
 
 const expectedDisciplineById = Object.fromEntries(
@@ -193,20 +196,20 @@ test('exports the exact frozen tiers and discipline map', () => {
   const tierIds = [...FEATURED_WORK_IDS, ...MORE_WORK_IDS];
   assert.equal(tierIds.length, 18);
   assert.equal(new Set(tierIds).size, 18);
-  assert.equal(Object.keys(DISCIPLINE_BY_ID).length, 30);
+  assert.equal(Object.keys(DISCIPLINE_BY_ID).length, 35);
   assert.ok(Object.isFrozen(FEATURED_WORK_IDS));
   assert.ok(Object.isFrozen(MORE_WORK_IDS));
   assert.ok(Object.isFrozen(DISCIPLINE_BY_ID));
 });
 
-test('builds a frozen presentation of all 30 real projects', () => {
+test('builds a frozen presentation of all 35 real projects', () => {
   const projects = readProjects();
   const presentation = buildWorkPresentation(projects);
 
-  assert.equal(projects.length, 30);
+  assert.equal(projects.length, 35);
   assert.deepEqual(presentation.featured.map(({ id }) => id), expectedFeaturedIds);
   assert.deepEqual(presentation.more.map(({ id }) => id), expectedMoreIds);
-  assert.equal(presentation.archive.length, 30);
+  assert.equal(presentation.archive.length, 35);
   assert.deepEqual(
     Object.fromEntries(presentation.archive.map(({ id, presentation: metadata }) => [id, metadata.discipline])),
     expectedDisciplineById,
@@ -252,7 +255,7 @@ test('opening panel alternates music, cinema, tools and generative projects in b
     assert.deepEqual(presentation.overview.map(({ id }) => id), expectedIds);
     assert.equal(new Set(presentation.overview.map(({ id }) => DISCIPLINE_BY_ID[id])).size, 4);
     assert.ok(Object.isFrozen(presentation.overview));
-    assert.equal(presentation.archive.length, 30);
+    assert.equal(presentation.archive.length, 35);
   }
 });
 
@@ -346,11 +349,16 @@ test('sorts the archive by latest year descending and title ascending, undated w
 
   assert.deepEqual(archiveIds, [
     'a-quermesse',
+    'aafton',
     'ableton-mcp-server',
+    'aguas-passadas',
     'fxhash',
+    'phaseslip',
     'rc-setlist',
     'rc-surface',
+    'sopru',
     'trisal',
+    'um-certo-joao-silvino',
     'ep-rinoceronte',
     'ticha-penicheiro',
     'o-clube',

@@ -8,6 +8,29 @@
       "ar": "1440/1800"
     }
   ],
+  "aafton": [
+    {
+      "file": "1.png",
+      "w": 1200,
+      "h": 630,
+      "type": "image",
+      "ar": "1200/630"
+    },
+    {
+      "file": "2.png",
+      "w": 1266,
+      "h": 853,
+      "type": "image",
+      "ar": "1266/853"
+    },
+    {
+      "file": "3.png",
+      "w": 1266,
+      "h": 853,
+      "type": "image",
+      "ar": "1266/853"
+    }
+  ],
   "ableton-mcp-server": [
     {
       "file": "1.jpg",
@@ -451,6 +474,22 @@
       "ar": "1280/664"
     }
   ],
+  "phaseslip": [
+    {
+      "file": "1.png",
+      "w": 1200,
+      "h": 630,
+      "type": "image",
+      "ar": "1200/630"
+    },
+    {
+      "file": "2.png",
+      "w": 1080,
+      "h": 1080,
+      "type": "image",
+      "ar": "1080/1080"
+    }
+  ],
   "rc-setlist": [
     {
       "file": "1.jpg",
@@ -497,6 +536,15 @@
       "ar": "1920/1080"
     }
   ],
+  "sopru": [
+    {
+      "file": "1.jpg",
+      "w": 1000,
+      "h": 1000,
+      "type": "image",
+      "ar": "1000/1000"
+    }
+  ],
   "soundwalking-lisboa": [
     {
       "file": "1.jpg",
@@ -531,6 +579,15 @@
       "h": 1920,
       "type": "image",
       "ar": "1440/1920"
+    }
+  ],
+  "um-certo-joao-silvino": [
+    {
+      "file": "1.jpg",
+      "w": 563,
+      "h": 705,
+      "type": "image",
+      "ar": "563/705"
     }
   ],
   "unconscious-vision": [

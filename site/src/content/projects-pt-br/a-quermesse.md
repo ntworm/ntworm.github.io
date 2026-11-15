@@ -14,7 +14,7 @@ As filmagens aconteceram entre abril e maio de 2026, em Palmas e no interior do 
 
 ## No set como assistente de som
 
-Minha função no filme foi de assistente de som na equipe de som direto — apenas no set, sem envolvimento na pós-produção. O trabalho era objetivo: apoiar o microfonista e o técnico de som direto, manter a organização dos cabos e a disciplina dos sistemas sem fio em locação, microfonar o elenco com lapelas em cenas internas e externas e manter a cadeia de som direto funcionando ao longo de longas diárias no calor do Tocantins. O equipamento de som direto girava em torno de um gravador Sound Devices MixPre-6, microfones Schoeps em configuração estéreo Mid-Side (MS) para as ambiências de locação, shotgun no boom e microfones de lapela sem fio.
+Minha função no filme foi de assistente de som na equipe de som direto. No set, operei o gravador, coloquei e ajustei as lapelas no elenco, montei os booms e mantive o setup de som pronto entre um plano e outro, ao lado do microfonista e do técnico de som direto, ao longo de longas diárias no calor do Tocantins. O equipamento de som direto girava em torno de um gravador Sound Devices MixPre-6, microfones Schoeps em configuração estéreo Mid-Side (MS) para as ambiências de locação, shotgun no boom e microfones de lapela sem fio.
 
 A maior parte das diárias foi ao ar livre ou em espaços comunitários em plena atividade (igrejas, povoados, ruas). O vento e o burburinho do entorno foram as limitações constantes; nos interiores, a troca entre setups precisava ser rápida, porque o cronograma era apertado e as locações tinham de ser devolvidas no mesmo dia.
 
@@ -25,7 +25,7 @@ Foi uma equipe local do começo ao fim, e isso fez diferença. Trabalhar numa pr
 - **Direção e roteiro**: Juliane Almeida
 - **Produção**: MZN Filmes (Marcio Mazaron) · Borboletas Filmes · Jubalina Produções · Sucupira Filmes
 - **Departamento de som**:
-  - **Técnico de som direto**: Diogo Goulart
+  - **Técnico de som direto**: Diogo Goltara
   - **Microfonista**: Yuri Vilar (Yuri Grooveman)
   - **Assistente de som**: Gabriel Worm
   - **Equipamento de som direto**: gravador Sound Devices MixPre-6, conjunto estéreo Schoeps em MS, shotgun no boom e lapelas sem fio no elenco

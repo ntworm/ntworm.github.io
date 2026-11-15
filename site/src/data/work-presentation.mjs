@@ -64,7 +64,7 @@ export const FEATURED_PRESENTATION_BY_ID = Object.freeze({
   trisal: Object.freeze({
     mediaLayout: 'portrait',
     highlight: 'premiered at CineSesc Araguaína on 10 June 2026',
-    summary: 'Led sound direction on “Isso de novo não tem nada!”, episode 2 of Artpalco’s Tocantins-made comedy about contemporary relationships. Produced with Grupo Tukan, it premiered at CineSesc Araguaína on 10 June 2026.',
+    summary: 'Directed, recorded, and post-produced all the sound of “Isso de novo não tem nada!”, episode 2 of Artpalco’s Tocantins-made comedy about contemporary relationships. Produced with Grupo Tukan, it premiered at CineSesc Araguaína on 10 June 2026.',
   }),
   'el-tono-del-mar': Object.freeze({
     mediaLayout: 'landscape',
@@ -128,7 +128,7 @@ export const FEATURED_COPY_PT_BY_ID = Object.freeze({
   }),
   trisal: Object.freeze({
     highlight: 'estreou no CineSesc Araguaína em 10 de junho de 2026',
-    summary: 'Assinei a direção de som de “Isso de novo não tem nada!”, episódio 2 da comédia tocantinense da Artpalco sobre os relacionamentos de hoje. Produzido com o Grupo Tukan, o episódio estreou no CineSesc Araguaína em 10 de junho de 2026.',
+    summary: 'Dirigi, gravei e finalizei todo o som de “Isso de novo não tem nada!”, episódio 2 da comédia tocantinense da Artpalco sobre os relacionamentos de hoje. Produzido com o Grupo Tukan, o episódio estreou no CineSesc Araguaína em 10 de junho de 2026.',
   }),
   'el-tono-del-mar': Object.freeze({
     highlight: 'venceu o prêmio de Melhor Curta Estudantil Mexicano do Pixelatl 2024',
@@ -167,10 +167,12 @@ export const DISCIPLINE_LABELS_PT = Object.freeze({
   generative: 'arte generativa',
   tools: 'ferramentas',
   'sound art': 'arte sonora',
+  performance: 'performance',
 });
 
 export const DISCIPLINE_BY_ID = Object.freeze({
   'a-quermesse': 'cinema',
+  'aguas-passadas': 'cinema',
   'ai-am': 'cinema',
   'bed-time': 'cinema',
   caio: 'cinema',
@@ -181,6 +183,7 @@ export const DISCIPLINE_BY_ID = Object.freeze({
   'this-feminine-side': 'cinema',
   'ticha-penicheiro': 'cinema',
   trisal: 'cinema',
+  'um-certo-joao-silvino': 'cinema',
   'unconscious-vision': 'cinema',
   'unveiling-new-futures': 'cinema',
   'arvore-seca': 'production',
@@ -197,9 +200,12 @@ export const DISCIPLINE_BY_ID = Object.freeze({
   'rc-surface': 'tools',
   'rc-setlist': 'tools',
   'ableton-mcp-server': 'tools',
+  phaseslip: 'tools',
+  aafton: 'tools',
   'soundwalking-lisboa': 'sound art',
   'noise-machine': 'sound art',
   'lusofona-av-performance': 'sound art',
+  sopru: 'performance',
 });
 
 const REQUIRED_WORK_IDS = [...new Set([...OVERVIEW_WORK_IDS, ...FEATURED_WORK_IDS, ...MORE_WORK_IDS])];

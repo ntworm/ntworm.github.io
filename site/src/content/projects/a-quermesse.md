@@ -20,7 +20,7 @@ Shooting took place between April and May 2026 across Palmas and the surrounding
 
 ## On set as Sound Assistant
 
-My role on the film was Sound Assistant on the production sound team — set-based only, no post-production involvement. The job was straightforward: support the boom operator and production sound mixer, manage cable and wireless discipline on location, wrangle lavs on talent across interior and exterior setups, and keep the production sound chain running through long location days in the Tocantins heat. The production sound rig centered on a Sound Devices MixPre-6 recorder, Schoeps microphones in Mid-Side (MS) stereo configuration for locational ambiances, shotgun on boom, and wireless lavaliers.
+My role on the film was Sound Assistant on the production sound team. On set I operated the recorder, fitted and adjusted the lavaliers on the cast, rigged the booms, and kept the sound setup ready between setups, alongside the boom operator and the production sound mixer, through long location days in the Tocantins heat. The production sound rig centered on a Sound Devices MixPre-6 recorder, Schoeps microphones in Mid-Side (MS) stereo configuration for locational ambiances, shotgun on boom, and wireless lavaliers.
 
 Most days were outdoors or in active community spaces (churches, povoados, streets). Wind and ambient crowd were the persistent constraints; the interiors needed fast turnaround between setups because the production schedule was tight and locations had to be returned the same day.
 
@@ -31,7 +31,7 @@ It was a local crew through and through, and that mattered. Working on a Tocanti
 - **Direction and screenplay**: Juliane Almeida
 - **Production**: MZN Filmes (Marcio Mazaron) · Borboletas Filmes · Jubalina Produções · Sucupira Filmes
 - **Sound department**:
-  - **Production Sound Mixer / Técnico de som direto**: Diogo Goulart
+  - **Production Sound Mixer / Técnico de som direto**: Diogo Goltara
   - **Boom Operator / Operador de boom**: Yuri Vilar (Yuri Grooveman)
   - **Sound Assistant / Assistente de som**: Gabriel Worm
   - **Production sound package**: Sound Devices MixPre-6 recorder, Schoeps MS stereo setup, boom shotgun, and talent wireless lavaliers
