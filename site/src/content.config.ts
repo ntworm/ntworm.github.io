@@ -1,6 +1,11 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
+// Only http(s): a javascript: link or embed would run in the site's origin.
+const httpUrl = z.string().url().refine((value) => /^https?:\/\//i.test(value), {
+  message: 'only http and https URLs are allowed',
+});
+
 const projects = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
   schema: z.object({
@@ -13,10 +18,10 @@ const projects = defineCollection({
     type: z.string().optional(),
     production: z.string().optional(),
     awards: z.array(z.string()).optional(),
-    links: z.array(z.object({ url: z.string().url(), label: z.string().min(1) })).optional(),
+    links: z.array(z.object({ url: httpUrl, label: z.string().min(1) })).optional(),
     youtubeId: z.string().optional(),
     interactiveEmbed: z.object({
-      url: z.string().url(),
+      url: httpUrl,
       title: z.string().min(1),
       cta: z.string().min(1),
     }).optional(),
@@ -31,7 +36,7 @@ const projects = defineCollection({
       slug: z.string(),
       title: z.string(),
       desc: z.string(),
-      url: z.string().url(),
+      url: httpUrl,
       // Path to the thumb. Accepts either an absolute URL or a root-relative
       // path (`/work/fxhash/thumbs/<slug>.webp` is the typical local path).
       thumb: z.string(),
@@ -57,7 +62,7 @@ const projectsPtBr = defineCollection({
     type: z.string().optional(),
     production: z.string().optional(),
     awards: z.array(z.string()).optional(),
-    links: z.array(z.object({ url: z.string().url(), label: z.string().min(1) })).optional(),
+    links: z.array(z.object({ url: httpUrl, label: z.string().min(1) })).optional(),
     seasons: z.array(z.object({ img: z.string(), label: z.string() })).optional(),
     interactiveEmbed: z.object({
       title: z.string().min(1),
