@@ -40,6 +40,15 @@
       "ar": "1200/630"
     }
   ],
+  "aguas-passadas": [
+    {
+      "file": "1.jpg",
+      "w": 832,
+      "h": 1248,
+      "type": "image",
+      "ar": "832/1248"
+    }
+  ],
   "ai-am": [
     {
       "file": "1.jpg",
@@ -584,10 +593,10 @@
   "um-certo-joao-silvino": [
     {
       "file": "1.jpg",
-      "w": 563,
-      "h": 705,
+      "w": 848,
+      "h": 1264,
       "type": "image",
-      "ar": "563/705"
+      "ar": "848/1264"
     }
   ],
   "unconscious-vision": [

@@ -1,11 +1,11 @@
 ---
 title: "Águas Passadas"
 year: 2026
-role: "Sound Editor (dialogue editing)"
+role: "Sound post-production"
 country: "Tocantins, Brazil"
 type: "Documentary feature"
 production: "H Oliveira de Brito Filmes · FSA/Ancine Novos Realizadores"
-tags: ["film", "sound-editor", "dialogue-editing", "post-production", "tocantins", "local"]
+tags: ["film", "sound-post-production", "dialogue-editing", "mixing", "post-production", "tocantins", "local"]
 ---
 
 ## Águas Passadas
@@ -14,9 +14,9 @@ A Tocantins feature documentary directed and edited by <a class="entity-link" hr
 
 The film weaves the testimonies of local teachers, narration, and views of the landscape and the river. Field research for the project covered Tocantinópolis, Porto Nacional, Goiânia, and Goiás Velho; production sound was recorded by Yuri Vilar (Puro Osso).
 
-## Sound editing
+## Sound post-production
 
-I worked on the film's post-production as Sound Editor, in Pro Tools, from the editor's AAF against the 89-minute cut. The core of the job was dialogue: cleaning and smoothing the interviews and the narration across the whole feature, so that every voice reads clearly and every cut passes without a bump.
+I worked on the film's sound post-production, covering dialogue editing, sound editing, and mixing, in Pro Tools, from the editor's AAF against the 89-minute cut. The core of the job was dialogue: cleaning and smoothing the interviews and the narration across the whole feature, so that every voice reads clearly and every cut passes without a bump.
 
 Around the dialogue, I brought in the dubbed lines and the sound design built by Yuri Vilar and fitted them to the final picture, and placed the music where the director asked for it. In the last round before the delivery to Ancine, at Hélio's request, I set Márcio Bello's indigenous theme in the ten landscape vignettes that open the teachers' testimonies, with its strongest drum passage in the foreground, as a reminder of the original peoples of that territory. The film went through five delivered versions before the final one.
 
@@ -25,7 +25,7 @@ Around the dialogue, I brought in the dubbed lines and the sound design built by
 - **Direction and editing**: Hélio Brito
 - **Production company**: H Oliveira de Brito Filmes
 - **Funding**: FSA / BRDE – Ancine, Cinema – Novos Realizadores 2022
-- **Cast**: Charlene Brito
+- **Cast**: Josafá Miranda, Guido Campos, Ana Kamila, Daniel Pajeú, Cinthia Abreu, Dalila Cristiny, João Welson, Osmar Casagrande, Raí Silva, Rosa Maria, Leoa do Norte (Sara Gomes), Gean Watina, Charlene Brito
 - **Production sound and sound design**: Yuri Vilar (Puro Osso)
 - **Indigenous theme**: Márcio Bello
-- **Sound Editor / Dialogue Editor**: Gabriel Worm
+- **Sound post-production (dialogue editing, sound editing, mixing)**: Gabriel Worm
