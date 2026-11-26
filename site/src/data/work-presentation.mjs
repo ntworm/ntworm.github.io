@@ -17,11 +17,11 @@ export const FEATURED_WORK_IDS = Object.freeze([
   'ep-rinoceronte',
   'arvore-seca',
   'em-agosto-chove',
+  'trisal',
   'this-feminine-side',
   'lucy',
   'aguas-passadas',
   'sopru',
-  'trisal',
   'unveiling-new-futures',
   'el-tono-del-mar',
 ]);

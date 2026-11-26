@@ -20,11 +20,11 @@ const expectedFeaturedIds = [
   'ep-rinoceronte',
   'arvore-seca',
   'em-agosto-chove',
+  'trisal',
   'this-feminine-side',
   'lucy',
   'aguas-passadas',
   'sopru',
-  'trisal',
   'unveiling-new-futures',
   'el-tono-del-mar',
 ];
@@ -260,8 +260,8 @@ test('opening panel alternates music, cinema, tools and generative projects in b
 test('audiovisual chapter keeps sound and music work while tools and generative cases remain in the catalogue', () => {
   const expectedFeatured = [
     'o-compositor', 'um-certo-joao-silvino', 'ep-rinoceronte', 'arvore-seca',
-    'em-agosto-chove', 'this-feminine-side', 'aguas-passadas', 'sopru',
-    'trisal', 'unveiling-new-futures', 'el-tono-del-mar',
+    'em-agosto-chove', 'trisal', 'this-feminine-side', 'aguas-passadas',
+    'sopru', 'unveiling-new-futures', 'el-tono-del-mar',
   ];
   for (const locale of ['en', 'pt']) {
     const presentation = buildWorkPresentation(readProjects(), { locale });
