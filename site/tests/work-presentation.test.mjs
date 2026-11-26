@@ -89,8 +89,8 @@ const expectedFeaturedPresentation = {
   },
   'um-certo-joao-silvino': {
     mediaLayout: 'portrait',
-    highlight: 'won four awards',
-    summary: 'Did the sound post-production of the version of Hélio Brito’s docudrama screened at the 3rd CINETOCA, where the film won four awards: dialogue editing, sound editing, foley, and mixing, except the music.',
+    highlight: 'screened at the 3rd CINETOCA',
+    summary: 'Did the sound post-production of the version of Hélio Brito’s docudrama screened at the 3rd CINETOCA, except the music: dialogue editing, sound editing, foley, and mixing. At the festival the film won four awards, including Best Feature Film by the popular jury.',
   },
   'aguas-passadas': {
     mediaLayout: 'portrait',

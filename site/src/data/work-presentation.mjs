@@ -82,8 +82,8 @@ export const FEATURED_PRESENTATION_BY_ID = Object.freeze({
   }),
   'um-certo-joao-silvino': Object.freeze({
     mediaLayout: 'portrait',
-    highlight: 'won four awards',
-    summary: 'Did the sound post-production of the version of Hélio Brito’s docudrama screened at the 3rd CINETOCA, where the film won four awards: dialogue editing, sound editing, foley, and mixing, except the music.',
+    highlight: 'screened at the 3rd CINETOCA',
+    summary: 'Did the sound post-production of the version of Hélio Brito’s docudrama screened at the 3rd CINETOCA, except the music: dialogue editing, sound editing, foley, and mixing. At the festival the film won four awards, including Best Feature Film by the popular jury.',
   }),
   'aguas-passadas': Object.freeze({
     mediaLayout: 'portrait',
@@ -137,8 +137,8 @@ export const FEATURED_COPY_PT_BY_ID = Object.freeze({
     summary: 'Criei um sistema audiovisual generativo e autônomo em Max, Ableton Live e Hydra.js, que compõe música e visuais reativos a partir de MIDI probabilístico, bancos de samples próprios e mudanças de seção em tempo real. Publicada na Teia e no fxhash, LUCY reúne dezesseis edições geradas por execuções que nunca se repetem exatamente.',
   }),
   'um-certo-joao-silvino': Object.freeze({
-    highlight: 'venceu quatro prêmios',
-    summary: 'Fiz a pós-produção de som da versão do docudrama de Hélio Brito exibida no 3º CINETOCA, onde o filme venceu quatro prêmios: edição de diálogos, edição de som, foley e mixagem, menos a música.',
+    highlight: 'exibida no 3º CINETOCA',
+    summary: 'Fiz a pós-produção de som da versão do docudrama de Hélio Brito exibida no 3º CINETOCA, menos a música: edição de diálogos, edição de som, foley e mixagem. No festival, o filme venceu quatro prêmios, entre eles Melhor Longa-metragem pelo Júri Popular.',
   }),
   'aguas-passadas': Object.freeze({
     highlight: 'selecionado no edital Novos Realizadores da Ancine',
