@@ -1,5 +1,6 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { YOUTUBE_ID_PATTERN } from './data/youtube-id.mjs';
 
 // Only http(s): a javascript: link or embed would run in the site's origin.
 const httpUrl = z.string().url().refine((value) => /^https?:\/\//i.test(value), {
@@ -20,6 +21,12 @@ const projects = defineCollection({
     awards: z.array(z.string()).optional(),
     links: z.array(z.object({ url: httpUrl, label: z.string().min(1) })).optional(),
     youtubeId: z.string().optional(),
+    // Vertical YouTube videos (Shorts) shown as a 9:16 grid after the case
+    // text. A fact shared by both languages, so it lives in the English file.
+    youtubeShorts: z.array(z.object({
+      id: z.string().regex(YOUTUBE_ID_PATTERN, 'a YouTube video id has 11 characters'),
+      title: z.string().min(1),
+    })).min(1).optional(),
     interactiveEmbed: z.object({
       url: httpUrl,
       title: z.string().min(1),

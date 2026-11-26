@@ -110,7 +110,7 @@ test('translations carry the credit words and match the English lists by key', (
     }
     assert.equal(hasKey(portuguese, 'awards'), hasKey(english, 'awards'), `${id}: awards must be translated`);
     if (hasKey(portuguese, 'interactiveEmbed')) assert.ok(hasKey(english, 'interactiveEmbed'), `${id}: no embed to translate`);
-    for (const key of ['year', 'youtubeId', 'hideGallery', 'tags']) {
+    for (const key of ['year', 'youtubeId', 'youtubeShorts', 'hideGallery', 'tags']) {
       assert.equal(hasKey(portuguese, key), false, `${id}: ${key} belongs to the English source only`);
     }
 

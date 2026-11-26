@@ -992,3 +992,27 @@ test('a mounted Gaussian settles its camera instead of gliding in from a cold st
     'camera variables must go through settle() so a fresh mount does not zoom in',
   );
 });
+
+test('Soprü case pages embed the three vertical show videos lazily, without autoplay', () => {
+  const ids = ['I8gjhhnX5dw', 'Nj3ahroct6M', 'xW3KL8fANdI'];
+  for (const page of ['work/sopru/index.html', 'pt-br/work/sopru/index.html']) {
+    const html = readFileSync(join(distDir, page), 'utf8');
+    const frames = [...html.matchAll(/<iframe[^>]*youtube-nocookie\.com\/embed\/([A-Za-z0-9_-]{11})[^>]*>/g)];
+    assert.deepEqual(frames.map((m) => m[1]), ids, `${page}: videos and order`);
+    for (const [tag] of frames) {
+      assert.match(tag, /loading="lazy"/, `${page}: lazy iframe`);
+      assert.doesNotMatch(tag, /autoplay=1/, `${page}: no autoplay`);
+    }
+    assert.match(html, /class="case__shorts"/, `${page}: shorts section`);
+  }
+});
+
+test('youtubeShorts ids use the shared validator, which rejects anything but an eleven-character id', async () => {
+  const { isYoutubeId } = await import('../src/data/youtube-id.mjs');
+  const config = readFileSync(join(process.cwd(), 'src', 'content.config.ts'), 'utf8');
+  assert.match(config, /id: z\.string\(\)\.regex\(YOUTUBE_ID_PATTERN,/);
+  assert.equal(isYoutubeId('I8gjhhnX5dw'), true);
+  for (const bad of ['short', 'javascript:x', 'I8gjhhnX5dw?autoplay=1', 'https://youtu.be/I8gjhhnX5dw', '', null]) {
+    assert.equal(isYoutubeId(bad), false, String(bad));
+  }
+});

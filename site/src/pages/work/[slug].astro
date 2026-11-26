@@ -47,6 +47,7 @@ const production = data.production ?? '';
 const links = data.links ?? [];
 const awards = data.awards ?? [];
 const interactiveEmbed = data.interactiveEmbed ?? null;
+const youtubeShorts = data.youtubeShorts ?? [];
 const hideGallery = entry.id === 'kakofoni-orquestra' || data.hideGallery === true;
 
 // Image dimension lookup so the cover + gallery size to each file's natural
@@ -248,6 +249,27 @@ function mediaStyle(dim?: { ar: string }) {
     <div class="case__body">
       <Content />
     </div>
+
+    {youtubeShorts.length > 0 && (
+      <section class="case__shorts" aria-label={t('case.shorts')}>
+        <span class="eyebrow">{t('case.shorts')}</span>
+        <div class="case__shorts-grid">
+          {youtubeShorts.map((v) => (
+            <figure class="case__short">
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${v.id}?rel=0`}
+                title={`${v.title} \u2014 YouTube`}
+                loading="lazy"
+                allow="encrypted-media; picture-in-picture; fullscreen"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen
+              ></iframe>
+              <figcaption>{v.title}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+    )}
 
     {!hideGallery && galleryBottom.length > 0 && (
       <section class="case__gallery case__gallery--bottom" aria-label={t('case.moreVisuals')}>
@@ -505,6 +527,41 @@ function mediaStyle(dim?: { ar: string }) {
      intrinsic height and the video renders squished. */
   .case__cover--video {
     aspect-ratio: 16 / 9;
+  }
+
+  /* Vertical YouTube videos: a 9:16 frame per video, one column on phones
+     and three side by side from 900px, each capped so it never stretches. */
+  .case__shorts {
+    display: grid;
+    gap: var(--s-4);
+    padding: var(--s-5) 0;
+  }
+  .case__shorts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--s-5);
+    justify-items: center;
+  }
+  @media (min-width: 900px) {
+    .case__shorts-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  .case__short {
+    margin: 0;
+    width: 100%;
+    max-width: 360px;
+    display: grid;
+    gap: var(--s-2);
+  }
+  .case__short iframe {
+    width: 100%;
+    aspect-ratio: 9 / 16;
+    border: 0;
+    display: block;
+  }
+  .case__short figcaption {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    opacity: 0.75;
   }
 
   .case__meta {
