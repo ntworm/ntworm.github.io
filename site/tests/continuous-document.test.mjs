@@ -338,15 +338,15 @@ test('featured entries alone render summaries and explicit orientation classes',
   assert.deepEqual(layoutById, {
     'o-compositor': 'portrait',
     'unveiling-new-futures': 'landscape',
-    'o-clube': 'portrait',
     'this-feminine-side': 'portrait',
     'ep-rinoceronte': 'portrait',
     trisal: 'portrait',
     'el-tono-del-mar': 'landscape',
     'em-agosto-chove': 'landscape',
-    'ai-am': 'portrait',
-    'unconscious-vision': 'portrait',
     'arvore-seca': 'portrait',
+    'um-certo-joao-silvino': 'portrait',
+    'aguas-passadas': 'portrait',
+    sopru: 'portrait',
   });
   assert.match(featuredTags[0], /\bis-lead\b/);
   assert.ok(featuredTags.slice(1).every((tag) => !/\bis-lead\b/.test(tag)));

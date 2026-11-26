@@ -16,18 +16,17 @@ const projectsDir = fileURLToPath(new URL('../src/content/projects/', import.met
 
 const expectedFeaturedIds = [
   'o-compositor',
-  'o-clube',
   'ep-rinoceronte',
-  'kakofoni-orquestra',
-  'this-feminine-side',
-  'lucy',
   'em-agosto-chove',
   'unveiling-new-futures',
-  'arvore-seca',
+  'this-feminine-side',
+  'lucy',
   'el-tono-del-mar',
-  'ai-am',
+  'arvore-seca',
   'trisal',
-  'unconscious-vision',
+  'um-certo-joao-silvino',
+  'aguas-passadas',
+  'sopru',
 ];
 
 const expectedMoreIds = [
@@ -49,11 +48,7 @@ const expectedFeaturedPresentation = {
     highlight: 'Universidade Lusófona’s 2025 international campaign',
     summary: 'Sound-directed and composed two films for Universidade Lusófona’s 2025 international campaign. I captured the production sound, built a shared musical and sonic language across both deliverables, and handled the original scores, mixes, and final delivery.',
   },
-  'o-clube': {
-    mediaLayout: 'portrait',
-    highlight: 'Sound Editor on seasons 6 and 7 at AMMP',
-    summary: 'Worked as Sound Editor on seasons 6 and 7 at AMMP for the OPTO/SIC series, recording surround ambiences across Lisbon, editing the series\' environmental beds, and creating sound effects for the 2025 seasons.',
-  },
+
   'this-feminine-side': {
     mediaLayout: 'portrait',
     highlight: 'animated documentary about Lisbon’s LGBTQ+ artistic scene',
@@ -74,26 +69,14 @@ const expectedFeaturedPresentation = {
     highlight: 'won Pixelatl’s 2024 Best Mexican Student Short Film award',
     summary: 'Worked as Sound Assistant and Sound Editor on Mica Bolaños Meade’s animated short, contributing through sound assistance, sound editing, and sound design. The film won Pixelatl’s 2024 Best Mexican Student Short Film award and screened at GIFF and in CINANIMA’s international student competition.',
   },
-  'kakofoni-orquestra': {
-    mediaLayout: 'portrait',
-    highlight: 'entered the collection of the Madison Museum of Art and Technology',
-    summary: 'Built the Web Audio engine and FFT-driven Hydra colour reactivity with Rangga Purnama Aji, joining sound and image inside one running generative system. Published on fxhash in 2022, edition #37 entered the collection of the Madison Museum of Art and Technology.',
-  },
+
   'em-agosto-chove': {
     mediaLayout: 'landscape',
     highlight: 'three singles, one album, and a live recording for Bem Ali Sessions',
     summary: 'Composer, guitarist, and producer in the Palmas band Em Agosto Chove from 2015 to 2021. Across six years we released three singles, one album, and a live recording for Bem Ali Sessions, building a catalogue rooted in the independent Tocantins music scene.',
   },
-  'ai-am': {
-    mediaLayout: 'portrait',
-    highlight: 'Composed the film’s original score',
-    summary: 'Composed the film’s original score for Danny J’s independently produced 2024 science-fiction short. The music frames a post-apocalyptic encounter between one of the last human survivors and an obsolete AI sentry, balancing human vulnerability against automated control.',
-  },
-  'unconscious-vision': {
-    mediaLayout: 'portrait',
-    highlight: 'full sound design from scratch through final mix',
-    summary: 'Worked as Sound Designer and Sound Mixer on this 2024 Universidade Lusófona horror short, creating the full sound design from scratch through final mix. Ambience, room tone, restrained impacts, and unresolved tails shape what the audience almost hears before the image confirms it.',
-  },
+
+
   'arvore-seca': {
     mediaLayout: 'portrait',
     highlight: 'co-founding Festival Som na Árvore 2019',
@@ -103,6 +86,21 @@ const expectedFeaturedPresentation = {
     mediaLayout: 'portrait',
     highlight: 'sixteen published editions generated from runs that are never exactly repeated',
     summary: 'Created an autonomous generative audiovisual system in Max, Ableton Live, and Hydra.js, composing music and reactive visuals through probabilistic MIDI, custom sample pools, and real-time section changes. Published across Teia and fxhash, LUCY comprises sixteen published editions generated from runs that are never exactly repeated.',
+  },
+  'um-certo-joao-silvino': {
+    mediaLayout: 'portrait',
+    highlight: 'won four awards',
+    summary: 'Did the sound post-production of the version of Hélio Brito’s docudrama screened at the 3rd CINETOCA, where the film won four awards: dialogue editing, sound editing, foley, and mixing, except the music.',
+  },
+  'aguas-passadas': {
+    mediaLayout: 'portrait',
+    highlight: 'selected in Ancine’s Novos Realizadores call',
+    summary: 'Did the sound post-production of Hélio Brito’s feature documentary on the history of Boa Vista do Tocantins, a project selected in Ancine’s Novos Realizadores call: dialogue editing, sound editing, and mixing in Pro Tools, cleaning and smoothing the interviews and narration across the 89-minute film.',
+  },
+  sopru: {
+    mediaLayout: 'portrait',
+    highlight: 'two Ableton sessions kept in sync by RC Setlist',
+    summary: 'Designed the lighting for Soprü’s Cidade do Suor release show and built the system that runs it: the light is written as automation in Ableton Live and sent to LumiKit SHOW, with two Ableton sessions kept in sync by RC Setlist, an extension I built for the band.',
   },
 };
 
@@ -194,8 +192,8 @@ test('exports the exact frozen tiers and discipline map', () => {
   assert.deepEqual(DISCIPLINE_BY_ID, expectedDisciplineById);
 
   const tierIds = [...FEATURED_WORK_IDS, ...MORE_WORK_IDS];
-  assert.equal(tierIds.length, 18);
-  assert.equal(new Set(tierIds).size, 18);
+  assert.equal(tierIds.length, 17);
+  assert.equal(new Set(tierIds).size, 17);
   assert.equal(Object.keys(DISCIPLINE_BY_ID).length, 35);
   assert.ok(Object.isFrozen(FEATURED_WORK_IDS));
   assert.ok(Object.isFrozen(MORE_WORK_IDS));
@@ -261,9 +259,9 @@ test('opening panel alternates music, cinema, tools and generative projects in b
 
 test('audiovisual chapter keeps sound and music work while tools and generative cases remain in the catalogue', () => {
   const expectedFeatured = [
-    'o-compositor', 'o-clube', 'ep-rinoceronte', 'this-feminine-side',
-    'em-agosto-chove', 'unveiling-new-futures', 'arvore-seca', 'el-tono-del-mar',
-    'ai-am', 'trisal', 'unconscious-vision',
+    'o-compositor', 'ep-rinoceronte', 'em-agosto-chove', 'unveiling-new-futures',
+    'this-feminine-side', 'el-tono-del-mar', 'arvore-seca', 'trisal',
+    'um-certo-joao-silvino', 'aguas-passadas', 'sopru',
   ];
   for (const locale of ['en', 'pt']) {
     const presentation = buildWorkPresentation(readProjects(), { locale });
@@ -320,7 +318,7 @@ test('project case copy keeps the verified Ableton, MOTELX, and Spotify facts', 
   );
 });
 
-test('decorates exactly thirteen featured projects with approved summaries and media layouts', () => {
+test('decorates exactly twelve featured projects with approved summaries and media layouts', () => {
   const presentation = buildWorkPresentation(readProjects());
   const featuredMetadata = Object.fromEntries(
     presentation.featured.map(({ id, presentation: metadata }) => [id, {
@@ -334,7 +332,7 @@ test('decorates exactly thirteen featured projects with approved summaries and m
   );
 
   assert.deepEqual(featuredMetadata, expectedFeaturedPresentation);
-  assert.equal(summarizedArchiveEntries.length, 13);
+  assert.equal(summarizedArchiveEntries.length, 12);
   assert.deepEqual(summarizedArchiveEntries.map(({ id }) => id).sort(), [...expectedFeaturedIds].sort());
   assert.ok(presentation.featured.every(({ presentation: metadata }) => (
     ['portrait', 'landscape'].includes(metadata.mediaLayout)
