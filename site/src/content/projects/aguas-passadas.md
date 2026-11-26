@@ -22,10 +22,18 @@ Around the dialogue, I brought in the dubbed lines and the sound design built by
 
 ## Credits (selected)
 
-- **Direction and editing**: Hélio Brito
+- **Screenplay and direction**: Hélio Brito
 - **Production company**: H Oliveira de Brito Filmes
 - **Funding**: FSA / BRDE – Ancine, Cinema – Novos Realizadores 2022
+- **Executive producer**: Sandra Alves
+- **Production manager**: Carol Brito
+- **Director of photography**: Franco Sehabra
+- **Art direction**: Érika Mariano
+- **Editing**: Hélio Brito, Igor Zinsky, Lourival Belém Jr.
 - **Cast**: Josafá Miranda, Guido Campos, Ana Kamila, Daniel Pajeú, Cinthia Abreu, Dalila Cristiny, João Welson, Osmar Casagrande, Raí Silva, Rosa Maria, Leoa do Norte (Sara Gomes), Gean Watina, Charlene Brito
-- **Production sound and sound design**: Yuri Vilar (Puro Osso)
-- **Indigenous theme**: Márcio Bello
+- **Casting coach**: Cleuda Milhomem
+- **Makeup**: Isabela Bernardes
+- **Underwater filming**: Alex Bezerra Barros
+- **Original score**: Hélio Brito, Márcio Bello, Nando Cruz
+- **Production sound, boom operation and sound design**: Yuri Vilar (Iury Grooveman, Puro Osso)
 - **Sound post-production (dialogue editing, sound editing, mixing)**: Gabriel Worm

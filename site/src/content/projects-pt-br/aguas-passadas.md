@@ -19,10 +19,18 @@ Em volta do diálogo, trouxe as falas dubladas e o desenho de som feitos por Yur
 
 ## Créditos (seleção)
 
-- **Direção e montagem**: Hélio Brito
+- **Roteiro e direção**: Hélio Brito
 - **Produtora**: H Oliveira de Brito Filmes
 - **Financiamento**: FSA / BRDE – Ancine, Cinema – Novos Realizadores 2022
+- **Produção executiva**: Sandra Alves
+- **Direção de produção**: Carol Brito
+- **Direção de fotografia**: Franco Sehabra
+- **Direção de arte**: Érika Mariano
+- **Montagem**: Hélio Brito, Igor Zinsky, Lourival Belém Jr.
 - **Elenco**: Josafá Miranda, Guido Campos, Ana Kamila, Daniel Pajeú, Cinthia Abreu, Dalila Cristiny, João Welson, Osmar Casagrande, Raí Silva, Rosa Maria, Leoa do Norte (Sara Gomes), Gean Watina, Charlene Brito
-- **Som direto e desenho de som**: Yuri Vilar (Puro Osso)
-- **Tema indígena**: Márcio Bello
+- **Preparação de elenco**: Cleuda Milhomem
+- **Maquiagem**: Isabela Bernardes
+- **Filmagem subaquática**: Alex Bezerra Barros
+- **Trilha sonora original**: Hélio Brito, Márcio Bello, Nando Cruz
+- **Som direto, microfonista e desenho de som**: Yuri Vilar (Iury Grooveman, Puro Osso)
 - **Pós-produção de som (edição de diálogos, edição de som, mixagem)**: Gabriel Worm
