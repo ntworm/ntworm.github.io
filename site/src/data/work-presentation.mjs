@@ -13,17 +13,17 @@ export const OVERVIEW_WORK_IDS = Object.freeze([
 
 export const FEATURED_WORK_IDS = Object.freeze([
   'o-compositor',
+  'um-certo-joao-silvino',
   'ep-rinoceronte',
+  'arvore-seca',
   'em-agosto-chove',
-  'unveiling-new-futures',
   'this-feminine-side',
   'lucy',
-  'el-tono-del-mar',
-  'arvore-seca',
-  'trisal',
-  'um-certo-joao-silvino',
   'aguas-passadas',
   'sopru',
+  'trisal',
+  'unveiling-new-futures',
+  'el-tono-del-mar',
 ]);
 
 export const MORE_WORK_IDS = Object.freeze([

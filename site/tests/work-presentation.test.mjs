@@ -16,17 +16,17 @@ const projectsDir = fileURLToPath(new URL('../src/content/projects/', import.met
 
 const expectedFeaturedIds = [
   'o-compositor',
+  'um-certo-joao-silvino',
   'ep-rinoceronte',
+  'arvore-seca',
   'em-agosto-chove',
-  'unveiling-new-futures',
   'this-feminine-side',
   'lucy',
-  'el-tono-del-mar',
-  'arvore-seca',
-  'trisal',
-  'um-certo-joao-silvino',
   'aguas-passadas',
   'sopru',
+  'trisal',
+  'unveiling-new-futures',
+  'el-tono-del-mar',
 ];
 
 const expectedMoreIds = [
@@ -259,9 +259,9 @@ test('opening panel alternates music, cinema, tools and generative projects in b
 
 test('audiovisual chapter keeps sound and music work while tools and generative cases remain in the catalogue', () => {
   const expectedFeatured = [
-    'o-compositor', 'ep-rinoceronte', 'em-agosto-chove', 'unveiling-new-futures',
-    'this-feminine-side', 'el-tono-del-mar', 'arvore-seca', 'trisal',
-    'um-certo-joao-silvino', 'aguas-passadas', 'sopru',
+    'o-compositor', 'um-certo-joao-silvino', 'ep-rinoceronte', 'arvore-seca',
+    'em-agosto-chove', 'this-feminine-side', 'aguas-passadas', 'sopru',
+    'trisal', 'unveiling-new-futures', 'el-tono-del-mar',
   ];
   for (const locale of ['en', 'pt']) {
     const presentation = buildWorkPresentation(readProjects(), { locale });
