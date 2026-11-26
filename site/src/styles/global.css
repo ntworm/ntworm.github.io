@@ -12,6 +12,10 @@
   --fg-bone: #EAE6DE;
   --accent-amber: #D4A847;
   --muted-graphite: #7C7C7E;
+  /* Secondary text. --muted-graphite stays for rules and borders; text needs
+     more headroom because blurred covers and Hydra lighten the ground behind
+     it (≈9:1 on --bg-noir, still ≥4.5:1 on mid-grey #404040). */
+  --fg-muted: #B3AFA7;
 
   /* Typefaces */
   --font-display: 'Antonio', 'Tungsten', system-ui, sans-serif;
@@ -247,7 +251,7 @@ h3 { font-size: var(--t-h3); }
   font-family: var(--font-mono);
   font-size: var(--t-mono);
   letter-spacing: 0.04em;
-  color: var(--muted-graphite);
+  color: var(--fg-muted);
 }
 
 p { max-width: 64ch; text-wrap: pretty; }

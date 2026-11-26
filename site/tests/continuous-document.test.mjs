@@ -372,7 +372,7 @@ test('featured projects reveal a diffused poster backdrop and zoom both image la
   assert.match(source, /\.work-entry--featured\s*\{[^}]*overflow:\s*visible;/s);
   assert.match(source, /\.work-entry--featured \.work-entry__backdrop\s*\{[^}]*position:\s*absolute;[^}]*top:\s*0;[^}]*bottom:\s*0;[^}]*left:\s*50%;[^}]*width:\s*100vw;[^}]*transform:\s*translateX\(-50%\);[^}]*opacity:\s*0\.3;[^}]*mask-image:[^}]*linear-gradient\(90deg, transparent 0%, #000 4%, #000 96%, transparent 100%\)/s);
   assert.match(source, /\.work-entry__backdrop img\s*\{[^}]*filter:\s*blur\(26px\)[^}]*transform:\s*scale\(1\.08\);/s);
-  assert.match(source, /\.work-entry--featured:hover \.work-entry__backdrop,[^}]*\{[^}]*opacity:\s*0\.9;/s);
+  assert.match(source, /\.work-entry--featured:hover \.work-entry__backdrop,[^}]*\{[^}]*opacity:\s*0\.8;/s);
   assert.match(source, /\.work-entry--featured:hover \.work-entry__backdrop img,[^}]*\{[^}]*transform:\s*scale\(1\.18\);/s);
   assert.match(source, /\.work-entry--featured:hover \.work-entry__media img,[^}]*\{[^}]*transform:\s*scale\(1\.1\);/s);
 });
